@@ -4,14 +4,7 @@ import { format } from 'date-fns'
 import { nb } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { CalendarIcon, MapPinIcon, BuildingIcon } from 'lucide-react'
 import type { GigStatus } from '@/types/database'
 
 const statusLabels: Record<GigStatus, string> = {
@@ -21,11 +14,19 @@ const statusLabels: Record<GigStatus, string> = {
   cancelled: 'Avlyst',
 }
 
-const statusVariants: Record<GigStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  draft: 'secondary',
+const statusVariants: Record<GigStatus, 'default' | 'secondary' | 'outline' | 'status-alert'> = {
+  draft: 'outline',
   confirmed: 'default',
-  completed: 'outline',
-  cancelled: 'destructive',
+  completed: 'secondary',
+  cancelled: 'status-alert',
+}
+
+function getCardHue(id: string) {
+  let hash = 0
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) & 0xffffffff
+  }
+  return Math.abs(hash) % 360
 }
 
 export default async function GigsPage() {
@@ -36,22 +37,19 @@ export default async function GigsPage() {
     .from('profiles')
     .select('role')
     .eq('id', user!.id)
-    .single()
+    .single() as { data: { role: string } | null, error: unknown }
 
   const isAdmin = profile?.role === 'admin'
 
-  let query = supabase
+  const { data: gigs } = await supabase
     .from('gigs')
     .select('*')
-    .order('start_date', { ascending: true })
-
-  // Technicians only see their own gigs via RLS — no filter needed
-  const { data: gigs } = await query
+    .order('start_date', { ascending: true }) as { data: any[] | null, error: unknown }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Oppdrag</h1>
+        <h1 className="font-heading text-3xl font-bold tracking-tight">Oppdrag</h1>
         {isAdmin && (
           <Button asChild>
             <Link href="/dashboard/gigs/new">Nytt oppdrag</Link>
@@ -62,45 +60,58 @@ export default async function GigsPage() {
       {!gigs?.length ? (
         <p className="text-muted-foreground text-sm">Ingen oppdrag å vise.</p>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Namn</TableHead>
-              <TableHead>Venue</TableHead>
-              <TableHead>Klient</TableHead>
-              <TableHead>Dato</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {gigs.map((gig) => (
-              <TableRow key={gig.id}>
-                <TableCell className="font-medium">{gig.name}</TableCell>
-                <TableCell>{gig.venue ?? '—'}</TableCell>
-                <TableCell>{gig.client ?? '—'}</TableCell>
-                <TableCell>
-                  {format(new Date(gig.start_date), 'd. MMM yyyy', { locale: nb })}
-                  {gig.start_date !== gig.end_date && (
-                    <span className="text-muted-foreground">
-                      {' '}– {format(new Date(gig.end_date), 'd. MMM', { locale: nb })}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {gigs.map((gig) => {
+            const hue = getCardHue(gig.id)
+            return (
+              <Link
+                key={gig.id}
+                href={`/dashboard/gigs/${gig.id}`}
+                className="group block rounded-xl overflow-hidden transition-transform hover:-translate-y-0.5"
+              >
+                {/* Colored gradient banner */}
+                <div
+                  className="h-28 flex items-end p-4"
+                  style={{
+                    background: `linear-gradient(135deg, oklch(0.28 0.12 ${hue}) 0%, oklch(0.13 0 0) 100%)`,
+                  }}
+                >
                   <Badge variant={statusVariants[gig.status as GigStatus]}>
                     {statusLabels[gig.status as GigStatus]}
                   </Badge>
-                </TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/dashboard/gigs/${gig.id}`}>Sjå detaljar</Link>
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                </div>
+
+                {/* Card body */}
+                <div className="bg-surface-container group-hover:bg-surface-high transition-colors p-4 flex flex-col gap-2">
+                  <p className="font-heading font-semibold text-sm leading-snug line-clamp-1">
+                    {gig.name}
+                  </p>
+                  {gig.client && (
+                    <p className="flex items-center gap-1.5 text-xs text-primary font-medium">
+                      <BuildingIcon className="size-3 shrink-0" />
+                      {gig.client}
+                    </p>
+                  )}
+                  <div className="flex flex-col gap-1 mt-0.5">
+                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <CalendarIcon className="size-3 shrink-0" />
+                      {format(new Date(gig.start_date), 'd. MMM yyyy', { locale: nb })}
+                      {gig.start_date !== gig.end_date && (
+                        <>{' – '}{format(new Date(gig.end_date), 'd. MMM', { locale: nb })}</>
+                      )}
+                    </span>
+                    {gig.venue && (
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <MapPinIcon className="size-3 shrink-0" />
+                        {gig.venue}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            )
+          })}
+        </div>
       )}
     </div>
   )

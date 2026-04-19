@@ -1,3 +1,4 @@
+import type { GigWithDetails } from '@/types/database'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -9,7 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import AddPersonnelDialog from '@/components/gigs/AddPersonnelDialog'
 import AddEquipmentDialog from '@/components/gigs/AddEquipmentDialog'
 import RemovePersonnelButton from '@/components/gigs/RemovePersonnelButton'
+import PersonHoverCard from '@/components/PersonHoverCard'
+import { Avatar } from '@/components/ui/avatar'
 import RemoveEquipmentButton from '@/components/gigs/RemoveEquipmentButton'
+import GigFilesSection from '@/components/gigs/GigFilesSection'
 import type { GigStatus } from '@/types/database'
 
 const statusLabels: Record<GigStatus, string> = {
@@ -32,27 +36,37 @@ export default async function GigDetailPage({
     .from('profiles')
     .select('role')
     .eq('id', user!.id)
-    .single()
+    .single() as { data: { role: string } | null, error: unknown }
 
   const isAdmin = profile?.role === 'admin'
 
+  const gigSelect = isAdmin
+    ? 'id, name, venue, client, start_date, end_date, description, status, price, price_notes, created_by, created_at'
+    : 'id, name, venue, client, start_date, end_date, description, status, created_by, created_at'
+
   const { data: gig } = await supabase
     .from('gigs')
-    .select('*')
+    .select(gigSelect)
     .eq('id', id)
-    .single()
+    .single() as { data: any, error: unknown }
 
   if (!gig) notFound()
 
   const { data: personnelRows } = await supabase
     .from('gig_personnel')
     .select('id, role_on_gig, notes, profiles(id, full_name, phone, role)')
-    .eq('gig_id', id)
+    .eq('gig_id', id) as { data: any[] | null, error: unknown }
 
   const { data: equipmentRows } = await supabase
     .from('gig_equipment')
     .select('id, quantity_needed, notes, equipment(id, name, category, quantity)')
+    .eq('gig_id', id) as { data: any[] | null, error: unknown }
+
+  const { data: fileRows } = await supabase
+    .from('gig_files')
+    .select('*')
     .eq('gig_id', id)
+    .order('created_at', { ascending: false }) as { data: any[] | null, error: unknown }
 
   return (
     <div className="flex flex-col gap-6 max-w-3xl">
@@ -69,7 +83,14 @@ export default async function GigDetailPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge>{statusLabels[gig.status as GigStatus]}</Badge>
+          <Badge variant={
+            gig.status === 'confirmed' ? 'default' :
+            gig.status === 'completed' ? 'success' :
+            gig.status === 'cancelled' ? 'destructive' :
+            'secondary'
+          }>
+            {statusLabels[gig.status as GigStatus]}
+          </Badge>
           {isAdmin && (
             <Button variant="outline" size="sm" asChild>
               <Link href={`/dashboard/gigs/${gig.id}/edit`}>Endre</Link>
@@ -80,6 +101,22 @@ export default async function GigDetailPage({
 
       {gig.description && (
         <p className="text-sm text-muted-foreground whitespace-pre-wrap">{gig.description}</p>
+      )}
+
+      {isAdmin && gig.price != null && (
+        <div className="flex items-baseline gap-2">
+          <span className="text-lg font-semibold">
+            {new Intl.NumberFormat('nb-NO', {
+              style: 'currency',
+              currency: 'NOK',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(gig.price)}
+          </span>
+          {gig.price_notes && (
+            <span className="text-sm text-muted-foreground">{gig.price_notes}</span>
+          )}
+        </div>
       )}
 
       {/* Personnel */}
@@ -99,10 +136,19 @@ export default async function GigDetailPage({
                 const person = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles
                 return (
                   <li key={row.id} className="flex items-center justify-between py-2">
-                    <div>
-                      <p className="text-sm font-medium">{person?.full_name ?? 'Ukjend'}</p>
+                    <div className="flex items-center gap-2.5">
+                      {person?.id ? (
+                        <PersonHoverCard profileId={person.id} name={person.full_name}>
+                          <div className="flex items-center gap-2.5">
+                            <Avatar src={person.avatar_url} name={person.full_name} size="sm" />
+                            <p className="text-sm font-medium">{person.full_name ?? 'Ukjend'}</p>
+                          </div>
+                        </PersonHoverCard>
+                      ) : (
+                        <p className="text-sm font-medium">Ukjend</p>
+                      )}
                       {row.role_on_gig && (
-                        <p className="text-xs text-muted-foreground">{row.role_on_gig}</p>
+                        <Badge variant="gold">{row.role_on_gig}</Badge>
                       )}
                     </div>
                     {isAdmin && <RemovePersonnelButton assignmentId={row.id} />}
@@ -146,6 +192,12 @@ export default async function GigDetailPage({
           )}
         </CardContent>
       </Card>
+      {/* Files */}
+      <GigFilesSection
+        gigId={gig.id}
+        isAdmin={isAdmin}
+        initialFiles={fileRows ?? []}
+      />
     </div>
   )
 }

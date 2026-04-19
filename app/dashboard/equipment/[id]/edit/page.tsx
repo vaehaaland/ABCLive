@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import EquipmentForm from '@/components/EquipmentForm'
+import type { Equipment } from '@/types/database'
 
 export default async function EditEquipmentPage({
   params,
@@ -10,10 +11,10 @@ export default async function EditEquipmentPage({
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user!.id).single()
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user!.id).single() as { data: { role: string } | null, error: unknown }
   if (profile?.role !== 'admin') redirect('/dashboard/gigs')
 
-  const { data: equipment } = await supabase.from('equipment').select('*').eq('id', id).single()
+  const { data: equipment } = await supabase.from('equipment').select('*').eq('id', id).single() as { data: Equipment | null, error: unknown }
   if (!equipment) notFound()
 
   return (

@@ -1,3 +1,4 @@
+import type { Gig } from '@/types/database'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import GigForm from '@/components/gigs/GigForm'
@@ -10,14 +11,14 @@ export default async function NewGigPage() {
     .from('profiles')
     .select('role')
     .eq('id', user!.id)
-    .single()
+    .single() as { data: { role: string } | null, error: unknown }
 
   if (profile?.role !== 'admin') redirect('/dashboard/gigs')
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
       <h1 className="text-2xl font-bold">Nytt oppdrag</h1>
-      <GigForm />
+      <GigForm isAdmin />
     </div>
   )
 }

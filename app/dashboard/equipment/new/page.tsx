@@ -5,7 +5,7 @@ import EquipmentForm from '@/components/EquipmentForm'
 export default async function NewEquipmentPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user!.id).single()
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user!.id).single() as { data: { role: string } | null, error: unknown }
   if (profile?.role !== 'admin') redirect('/dashboard/gigs')
 
   return (

@@ -18,9 +18,10 @@ import type { Gig, GigStatus } from '@/types/database'
 
 interface GigFormProps {
   gig?: Gig
+  isAdmin?: boolean
 }
 
-export default function GigForm({ gig }: GigFormProps) {
+export default function GigForm({ gig, isAdmin }: GigFormProps) {
   const router = useRouter()
   const supabase = createClient()
 
@@ -31,6 +32,8 @@ export default function GigForm({ gig }: GigFormProps) {
   const [endDate, setEndDate] = useState(gig?.end_date ?? '')
   const [description, setDescription] = useState(gig?.description ?? '')
   const [status, setStatus] = useState<GigStatus>(gig?.status ?? 'draft')
+  const [price, setPrice] = useState<string>(gig?.price != null ? String(gig.price) : '')
+  const [priceNotes, setPriceNotes] = useState(gig?.price_notes ?? '')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -39,7 +42,13 @@ export default function GigForm({ gig }: GigFormProps) {
     setLoading(true)
     setError(null)
 
-    const payload = { name, venue, client, start_date: startDate, end_date: endDate, description, status }
+    const payload = {
+      name, venue, client, start_date: startDate, end_date: endDate, description, status,
+      ...(isAdmin && {
+        price: price ? parseFloat(price) : null,
+        price_notes: priceNotes || null,
+      }),
+    }
 
     let result
     if (gig) {
@@ -111,6 +120,32 @@ export default function GigForm({ gig }: GigFormProps) {
           rows={4}
         />
       </div>
+
+      {isAdmin && (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="price">Pris (NOK)</Label>
+            <Input
+              id="price"
+              type="number"
+              step="0.01"
+              min="0"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="0"
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="price_notes">Prisnotat</Label>
+            <Input
+              id="price_notes"
+              value={priceNotes}
+              onChange={(e) => setPriceNotes(e.target.value)}
+              placeholder="t.d. inkl. MVA"
+            />
+          </div>
+        </div>
+      )}
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 

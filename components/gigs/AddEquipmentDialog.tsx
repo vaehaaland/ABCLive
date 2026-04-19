@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -13,13 +12,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import type { Equipment } from '@/types/database'
 
 interface Props {
@@ -28,20 +20,23 @@ interface Props {
   gigEndDate: string
 }
 
-interface EquipmentWithAvailability extends Equipment {
+interface EquipmentItem extends Equipment {
   available: number
 }
+
+// equipmentId → { quantity, existingRowId? }
+type Selections = Map<string, { quantity: number; existingRowId?: string }>
 
 export default function AddEquipmentDialog({ gigId, gigStartDate, gigEndDate }: Props) {
   const router = useRouter()
   const supabase = createClient()
 
   const [open, setOpen] = useState(false)
-  const [items, setItems] = useState<EquipmentWithAvailability[]>([])
-  const [selectedId, setSelectedId] = useState('')
-  const [quantityNeeded, setQuantityNeeded] = useState(1)
+  const [items, setItems] = useState<EquipmentItem[]>([])
+  const [selections, setSelections] = useState<Selections>(new Map())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     if (!open) return
@@ -49,118 +44,243 @@ export default function AddEquipmentDialog({ gigId, gigStartDate, gigEndDate }: 
       const { data: allEquipment } = await supabase
         .from('equipment')
         .select('*')
+        .order('category', { nullsFirst: false })
         .order('name')
 
       if (!allEquipment) return
 
-      // Get all equipment allocations for overlapping gigs (excluding this gig)
+      // Existing rows for this gig
+      const { data: existing } = await supabase
+        .from('gig_equipment')
+        .select('id, equipment_id, quantity_needed')
+        .eq('gig_id', gigId)
+
+      const existingMap = new Map<string, { id: string; quantity: number }>()
+      existing?.forEach((e) => existingMap.set(e.equipment_id, { id: e.id, quantity: e.quantity_needed }))
+
+      // Allocations from OTHER overlapping gigs
       const { data: allocations } = await supabase
         .from('gig_equipment')
         .select('equipment_id, quantity_needed, gigs!inner(start_date, end_date)')
         .neq('gig_id', gigId)
 
-      // Sum up allocated quantities per equipment for conflicting date ranges
       const allocatedMap = new Map<string, number>()
       allocations?.forEach((a) => {
         const gigs = Array.isArray(a.gigs) ? a.gigs : [a.gigs]
         gigs.forEach((g: { start_date: string; end_date: string }) => {
           if (g.start_date <= gigEndDate && g.end_date >= gigStartDate) {
-            const current = allocatedMap.get(a.equipment_id) ?? 0
-            allocatedMap.set(a.equipment_id, current + a.quantity_needed)
+            const cur = allocatedMap.get(a.equipment_id) ?? 0
+            allocatedMap.set(a.equipment_id, cur + a.quantity_needed)
           }
         })
       })
 
-      const withAvailability: EquipmentWithAvailability[] = allEquipment.map((eq) => ({
-        ...eq,
-        available: eq.quantity - (allocatedMap.get(eq.id) ?? 0),
-      }))
+      setItems(
+        allEquipment.map((eq) => ({
+          ...eq,
+          available: eq.quantity - (allocatedMap.get(eq.id) ?? 0),
+        }))
+      )
 
-      setItems(withAvailability)
+      // Pre-populate selections from existing rows
+      const init: Selections = new Map()
+      existingMap.forEach(({ id, quantity }, equipId) => {
+        init.set(equipId, { quantity, existingRowId: id })
+      })
+      setSelections(init)
     }
     load()
   }, [open, gigId, gigStartDate, gigEndDate])
 
-  async function handleAdd() {
-    if (!selectedId) return
+  function toggle(item: EquipmentItem) {
+    if (item.available <= 0 && !selections.has(item.id)) return
+    setSelections((prev) => {
+      const next = new Map(prev)
+      if (next.has(item.id)) {
+        next.delete(item.id)
+      } else {
+        next.set(item.id, { quantity: 1 })
+      }
+      return next
+    })
+  }
+
+  function setQuantity(id: string, qty: number) {
+    setSelections((prev) => {
+      const next = new Map(prev)
+      const cur = next.get(id)
+      if (cur) next.set(id, { ...cur, quantity: Math.max(1, qty) })
+      return next
+    })
+  }
+
+  async function handleSave() {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.from('gig_equipment').insert({
-      gig_id: gigId,
-      equipment_id: selectedId,
-      quantity_needed: quantityNeeded,
+    const { data: existing } = await supabase
+      .from('gig_equipment')
+      .select('id, equipment_id, quantity_needed')
+      .eq('gig_id', gigId)
+
+    const existingMap = new Map<string, { id: string; quantity: number }>()
+    existing?.forEach((e) => existingMap.set(e.equipment_id, { id: e.id, quantity: e.quantity_needed }))
+
+    const ops: Promise<{ error: { message: string } | null }>[] = []
+
+    selections.forEach(({ quantity }, equipId) => {
+      const ex = existingMap.get(equipId)
+      if (!ex) {
+        ops.push(
+          supabase.from('gig_equipment').insert({ gig_id: gigId, equipment_id: equipId, quantity_needed: quantity })
+        )
+      } else if (ex.quantity !== quantity) {
+        ops.push(
+          supabase.from('gig_equipment').update({ quantity_needed: quantity }).eq('id', ex.id)
+        )
+      }
     })
 
-    if (error) {
-      setError(error.message)
+    existingMap.forEach(({ id }, equipId) => {
+      if (!selections.has(equipId)) {
+        ops.push(supabase.from('gig_equipment').delete().eq('id', id))
+      }
+    })
+
+    const results = await Promise.all(ops)
+    const failed = results.find((r) => r.error)
+    if (failed?.error) {
+      setError(failed.error.message)
     } else {
       setOpen(false)
-      setSelectedId('')
-      setQuantityNeeded(1)
       router.refresh()
     }
     setLoading(false)
   }
 
-  const selected = items.find((i) => i.id === selectedId)
+  const q = search.toLowerCase().trim()
+  const filteredItems = q
+    ? items.filter((i) => i.name.toLowerCase().includes(q) || (i.category ?? '').toLowerCase().includes(q))
+    : items
+
+  const categories = [...new Set(filteredItems.map((i) => i.category ?? 'Anna'))].sort()
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm">Legg til utstyr</Button>
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setSearch('') }}>
+      <DialogTrigger render={<Button size="sm" />}>
+        Legg til utstyr
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl" showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>Legg til utstyr</DialogTitle>
+          <DialogTitle>Utstyr på oppdraget</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col gap-4">
-          <div className="grid gap-2">
-            <Label>Utstyr</Label>
-            <Select value={selectedId} onValueChange={(v) => { setSelectedId(v); setQuantityNeeded(1) }}>
-              <SelectTrigger>
-                <SelectValue placeholder="Vel utstyr…" />
-              </SelectTrigger>
-              <SelectContent>
-                {items.map((item) => (
-                  <SelectItem key={item.id} value={item.id} disabled={item.available <= 0}>
-                    <span>{item.name}</span>
-                    <span className={`ml-2 text-xs ${item.available <= 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                      ({item.available} av {item.quantity} ledig)
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {selected && selected.available <= 0 && (
-              <p className="text-sm text-destructive">⚠ Ingen ledige einingar i denne perioden.</p>
-            )}
-          </div>
 
-          <div className="grid gap-2">
-            <Label>Antal</Label>
-            <Input
-              type="number"
-              min={1}
-              max={selected?.available ?? 1}
-              value={quantityNeeded}
-              onChange={(e) => setQuantityNeeded(Number(e.target.value))}
-            />
-            {selected && quantityNeeded > selected.available && (
-              <p className="text-sm text-destructive">
-                Berre {selected.available} tilgjengeleg.
-              </p>
+        <div className="flex flex-col gap-4">
+          <Input
+            placeholder="Søk etter utstyr…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            autoFocus
+          />
+
+          {/* Scrollable equipment list */}
+          <div className="max-h-[60vh] overflow-y-auto flex flex-col gap-5 pr-0.5">
+            {items.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-10">Laster utstyr…</p>
             )}
+            {filteredItems.length === 0 && items.length > 0 && (
+              <p className="text-sm text-muted-foreground text-center py-10">Ingen utstyr funne</p>
+            )}
+            {categories.map((cat) => {
+              const catItems = filteredItems.filter((i) => (i.category ?? 'Anna') === cat)
+              if (catItems.length === 0) return null
+              return (
+              <div key={cat}>
+                <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground mb-2 px-1">
+                  {cat}
+                </p>
+                <div className="flex flex-col gap-1">
+                  {catItems
+                    .map((item) => {
+                      const sel = selections.get(item.id)
+                      const isSelected = !!sel
+                      const exhausted = item.available <= 0 && !isSelected
+
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => toggle(item)}
+                          className={[
+                            'flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors',
+                            isSelected
+                              ? 'bg-primary/10 ring-1 ring-inset ring-primary/25'
+                              : exhausted
+                              ? 'opacity-40 cursor-not-allowed'
+                              : 'hover:bg-surface-high cursor-pointer',
+                          ].join(' ')}
+                        >
+                          <div className="flex items-center gap-3">
+                            {/* Checkbox */}
+                            <div
+                              className={[
+                                'size-4 rounded-sm border flex items-center justify-center shrink-0 transition-colors',
+                                isSelected ? 'bg-primary border-primary' : 'border-white/25',
+                              ].join(' ')}
+                            >
+                              {isSelected && (
+                                <svg viewBox="0 0 10 8" className="size-2.5 fill-primary-foreground">
+                                  <path d="M1 4l2.5 2.5L9 1" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              )}
+                            </div>
+
+                            <div>
+                              <p className="text-sm font-medium leading-tight">{item.name}</p>
+                              <p className={`text-xs mt-0.5 ${item.available <= 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                {item.available} av {item.quantity} ledig
+                              </p>
+                            </div>
+                          </div>
+
+                          {isSelected && (
+                            <div
+                              className="flex items-center gap-2"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <span className="text-xs text-muted-foreground">Antal</span>
+                              <Input
+                                type="number"
+                                min={1}
+                                max={item.available}
+                                value={sel.quantity}
+                                onChange={(e) => setQuantity(item.id, Number(e.target.value))}
+                                className="h-7 w-16 text-center px-1"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                </div>
+              </div>
+            )})}
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <Button
-            onClick={handleAdd}
-            disabled={!selectedId || loading || (selected ? quantityNeeded > selected.available : false)}
-          >
-            {loading ? 'Legg til…' : 'Legg til'}
-          </Button>
+          <div className="flex items-center justify-between border-t border-white/8 pt-3">
+            <span className="text-xs text-muted-foreground">
+              {selections.size} {selections.size === 1 ? 'utstyrstype' : 'utstyrstypar'} valt
+            </span>
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={() => setOpen(false)}>
+                Avbryt
+              </Button>
+              <Button onClick={handleSave} disabled={loading}>
+                {loading ? 'Lagrar…' : 'Lagre'}
+              </Button>
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

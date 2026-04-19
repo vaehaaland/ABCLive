@@ -9,20 +9,32 @@ export interface Database {
           id: string
           full_name: string | null
           role: UserRole
+          primary_role: string | null
           phone: string | null
+          email: string | null
+          avatar_url: string | null
+          is_superadmin: boolean
           created_at: string
         }
         Insert: {
           id: string
           full_name?: string | null
           role?: UserRole
+          primary_role?: string | null
           phone?: string | null
+          email?: string | null
+          avatar_url?: string | null
+          is_superadmin?: boolean
           created_at?: string
         }
         Update: {
           full_name?: string | null
           role?: UserRole
+          primary_role?: string | null
           phone?: string | null
+          email?: string | null
+          avatar_url?: string | null
+          is_superadmin?: boolean
         }
       }
       gigs: {
@@ -35,6 +47,8 @@ export interface Database {
           end_date: string
           description: string | null
           status: GigStatus
+          price: number | null
+          price_notes: string | null
           created_by: string | null
           created_at: string
         }
@@ -47,6 +61,8 @@ export interface Database {
           end_date: string
           description?: string | null
           status?: GigStatus
+          price?: number | null
+          price_notes?: string | null
           created_by?: string | null
           created_at?: string
         }
@@ -58,6 +74,8 @@ export interface Database {
           end_date?: string
           description?: string | null
           status?: GigStatus
+          price?: number | null
+          price_notes?: string | null
         }
       }
       equipment: {
@@ -124,6 +142,31 @@ export interface Database {
           notes?: string | null
         }
       }
+      gig_files: {
+        Row: {
+          id: string
+          gig_id: string
+          uploaded_by: string | null
+          file_name: string
+          file_size: number
+          mime_type: string
+          storage_path: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          gig_id: string
+          uploaded_by?: string | null
+          file_name: string
+          file_size: number
+          mime_type: string
+          storage_path: string
+          created_at?: string
+        }
+        Update: {
+          file_name?: string
+        }
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -137,8 +180,10 @@ export type Gig = Database['public']['Tables']['gigs']['Row']
 export type Equipment = Database['public']['Tables']['equipment']['Row']
 export type GigPersonnel = Database['public']['Tables']['gig_personnel']['Row']
 export type GigEquipment = Database['public']['Tables']['gig_equipment']['Row']
+export type GigFile = Database['public']['Tables']['gig_files']['Row']
 
 export type GigWithDetails = Gig & {
   gig_personnel: (GigPersonnel & { profiles: Profile })[]
   gig_equipment: (GigEquipment & { equipment: Equipment })[]
+  gig_files: GigFile[]
 }

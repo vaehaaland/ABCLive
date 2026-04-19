@@ -34,10 +34,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/40">
-      <Card className="w-full max-w-sm">
+    <div className="relative min-h-screen flex items-center justify-center bg-background overflow-hidden">
+      {/* Stage-light radial glow */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse at 50% 0%, oklch(0.74 0.18 295 / 0.10) 0%, transparent 60%)',
+        }}
+      />
+      <Card className="relative z-10 w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">ABC Studio</CardTitle>
+          <CardTitle className="font-heading text-2xl font-bold tracking-tight">ABC Studio</CardTitle>
           <CardDescription>Logg inn for å planlegge oppdrag</CardDescription>
         </CardHeader>
         <CardContent>
@@ -76,3 +84,4 @@ export default function LoginPage() {
     </div>
   )
 }
+

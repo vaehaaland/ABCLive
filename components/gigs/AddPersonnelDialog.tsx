@@ -18,7 +18,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select'
 import type { Profile } from '@/types/database'
 
@@ -118,8 +117,8 @@ export default function AddPersonnelDialog({ gigId, gigStartDate, gigEndDate }: 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm">Legg til teknikar</Button>
+      <DialogTrigger render={<Button size="sm" />}>
+        Legg til teknikar
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -129,8 +128,11 @@ export default function AddPersonnelDialog({ gigId, gigStartDate, gigEndDate }: 
           <div className="grid gap-2">
             <Label>Teknikar</Label>
             <Select value={selectedId} onValueChange={setSelectedId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Vel ein teknikar…" />
+              <SelectTrigger className="w-full">
+                {selectedId
+                  ? <span className="flex-1 text-left text-sm truncate">{selected?.full_name ?? selectedId}</span>
+                  : <span className="flex-1 text-left text-sm text-muted-foreground">Vel ein teknikar…</span>
+                }
               </SelectTrigger>
               <SelectContent>
                 {personnel.map((p) => (
