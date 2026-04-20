@@ -43,6 +43,9 @@ export interface Database {
           id: string
           name: string
           gig_type: GigType
+          public_report_enabled: boolean
+          public_report_slug: string | null
+          public_report_password_hash: string | null
           venue: string | null
           client: string | null
           start_date: string
@@ -58,6 +61,9 @@ export interface Database {
           id?: string
           name: string
           gig_type?: GigType
+          public_report_enabled?: boolean
+          public_report_slug?: string | null
+          public_report_password_hash?: string | null
           venue?: string | null
           client?: string | null
           start_date: string
@@ -72,6 +78,9 @@ export interface Database {
         Update: {
           name?: string
           gig_type?: GigType
+          public_report_enabled?: boolean
+          public_report_slug?: string | null
+          public_report_password_hash?: string | null
           venue?: string | null
           client?: string | null
           start_date?: string

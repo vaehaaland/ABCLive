@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import { format, subDays } from 'date-fns'
 import { nb } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { PastGigsToggle } from '@/components/gigs/PastGigsToggle'
 import { CalendarIcon, MapPinIcon, BuildingIcon } from 'lucide-react'
 import type { Gig, GigStatus } from '@/types/database'
 
@@ -29,7 +30,35 @@ function getCardHue(id: string) {
   return Math.abs(hash) % 360
 }
 
-export default async function GigsPage() {
+type GigSort = 'date' | 'name'
+
+export default async function GigsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sort?: string; showPast?: string }>
+}) {
+  const sp = await searchParams
+  const sort: GigSort = sp.sort === 'name' ? 'name' : 'date'
+  const showPast = sp.showPast === '1'
+  const baseParams = new URLSearchParams()
+  if (sort === 'name') {
+    baseParams.set('sort', 'name')
+  }
+  if (showPast) {
+    baseParams.set('showPast', '1')
+  }
+  const buildHref = (updates: Record<string, string | null>) => {
+    const params = new URLSearchParams(baseParams)
+    for (const [key, value] of Object.entries(updates)) {
+      if (value === null) {
+        params.delete(key)
+      } else {
+        params.set(key, value)
+      }
+    }
+    const query = params.toString()
+    return query ? `/dashboard/gigs?${query}` : '/dashboard/gigs'
+  }
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -41,12 +70,22 @@ export default async function GigsPage() {
 
   const isAdmin = profile?.role === 'admin'
 
-  const { data: gigs } = await supabase
+  let gigsQuery = supabase
     .from('gigs')
     .select('*')
-    .order('start_date', { ascending: true }) as { data: Gig[] | null, error: unknown }
 
-  const festivalIds = (gigs ?? []).filter((gig) => gig.gig_type === 'festival').map((gig) => gig.id)
+  if (!showPast) {
+    gigsQuery = gigsQuery.gt('end_date', format(subDays(new Date(), 3), 'yyyy-MM-dd'))
+  }
+
+  gigsQuery = sort === 'name'
+    ? gigsQuery.order('name', { ascending: true }).order('start_date', { ascending: true })
+    : gigsQuery.order('start_date', { ascending: true }).order('name', { ascending: true })
+
+  const { data: gigs } = await gigsQuery as { data: Gig[] | null, error: unknown }
+
+  const gigList = gigs ?? []
+  const festivalIds = gigList.filter((gig) => gig.gig_type === 'festival').map((gig) => gig.id)
   const programItemCountMap = new Map<string, number>()
 
   if (festivalIds.length > 0) {
@@ -72,11 +111,22 @@ export default async function GigsPage() {
         )}
       </div>
 
-      {!gigs?.length ? (
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-muted-foreground">Sorter etter</span>
+        <Button asChild size="sm" variant={sort === 'date' ? 'default' : 'outline'}>
+          <Link href={buildHref({ sort: null })}>Startdato</Link>
+        </Button>
+        <Button asChild size="sm" variant={sort === 'name' ? 'default' : 'outline'}>
+          <Link href={buildHref({ sort: 'name' })}>Namn</Link>
+        </Button>
+        <PastGigsToggle defaultChecked={showPast} />
+      </div>
+
+      {!gigList.length ? (
         <p className="text-muted-foreground text-sm">Ingen oppdrag å vise.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {gigs.map((gig) => {
+          {gigList.map((gig) => {
             const hue = getCardHue(gig.id)
             return (
               <Link

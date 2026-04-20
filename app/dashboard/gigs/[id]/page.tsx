@@ -18,6 +18,7 @@ import RemoveProgramItemPersonnelButton from '@/components/gigs/RemoveProgramIte
 import RemoveProgramItemEquipmentButton from '@/components/gigs/RemoveProgramItemEquipmentButton'
 import PersonHoverCard from '@/components/PersonHoverCard'
 import { Avatar } from '@/components/ui/avatar'
+import FestivalReportSharingPanel from '@/components/gigs/FestivalReportSharingPanel'
 import GigFilesSection from '@/components/gigs/GigFilesSection'
 import type { GigFile, GigProgramItem, GigStatus, GigType } from '@/types/database'
 
@@ -69,6 +70,8 @@ type GigDetailRow = {
   id: string
   name: string
   gig_type: GigType
+  public_report_enabled: boolean
+  public_report_slug: string | null
   venue: string | null
   client: string | null
   start_date: string
@@ -135,8 +138,8 @@ export default async function GigDetailPage({
   const isAdmin = profile?.role === 'admin'
 
   const gigSelect = isAdmin
-    ? 'id, name, gig_type, venue, client, start_date, end_date, description, status, price, price_notes, created_by, created_at'
-    : 'id, name, gig_type, venue, client, start_date, end_date, description, status, created_by, created_at'
+    ? 'id, name, gig_type, public_report_enabled, public_report_slug, venue, client, start_date, end_date, description, status, price, price_notes, created_by, created_at'
+    : 'id, name, gig_type, public_report_enabled, public_report_slug, venue, client, start_date, end_date, description, status, created_by, created_at'
 
   const { data: gig } = await supabase
     .from('gigs')
@@ -260,6 +263,24 @@ export default async function GigDetailPage({
           </span>
           {gig.price_notes && (
             <span className="text-sm text-muted-foreground">{gig.price_notes}</span>
+          )}
+        </div>
+      )}
+
+      {isFestival && (
+        <div className={`grid gap-4 ${isAdmin ? 'xl:grid-cols-[auto_1fr]' : ''}`}>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button asChild>
+              <Link href={`/api/festival-report/${gig.id}`} target="_blank">PDF-rapport</Link>
+            </Button>
+          </div>
+
+          {isAdmin && (
+            <FestivalReportSharingPanel
+              gigId={gig.id}
+              initialEnabled={gig.public_report_enabled}
+              initialPublicPath={gig.public_report_slug ? `/festival-report/${gig.public_report_slug}/pdf` : null}
+            />
           )}
         </div>
       )}

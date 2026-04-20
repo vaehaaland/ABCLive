@@ -129,3 +129,30 @@
     cursor: text;
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .festival-report-shell {
+    max-width: none !important;
+    gap: 0 !important;
+  }
+
+  .festival-report-page {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
+}
