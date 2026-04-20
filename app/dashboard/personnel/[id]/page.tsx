@@ -67,6 +67,18 @@ function calcBusySlots(
   }
 }
 
+type AssignmentCard = {
+  id: string
+  name: string
+  venue: string | null
+  start_date: string
+  end_date: string
+  status: string
+  role_label: string | null
+  item_name: string | null
+  sort_key: string
+}
+
 export default async function PersonnelProfilePage({
   params,
 }: {
@@ -127,23 +139,98 @@ export default async function PersonnelProfilePage({
       error: unknown
     }
 
-  const assignments = (rawAssignments ?? [])
-    .filter((a) => a.gigs !== null)
-    .sort((a, b) =>
-      (b.gigs!.start_date ?? '').localeCompare(a.gigs!.start_date ?? '')
-    )
+  const { data: rawItemAssignments } = await supabase
+    .from('gig_program_item_personnel')
+    .select(`
+      role_on_item,
+      gig_program_items!inner (
+        id,
+        gig_id,
+        name,
+        venue,
+        start_at,
+        end_at
+      )
+    `)
+    .eq('profile_id', id) as {
+      data: {
+        role_on_item: string | null
+        gig_program_items: {
+          id: string
+          gig_id: string
+          name: string
+          venue: string | null
+          start_at: string
+          end_at: string
+        } | null
+      }[] | null
+      error: unknown
+    }
+
+  const itemGigIds = [...new Set((rawItemAssignments ?? [])
+    .map((assignment) => assignment.gig_program_items?.gig_id)
+    .filter(Boolean) as string[])]
+
+  const { data: itemParentGigs } = itemGigIds.length > 0
+    ? await supabase
+        .from('gigs')
+        .select('id, name, venue, start_date, end_date, status')
+        .in('id', itemGigIds) as {
+          data: { id: string; name: string; venue: string | null; start_date: string; end_date: string; status: string }[] | null
+          error: unknown
+        }
+    : { data: [] as { id: string; name: string; venue: string | null; start_date: string; end_date: string; status: string }[], error: null }
+
+  const itemParentGigMap = new Map((itemParentGigs ?? []).map((gig) => [gig.id, gig]))
+
+  const itemLevelAssignments = (rawItemAssignments ?? [])
+    .map((assignment): AssignmentCard | null => {
+      if (!assignment.gig_program_items) return null
+      const parentGig = itemParentGigMap.get(assignment.gig_program_items.gig_id)
+      if (!parentGig) return null
+      return {
+        id: parentGig.id,
+        name: parentGig.name,
+        venue: assignment.gig_program_items.venue ?? parentGig.venue,
+        start_date: assignment.gig_program_items.start_at.slice(0, 10),
+        end_date: assignment.gig_program_items.end_at.slice(0, 10),
+        status: parentGig.status,
+        role_label: assignment.role_on_item,
+        item_name: assignment.gig_program_items.name,
+        sort_key: assignment.gig_program_items.start_at,
+      }
+    })
+    .filter((assignment): assignment is AssignmentCard => assignment !== null)
+
+  const assignments: AssignmentCard[] = [
+    ...(rawAssignments ?? [])
+      .filter((assignment) => assignment.gigs !== null)
+      .map((assignment) => ({
+        id: assignment.gigs!.id,
+        name: assignment.gigs!.name,
+        venue: assignment.gigs!.venue,
+        start_date: assignment.gigs!.start_date,
+        end_date: assignment.gigs!.end_date,
+        status: assignment.gigs!.status,
+        role_label: assignment.role_on_gig,
+        item_name: null as string | null,
+        sort_key: assignment.gigs!.start_date,
+      })),
+    ...itemLevelAssignments,
+  ]
+    .sort((a, b) => b.sort_key.localeCompare(a.sort_key))
 
   const today = new Date().toISOString().split('T')[0]
-  const windowEnd = new Date(Date.now() + 6 * DAY).toISOString().split('T')[0]
+  const windowEnd = new Date(new Date(today).getTime() + 6 * DAY).toISOString().split('T')[0]
 
   // Upcoming gigs for availability
   const upcomingForAvailability = assignments
-    .filter((a) => a.gigs && a.gigs.end_date >= today && a.gigs.start_date <= windowEnd && a.gigs.status !== 'cancelled')
-    .map((a) => ({ start_date: a.gigs!.start_date, end_date: a.gigs!.end_date }))
+    .filter((assignment) => assignment.end_date >= today && assignment.start_date <= windowEnd && assignment.status !== 'cancelled')
+    .map((assignment) => ({ start_date: assignment.start_date, end_date: assignment.end_date }))
 
   const { busyToday, slots } = calcBusySlots(upcomingForAvailability, today)
   const busyCount = slots.filter(Boolean).length
-  const todayMs = Date.now()
+  const todayMs = new Date(today).getTime()
 
   const roleLabel = profile.role === 'admin' ? 'Administrator' : 'Lydtekniker'
   const roleTagline = profile.role === 'admin' ? 'ABC Studio — Admin' : 'Profesjonelt crew-medlem'
@@ -286,13 +373,12 @@ export default async function PersonnelProfilePage({
             <p className="text-sm text-muted-foreground">Ingen oppdrag registrert.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {assignments.map(({ role_on_gig, gigs: gig }) => {
-                if (!gig) return null
-                const hue = getCardHue(gig.id)
+              {assignments.map((assignment) => {
+                const hue = getCardHue(assignment.id)
                 return (
                   <Link
-                    key={gig.id}
-                    href={`/dashboard/gigs/${gig.id}`}
+                    key={`${assignment.id}-${assignment.item_name ?? 'top'}`}
+                    href={`/dashboard/gigs/${assignment.id}`}
                     className="group block rounded-xl overflow-hidden transition-transform hover:-translate-y-0.5"
                   >
                     <div
@@ -301,27 +387,30 @@ export default async function PersonnelProfilePage({
                         background: `linear-gradient(135deg, oklch(0.28 0.12 ${hue}) 0%, oklch(0.13 0 0) 100%)`,
                       }}
                     >
-                      <Badge variant={statusVariants[gig.status as GigStatus]}>
-                        {statusLabels[gig.status as GigStatus]}
+                      <Badge variant={statusVariants[assignment.status as GigStatus]}>
+                        {statusLabels[assignment.status as GigStatus]}
                       </Badge>
                     </div>
 
                     <div className="bg-surface-container group-hover:bg-surface-high transition-colors p-4 flex flex-col gap-2">
                       <p className="font-heading font-semibold text-sm leading-snug line-clamp-1">
-                        {gig.name}
+                        {assignment.name}
                       </p>
-                      {role_on_gig && (
-                        <p className="text-xs text-primary font-medium">{role_on_gig}</p>
+                      {assignment.item_name && (
+                        <p className="text-xs text-primary font-medium">{assignment.item_name}</p>
+                      )}
+                      {assignment.role_label && (
+                        <p className="text-xs text-primary font-medium">{assignment.role_label}</p>
                       )}
                       <div className="flex flex-col gap-1 mt-0.5">
                         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                           <CalendarIcon className="size-3 shrink-0" />
-                          {format(new Date(gig.start_date), 'd. MMM yyyy', { locale: nb })}
+                          {format(new Date(assignment.start_date), 'd. MMM yyyy', { locale: nb })}
                         </span>
-                        {gig.venue && (
+                        {assignment.venue && (
                           <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                             <MapPinIcon className="size-3 shrink-0" />
-                            {gig.venue}
+                            {assignment.venue}
                           </span>
                         )}
                       </div>

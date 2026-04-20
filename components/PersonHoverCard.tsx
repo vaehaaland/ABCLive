@@ -17,6 +17,7 @@ interface UpcomingGig {
   start_date: string
   end_date: string
   venue?: string | null
+  item_name?: string | null
 }
 
 interface FetchedData {
@@ -27,6 +28,34 @@ interface FetchedData {
   primary_role: string | null
   busyToday: boolean
   upcomingGigs: UpcomingGig[]
+}
+
+type ProfilePreview = {
+  full_name: string | null
+  phone: string | null
+  email: string | null
+  avatar_url: string | null
+  primary_role: string | null
+}
+
+type DirectAssignmentRow = {
+  gigs: UpcomingGig | UpcomingGig[] | null
+}
+
+type ItemAssignmentRow = {
+  gig_program_items: {
+    gig_id: string
+    name: string
+    venue: string | null
+    start_at: string
+    end_at: string
+  } | {
+    gig_id: string
+    name: string
+    venue: string | null
+    start_at: string
+    end_at: string
+  }[] | null
 }
 
 export interface PersonHoverCardProps {
@@ -47,7 +76,7 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
     const today = new Date().toISOString().split('T')[0]
     const windowEnd = new Date(Date.now() + 6 * DAY).toISOString().split('T')[0]
 
-    const [{ data: profile }, { data: assignments }] = await Promise.all([
+    const [{ data: profile }, { data: assignments }, { data: itemAssignments }] = await Promise.all([
       supabase
         .from('profiles')
         .select('full_name, phone, email, avatar_url, primary_role')
@@ -60,11 +89,57 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
         .filter('gigs.status', 'neq', 'cancelled')
         .filter('gigs.end_date', 'gte', today)
         .filter('gigs.start_date', 'lte', windowEnd),
-    ])
+      supabase
+        .from('gig_program_item_personnel')
+        .select('gig_program_items!inner(id, gig_id, name, venue, start_at, end_at)')
+        .eq('profile_id', profileId),
+    ]) as [
+      { data: ProfilePreview | null },
+      { data: DirectAssignmentRow[] | null },
+      { data: ItemAssignmentRow[] | null },
+    ]
 
-    const gigs = ((assignments ?? []) as any[])
+    const directGigs = (assignments ?? [])
       .map((a) => (Array.isArray(a.gigs) ? a.gigs[0] : a.gigs))
       .filter(Boolean) as UpcomingGig[]
+
+    const itemRows = (itemAssignments ?? [])
+      .map((row) => (Array.isArray(row.gig_program_items) ? row.gig_program_items[0] : row.gig_program_items))
+      .filter(Boolean) as { gig_id: string; name: string; venue: string | null; start_at: string; end_at: string }[]
+
+    const parentGigIds = [...new Set(itemRows.map((row) => row.gig_id))]
+    let itemGigs: UpcomingGig[] = []
+
+    if (parentGigIds.length > 0) {
+      const { data: parentGigs } = await supabase
+        .from('gigs')
+        .select('id, name, start_date, end_date, status')
+        .in('id', parentGigIds)
+        .filter('status', 'neq', 'cancelled') as {
+          data: { id: string; name: string; start_date: string; end_date: string; status: string }[] | null
+          error: unknown
+        }
+
+      const parentGigMap = new Map((parentGigs ?? []).map((gig) => [gig.id, gig]))
+
+      itemGigs = itemRows
+        .filter((row) => row.end_at.slice(0, 10) >= today && row.start_at.slice(0, 10) <= windowEnd)
+        .map((row) => {
+          const parentGig = parentGigMap.get(row.gig_id)
+          if (!parentGig) return null
+          return {
+            id: parentGig.id,
+            name: parentGig.name,
+            start_date: row.start_at.slice(0, 10),
+            end_date: row.end_at.slice(0, 10),
+            venue: row.venue,
+            item_name: row.name,
+          }
+        })
+        .filter(Boolean) as UpcomingGig[]
+    }
+
+    const gigs = [...directGigs, ...itemGigs]
 
     const todayMs = new Date(today).getTime()
     const busyToday = gigs.some((g) => {
@@ -75,10 +150,10 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
 
     setData({
       full_name: profile?.full_name ?? null,
-      phone: (profile as any)?.phone ?? null,
-      email: (profile as any)?.email ?? null,
-      avatar_url: (profile as any)?.avatar_url ?? null,
-      primary_role: (profile as any)?.primary_role ?? null,
+      phone: profile?.phone ?? null,
+      email: profile?.email ?? null,
+      avatar_url: profile?.avatar_url ?? null,
+      primary_role: profile?.primary_role ?? null,
       busyToday,
       upcomingGigs: gigs,
     })
@@ -165,6 +240,9 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
                           <CalendarIcon className="size-3 mt-0.5 shrink-0 text-primary" />
                           <div className="min-w-0">
                             <p className="text-xs font-medium leading-tight truncate">{gig.name}</p>
+                            {gig.item_name && (
+                              <p className="mt-0.5 text-[0.65rem] text-primary">{gig.item_name}</p>
+                            )}
                             <p className="text-[0.65rem] text-muted-foreground mt-0.5">
                               {format(new Date(gig.start_date), 'd. MMM', { locale: nb })}
                               {gig.start_date !== gig.end_date && (

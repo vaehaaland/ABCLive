@@ -1,5 +1,6 @@
 export type UserRole = 'admin' | 'technician'
 export type GigStatus = 'draft' | 'confirmed' | 'completed' | 'cancelled'
+export type GigType = 'single' | 'festival'
 
 export interface Database {
   public: {
@@ -41,6 +42,7 @@ export interface Database {
         Row: {
           id: string
           name: string
+          gig_type: GigType
           venue: string | null
           client: string | null
           start_date: string
@@ -55,6 +57,7 @@ export interface Database {
         Insert: {
           id?: string
           name: string
+          gig_type?: GigType
           venue?: string | null
           client?: string | null
           start_date: string
@@ -68,6 +71,7 @@ export interface Database {
         }
         Update: {
           name?: string
+          gig_type?: GigType
           venue?: string | null
           client?: string | null
           start_date?: string
@@ -167,6 +171,75 @@ export interface Database {
           file_name?: string
         }
       }
+      gig_program_items: {
+        Row: {
+          id: string
+          gig_id: string
+          name: string
+          venue: string | null
+          start_at: string
+          end_at: string
+          description: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          gig_id: string
+          name: string
+          venue?: string | null
+          start_at: string
+          end_at: string
+          description?: string | null
+          created_at?: string
+        }
+        Update: {
+          name?: string
+          venue?: string | null
+          start_at?: string
+          end_at?: string
+          description?: string | null
+        }
+      }
+      gig_program_item_personnel: {
+        Row: {
+          id: string
+          program_item_id: string
+          profile_id: string
+          role_on_item: string | null
+          notes: string | null
+        }
+        Insert: {
+          id?: string
+          program_item_id: string
+          profile_id: string
+          role_on_item?: string | null
+          notes?: string | null
+        }
+        Update: {
+          role_on_item?: string | null
+          notes?: string | null
+        }
+      }
+      gig_program_item_equipment: {
+        Row: {
+          id: string
+          program_item_id: string
+          equipment_id: string
+          quantity_needed: number
+          notes: string | null
+        }
+        Insert: {
+          id?: string
+          program_item_id: string
+          equipment_id: string
+          quantity_needed?: number
+          notes?: string | null
+        }
+        Update: {
+          quantity_needed?: number
+          notes?: string | null
+        }
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -181,9 +254,18 @@ export type Equipment = Database['public']['Tables']['equipment']['Row']
 export type GigPersonnel = Database['public']['Tables']['gig_personnel']['Row']
 export type GigEquipment = Database['public']['Tables']['gig_equipment']['Row']
 export type GigFile = Database['public']['Tables']['gig_files']['Row']
+export type GigProgramItem = Database['public']['Tables']['gig_program_items']['Row']
+export type GigProgramItemPersonnel = Database['public']['Tables']['gig_program_item_personnel']['Row']
+export type GigProgramItemEquipment = Database['public']['Tables']['gig_program_item_equipment']['Row']
+
+export type GigProgramItemWithDetails = GigProgramItem & {
+  gig_program_item_personnel: (GigProgramItemPersonnel & { profiles: Profile })[]
+  gig_program_item_equipment: (GigProgramItemEquipment & { equipment: Equipment })[]
+}
 
 export type GigWithDetails = Gig & {
   gig_personnel: (GigPersonnel & { profiles: Profile })[]
   gig_equipment: (GigEquipment & { equipment: Equipment })[]
   gig_files: GigFile[]
+  gig_program_items: GigProgramItemWithDetails[]
 }

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Avatar } from '@/components/ui/avatar'
 import PersonHoverCard from '@/components/PersonHoverCard'
+import type { Profile } from '@/types/database'
 import {
   Table,
   TableBody,
@@ -52,24 +53,36 @@ export default async function PersonnelPage() {
   if (profile?.role !== 'admin') redirect('/dashboard/gigs')
 
   const today = new Date().toISOString().split('T')[0]
-  const windowEnd = new Date(Date.now() + 6 * 86_400_000).toISOString().split('T')[0]
+  const todayMs = new Date(today).getTime()
+  const windowEnd = new Date(todayMs + 6 * 86_400_000).toISOString().split('T')[0]
 
   const { data: profiles } = await supabase
     .from('profiles')
     .select('*')
-    .order('full_name') as { data: any[] | null, error: unknown }
+    .order('full_name') as { data: Profile[] | null, error: unknown }
 
   // Fetch gig assignments with dates — active/confirmed gigs overlapping the next 7 days
-  const { data: assignments } = await supabase
+  const { data: assignments } = await (supabase
     .from('gig_personnel')
     .select('profile_id, role_on_gig, gigs!inner(id, name, start_date, end_date, status, venue)')
     .filter('gigs.status', 'neq', 'cancelled')
     .filter('gigs.end_date', 'gte', today)
-    .filter('gigs.start_date', 'lte', windowEnd) as {
+    .filter('gigs.start_date', 'lte', windowEnd)) as {
       data: {
         profile_id: string
         role_on_gig: string | null
         gigs: { id: string; name: string; start_date: string; end_date: string; status: string; venue: string | null } | null
+      }[] | null
+      error: unknown
+    }
+
+  const { data: itemAssignments } = await (supabase
+    .from('gig_program_item_personnel')
+    .select('profile_id, role_on_item, gig_program_items!inner(start_at, end_at)')) as {
+      data: {
+        profile_id: string
+        role_on_item: string | null
+        gig_program_items: { start_at: string; end_at: string } | null
       }[] | null
       error: unknown
     }
@@ -85,6 +98,16 @@ export default async function PersonnelPage() {
     gigDatesMap.set(row.profile_id, dates)
   }
 
+  for (const row of itemAssignments ?? []) {
+    if (!row.gig_program_items) continue
+    const dates = gigDatesMap.get(row.profile_id) ?? []
+    dates.push({
+      start_date: row.gig_program_items.start_at.slice(0, 10),
+      end_date: row.gig_program_items.end_at.slice(0, 10),
+    })
+    gigDatesMap.set(row.profile_id, dates)
+  }
+
   // Fetch all roles (not date-filtered)
   const { data: allGigRoles } = await supabase
     .from('gig_personnel')
@@ -97,6 +120,13 @@ export default async function PersonnelPage() {
     if (!row.role_on_gig) continue
     const list = rolesMap.get(row.profile_id) ?? []
     if (!list.includes(row.role_on_gig)) list.push(row.role_on_gig)
+    rolesMap.set(row.profile_id, list)
+  }
+
+  for (const row of itemAssignments ?? []) {
+    if (!row.role_on_item) continue
+    const list = rolesMap.get(row.profile_id) ?? []
+    if (!list.includes(row.role_on_item)) list.push(row.role_on_item)
     rolesMap.set(row.profile_id, list)
   }
 
@@ -163,7 +193,7 @@ export default async function PersonnelPage() {
                     }
                   </TableCell>
                   <TableCell>
-                    <AvailabilityCell busyToday={busyToday} slots={slots} />
+                    <AvailabilityCell busyToday={busyToday} slots={slots} todayMs={todayMs} />
                   </TableCell>
                 </TableRow>
               )
@@ -182,8 +212,7 @@ function getDayLetter(todayMs: number, offset: number): string {
   return DAY_LETTERS[d.getDay() === 0 ? 6 : d.getDay() - 1]
 }
 
-function AvailabilityCell({ busyToday, slots }: { busyToday: boolean; slots: boolean[] }) {
-  const todayMs = Date.now()
+function AvailabilityCell({ busyToday, slots, todayMs }: { busyToday: boolean; slots: boolean[]; todayMs: number }) {
   const busyCount = slots.filter(Boolean).length
 
   return (

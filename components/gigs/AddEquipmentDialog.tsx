@@ -18,6 +18,8 @@ interface Props {
   gigId: string
   gigStartDate: string
   gigEndDate: string
+  buttonLabel?: string
+  dialogTitle?: string
 }
 
 interface EquipmentItem extends Equipment {
@@ -27,7 +29,13 @@ interface EquipmentItem extends Equipment {
 // equipmentId → { quantity, existingRowId? }
 type Selections = Map<string, { quantity: number; existingRowId?: string }>
 
-export default function AddEquipmentDialog({ gigId, gigStartDate, gigEndDate }: Props) {
+export default function AddEquipmentDialog({
+  gigId,
+  gigStartDate,
+  gigEndDate,
+  buttonLabel = 'Legg til utstyr',
+  dialogTitle = 'Utstyr på oppdraget',
+}: Props) {
   const router = useRouter()
   const supabase = createClient()
 
@@ -90,7 +98,7 @@ export default function AddEquipmentDialog({ gigId, gigStartDate, gigEndDate }: 
       setSelections(init)
     }
     load()
-  }, [open, gigId, gigStartDate, gigEndDate])
+  }, [open, gigId, gigStartDate, gigEndDate, supabase])
 
   function toggle(item: EquipmentItem) {
     if (item.available <= 0 && !selections.has(item.id)) return
@@ -168,11 +176,11 @@ export default function AddEquipmentDialog({ gigId, gigStartDate, gigEndDate }: 
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setSearch('') }}>
       <DialogTrigger render={<Button size="sm" />}>
-        Legg til utstyr
+        {buttonLabel}
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl" showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>Utstyr på oppdraget</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">

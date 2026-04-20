@@ -3,9 +3,8 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseIS
 import { nb } from 'date-fns/locale'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Badge } from '@/components/ui/badge'
 import { CalendarSearch } from '@/components/calendar/CalendarSearch'
-import type { GigStatus } from '@/types/database'
+import type { GigStatus, GigType } from '@/types/database'
 
 type CalendarGig = {
   id: string
@@ -13,6 +12,7 @@ type CalendarGig = {
   start_date: string
   end_date: string
   status: GigStatus
+  gig_type: GigType
 }
 
 const statusColors: Record<GigStatus, string> = {
@@ -41,7 +41,7 @@ export default async function CalendarPage({
   const supabase = await createClient()
   let gigsQuery = supabase
     .from('gigs')
-    .select('id, name, start_date, end_date, status')
+    .select('id, name, start_date, end_date, status, gig_type')
     .lte('start_date', format(end, 'yyyy-MM-dd'))
     .gte('end_date', format(start, 'yyyy-MM-dd'))
     .neq('status', 'cancelled')
@@ -140,7 +140,7 @@ export default async function CalendarPage({
                   <span
                     className={`block truncate text-xs px-1 py-0.5 rounded cursor-pointer hover:opacity-80 ${statusColors[g.status as GigStatus]}`}
                   >
-                    {g.name}
+                    {g.gig_type === 'festival' ? `Festival · ${g.name}` : g.name}
                   </span>
                 </Link>
               ))}

@@ -1,4 +1,3 @@
-import type { Gig } from '@/types/database'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import GigForm from '@/components/gigs/GigForm'
@@ -17,7 +16,7 @@ export default async function NewGigPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
-      <h1 className="text-2xl font-bold">Nytt oppdrag</h1>
+      <h1 className="text-2xl font-bold">Nytt arrangement</h1>
       <GigForm isAdmin />
     </div>
   )

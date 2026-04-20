@@ -25,6 +25,8 @@ interface Props {
   gigId: string
   gigStartDate: string
   gigEndDate: string
+  buttonLabel?: string
+  dialogTitle?: string
 }
 
 interface PersonWithConflict extends Profile {
@@ -32,7 +34,13 @@ interface PersonWithConflict extends Profile {
   conflictGigName?: string
 }
 
-export default function AddPersonnelDialog({ gigId, gigStartDate, gigEndDate }: Props) {
+export default function AddPersonnelDialog({
+  gigId,
+  gigStartDate,
+  gigEndDate,
+  buttonLabel = 'Legg til teknikar',
+  dialogTitle = 'Legg til teknikar',
+}: Props) {
   const router = useRouter()
   const supabase = createClient()
 
@@ -89,7 +97,7 @@ export default function AddPersonnelDialog({ gigId, gigStartDate, gigEndDate }: 
       setPersonnel(withConflicts)
     }
     load()
-  }, [open, gigId, gigStartDate, gigEndDate])
+  }, [open, gigId, gigStartDate, gigEndDate, supabase])
 
   async function handleAdd() {
     if (!selectedId) return
@@ -117,12 +125,12 @@ export default function AddPersonnelDialog({ gigId, gigStartDate, gigEndDate }: 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="sm" />}>
-        Legg til teknikar
+        <DialogTrigger render={<Button size="sm" />}>
+        {buttonLabel}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Legg til teknikar</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4">
           <div className="grid gap-2">

@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { Gig, GigStatus } from '@/types/database'
+import type { Gig, GigStatus, GigType } from '@/types/database'
 
 interface GigFormProps {
   gig?: Gig
@@ -26,6 +26,7 @@ export default function GigForm({ gig, isAdmin }: GigFormProps) {
   const supabase = createClient()
 
   const [name, setName] = useState(gig?.name ?? '')
+  const [gigType, setGigType] = useState<GigType>(gig?.gig_type ?? 'single')
   const [venue, setVenue] = useState(gig?.venue ?? '')
   const [client, setClient] = useState(gig?.client ?? '')
   const [startDate, setStartDate] = useState(gig?.start_date ?? '')
@@ -43,6 +44,7 @@ export default function GigForm({ gig, isAdmin }: GigFormProps) {
     setError(null)
 
     const payload = {
+      gig_type: gigType,
       name, venue, client, start_date: startDate, end_date: endDate, description, status,
       ...(isAdmin && {
         price: price ? parseFloat(price) : null,
@@ -52,17 +54,26 @@ export default function GigForm({ gig, isAdmin }: GigFormProps) {
 
     let result
     if (gig) {
-      result = await supabase.from('gigs').update(payload).eq('id', gig.id)
+      result = await supabase
+        .from('gigs')
+        .update(payload)
+        .eq('id', gig.id)
+        .select('id, gig_type')
+        .single()
     } else {
       const { data: { user } } = await supabase.auth.getUser()
-      result = await supabase.from('gigs').insert({ ...payload, created_by: user!.id })
+      result = await supabase
+        .from('gigs')
+        .insert({ ...payload, created_by: user!.id })
+        .select('id, gig_type')
+        .single()
     }
 
     if (result.error) {
       setError(result.error.message)
       setLoading(false)
     } else {
-      router.push('/dashboard/gigs')
+      router.push(`/dashboard/gigs/${result.data.id}`)
       router.refresh()
     }
   }
@@ -74,9 +85,27 @@ export default function GigForm({ gig, isAdmin }: GigFormProps) {
         <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
       </div>
 
+      <div className="grid gap-2">
+        <Label htmlFor="gig_type">Type</Label>
+        <Select value={gigType} onValueChange={(value) => setGigType(value as GigType)}>
+          <SelectTrigger id="gig_type">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="single">Enkeltarrangement</SelectItem>
+            <SelectItem value="festival">Festival</SelectItem>
+          </SelectContent>
+        </Select>
+        {gigType === 'festival' && (
+          <p className="text-xs text-muted-foreground">
+            Programmet blir lagt inn etter at festivalen er oppretta.
+          </p>
+        )}
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="venue">Venue</Label>
+          <Label htmlFor="venue">{gigType === 'festival' ? 'Festivalvenue' : 'Venue'}</Label>
           <Input id="venue" value={venue} onChange={(e) => setVenue(e.target.value)} />
         </div>
         <div className="grid gap-2">
@@ -87,11 +116,11 @@ export default function GigForm({ gig, isAdmin }: GigFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="start_date">Startdato *</Label>
+          <Label htmlFor="start_date">{gigType === 'festival' ? 'Festivalstart *' : 'Startdato *'}</Label>
           <Input id="start_date" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="end_date">Sluttdato *</Label>
+          <Label htmlFor="end_date">{gigType === 'festival' ? 'Festivalslutt *' : 'Sluttdato *'}</Label>
           <Input id="end_date" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required min={startDate} />
         </div>
       </div>
@@ -151,7 +180,7 @@ export default function GigForm({ gig, isAdmin }: GigFormProps) {
 
       <div className="flex gap-2">
         <Button type="submit" disabled={loading}>
-          {loading ? 'Lagrar…' : gig ? 'Lagre endringer' : 'Opprett oppdrag'}
+          {loading ? 'Lagrar…' : gig ? 'Lagre endringer' : 'Opprett arrangement'}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()}>
           Avbryt

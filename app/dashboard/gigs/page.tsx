@@ -5,7 +5,7 @@ import { nb } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CalendarIcon, MapPinIcon, BuildingIcon } from 'lucide-react'
-import type { GigStatus } from '@/types/database'
+import type { Gig, GigStatus } from '@/types/database'
 
 const statusLabels: Record<GigStatus, string> = {
   draft: 'Utkast',
@@ -44,7 +44,22 @@ export default async function GigsPage() {
   const { data: gigs } = await supabase
     .from('gigs')
     .select('*')
-    .order('start_date', { ascending: true }) as { data: any[] | null, error: unknown }
+    .order('start_date', { ascending: true }) as { data: Gig[] | null, error: unknown }
+
+  const festivalIds = (gigs ?? []).filter((gig) => gig.gig_type === 'festival').map((gig) => gig.id)
+  const programItemCountMap = new Map<string, number>()
+
+  if (festivalIds.length > 0) {
+    const { data: programItems } = await supabase
+      .from('gig_program_items')
+      .select('gig_id')
+      .in('gig_id', festivalIds) as { data: { gig_id: string }[] | null, error: unknown }
+
+    for (const item of programItems ?? []) {
+      const count = programItemCountMap.get(item.gig_id) ?? 0
+      programItemCountMap.set(item.gig_id, count + 1)
+    }
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -52,7 +67,7 @@ export default async function GigsPage() {
         <h1 className="font-heading text-3xl font-bold tracking-tight">Oppdrag</h1>
         {isAdmin && (
           <Button asChild>
-            <Link href="/dashboard/gigs/new">Nytt oppdrag</Link>
+            <Link href="/dashboard/gigs/new">Nytt arrangement</Link>
           </Button>
         )}
       </div>
@@ -86,6 +101,14 @@ export default async function GigsPage() {
                   <p className="font-heading font-semibold text-sm leading-snug line-clamp-1">
                     {gig.name}
                   </p>
+                  <div className="flex flex-wrap gap-1">
+                    {gig.gig_type === 'festival' && <Badge variant="gold">Festival</Badge>}
+                    {gig.gig_type === 'festival' && (
+                      <Badge variant="outline">
+                        {programItemCountMap.get(gig.id) ?? 0} postar
+                      </Badge>
+                    )}
+                  </div>
                   {gig.client && (
                     <p className="flex items-center gap-1.5 text-xs text-primary font-medium">
                       <BuildingIcon className="size-3 shrink-0" />
