@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { BellIcon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { nb } from 'date-fns/locale'
@@ -18,19 +18,18 @@ export default function NotificationBell() {
   const [loading, setLoading] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
 
-  const refreshCount = useCallback(async () => {
-    const { count } = await supabase
-      .from('notifications')
-      .select('id', { count: 'exact', head: true })
-      .eq('read', false)
-    setUnreadCount(count ?? 0)
-  }, [supabase])
-
   useEffect(() => {
-    refreshCount()
-    const timer = setInterval(refreshCount, POLL_INTERVAL_MS)
+    async function fetchCount() {
+      const { count } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('read', false)
+      setUnreadCount(count ?? 0)
+    }
+    void fetchCount()
+    const timer = setInterval(fetchCount, POLL_INTERVAL_MS)
     return () => clearInterval(timer)
-  }, [refreshCount])
+  }, [supabase])
 
   async function handleOpen() {
     setOpen(true)

@@ -168,6 +168,7 @@ export default function GigCommentsSection({
   const [activeBody, setActiveBodyRef] = useState<string>('')
   const mainTextareaRef = useRef<HTMLTextAreaElement>(null)
   const replyTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const [activeTextarea, setActiveTextarea] = useState<'main' | 'reply'>('main')
 
   useEffect(() => {
     supabase
@@ -186,11 +187,13 @@ export default function GigCommentsSection({
   function handleBodyChange(
     e: React.ChangeEvent<HTMLTextAreaElement>,
     setter: (v: string) => void,
+    textarea: 'main' | 'reply',
   ) {
     const val = e.target.value
     setter(val)
     setActiveBodyRef(val)
     setActiveSetter(() => setter)
+    setActiveTextarea(textarea)
 
     const pos = e.target.selectionStart ?? val.length
     const textBefore = val.slice(0, pos)
@@ -417,7 +420,7 @@ export default function GigCommentsSection({
                             ref={replyTextareaRef}
                             placeholder="Skriv eit svar… (bruk @ for å nemne nokon)"
                             value={replyBody}
-                            onChange={e => handleBodyChange(e, setReplyBody)}
+                            onChange={e => handleBodyChange(e, setReplyBody, 'reply')}
                             onKeyDown={e => handleKeyDown(e, replyBody, setReplyBody, replyTextareaRef, handlePostReply)}
                             className="min-h-[60px] text-sm resize-none"
                             autoFocus
@@ -454,7 +457,7 @@ export default function GigCommentsSection({
                 ref={mainTextareaRef}
                 placeholder="Skriv ein kommentar… (bruk @ for å nemne nokon)"
                 value={newCommentBody}
-                onChange={e => handleBodyChange(e, setNewCommentBody)}
+                onChange={e => handleBodyChange(e, setNewCommentBody, 'main')}
                 onKeyDown={e => handleKeyDown(e, newCommentBody, setNewCommentBody, mainTextareaRef, handlePostComment)}
                 className="min-h-[60px] text-sm resize-none"
               />
@@ -477,29 +480,27 @@ export default function GigCommentsSection({
           style={{ position: 'fixed', top: mentionAnchor.top, left: mentionAnchor.left }}
           className="z-50 w-56 rounded-lg bg-popover ring-1 ring-foreground/10 shadow-xl overflow-hidden"
         >
-          {mentionCandidates.map((p, i) => {
-            const currentTa = document.activeElement === replyTextareaRef.current
-              ? replyTextareaRef
-              : mainTextareaRef
-            const currentBodyVal = activeBody
-            const currentSetterVal = activeSetter
-
-            return (
+          {(() => {
+            const which = activeTextarea
+            const bodyVal = activeBody
+            const setterVal = activeSetter
+            return mentionCandidates.map((p, i) => (
               <button
                 key={p.id}
                 type="button"
                 onMouseDown={e => {
                   e.preventDefault()
-                  if (currentSetterVal) {
-                    insertMention(p, currentBodyVal, currentSetterVal, currentTa)
+                  if (setterVal) {
+                    const taRef = which === 'reply' ? replyTextareaRef : mainTextareaRef
+                    insertMention(p, bodyVal, setterVal, taRef)
                   }
                 }}
                 className={`w-full px-3 py-2 text-left text-sm transition-colors hover:bg-accent ${i === mentionActiveIdx ? 'bg-accent' : ''}`}
               >
                 {p.full_name ?? p.id}
               </button>
-            )
-          })}
+            ))
+          })()}
         </div>
       )}
     </>
