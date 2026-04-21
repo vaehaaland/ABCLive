@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { Trash2 } from 'lucide-react'
 
 export default function RemoveProgramItemButton({ itemId }: { itemId: string }) {
   const router = useRouter()
@@ -14,8 +15,8 @@ export default function RemoveProgramItemButton({ itemId }: { itemId: string }) 
   }
 
   return (
-    <Button variant="ghost" size="sm" className="text-destructive" onClick={handleRemove}>
-      Slett post
+    <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive" onClick={handleRemove} aria-label="Slett post">
+      <Trash2 className="size-4" />
     </Button>
   )
 }

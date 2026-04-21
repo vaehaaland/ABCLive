@@ -216,25 +216,34 @@ export default async function PersonnelProfilePage({
 
   const itemParentGigMap = new Map((itemParentGigs ?? []).map((gig) => [gig.id, gig]))
 
-  const itemLevelAssignments = (rawItemAssignments ?? [])
-    .map((assignment): AssignmentCard | null => {
-      if (!assignment.gig_program_items) return null
-      const parentGig = itemParentGigMap.get(assignment.gig_program_items.gig_id)
+  const itemsByGigId = new Map<string, { role_on_item: string | null }[]>()
+  for (const a of rawItemAssignments ?? []) {
+    const gid = a.gig_program_items?.gig_id
+    if (!gid) continue
+    if (!itemsByGigId.has(gid)) itemsByGigId.set(gid, [])
+    itemsByGigId.get(gid)!.push({ role_on_item: a.role_on_item })
+  }
+
+  const itemLevelAssignments = [...itemsByGigId.entries()]
+    .map(([gig_id, items]): AssignmentCard | null => {
+      const parentGig = itemParentGigMap.get(gig_id)
       if (!parentGig) return null
+      const roles = [...new Set(items.map((i) => i.role_on_item).filter(Boolean))].join(', ')
       return {
         id: parentGig.id,
         name: parentGig.name,
-        venue: assignment.gig_program_items.venue ?? parentGig.venue,
-        start_date: assignment.gig_program_items.start_at.slice(0, 10),
-        end_date: assignment.gig_program_items.end_at.slice(0, 10),
+        venue: parentGig.venue,
+        start_date: parentGig.start_date,
+        end_date: parentGig.end_date,
         status: parentGig.status,
-        role_label: assignment.role_on_item,
-        item_name: assignment.gig_program_items.name,
-        sort_key: assignment.gig_program_items.start_at,
+        role_label: roles || null,
+        item_name: null,
+        sort_key: parentGig.start_date,
       }
     })
     .filter((assignment): assignment is AssignmentCard => assignment !== null)
 
+  const seen = new Set<string>()
   const assignments: AssignmentCard[] = [
     ...(rawAssignments ?? [])
       .filter((assignment) => assignment.gigs !== null)
@@ -252,6 +261,7 @@ export default async function PersonnelProfilePage({
     ...itemLevelAssignments,
   ]
     .sort((a, b) => b.sort_key.localeCompare(a.sort_key))
+    .filter((a) => { if (seen.has(a.id)) return false; seen.add(a.id); return true })
 
   const today = new Date().toISOString().split('T')[0]
   const windowEnd = new Date(new Date(today).getTime() + 6 * DAY).toISOString().split('T')[0]
@@ -344,7 +354,7 @@ export default async function PersonnelProfilePage({
           <div className="flex items-center gap-1.5">
             <span className={`size-1.5 rounded-full shrink-0 ${
               busyToday === 'gig' ? 'bg-destructive' :
-              busyToday === 'blocked' ? 'bg-amber-500' :
+              busyToday === 'blocked' ? 'bg-spotlight-gold' :
               'bg-emerald-500'
             }`} />
             <span className="text-xs text-muted-foreground">
@@ -365,7 +375,7 @@ export default async function PersonnelProfilePage({
                         ? 'bg-spotlight-gold/80'
                         : 'bg-emerald-500/80'
                       : status === 'blocked'
-                      ? 'bg-amber-500/80'
+                      ? 'bg-spotlight-gold/80'
                       : i === 0
                       ? 'bg-white/20'
                       : 'bg-white/10'
@@ -383,7 +393,7 @@ export default async function PersonnelProfilePage({
               <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">Blokkeringar</p>
               {upcomingBlocks.map((block) => (
                 <div key={block.id} className="flex items-start gap-2">
-                  <BanIcon className="size-3 text-amber-500 shrink-0 mt-0.5" />
+                  <BanIcon className="size-3 text-spotlight-gold shrink-0 mt-0.5" />
                   <div className="flex flex-col">
                     <span className="text-xs">{formatBlockRange(block.blocked_from, block.blocked_until)}</span>
                     {block.reason && (

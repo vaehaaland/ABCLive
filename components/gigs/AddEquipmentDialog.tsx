@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import {
   Dialog,
@@ -19,7 +20,6 @@ interface Props {
   gigId: string
   gigStartDate: string
   gigEndDate: string
-  buttonLabel?: string
   dialogTitle?: string
 }
 
@@ -34,7 +34,6 @@ export default function AddEquipmentDialog({
   gigId,
   gigStartDate,
   gigEndDate,
-  buttonLabel = 'Legg til utstyr',
   dialogTitle = 'Utstyr på oppdraget',
 }: Props) {
   const router = useRouter()
@@ -161,8 +160,8 @@ export default function AddEquipmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setSearch('') }}>
-      <DialogTrigger render={<Button size="sm" />}>
-        {buttonLabel}
+      <DialogTrigger render={<Button size="icon-sm" variant="ghost" aria-label={dialogTitle} />}>
+        <Plus className="size-4" />
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl" showCloseButton={false}>
         <DialogHeader>

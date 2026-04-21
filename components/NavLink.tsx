@@ -18,7 +18,7 @@ export function NavLink({ href, children }: NavLinkProps) {
       href={href}
       className={cn(
         "relative px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-        "text-muted-foreground hover:text-foreground hover:bg-surface-high",
+        "text-muted-foreground hover:text-primary hover:bg-surface-high",
         isActive && [
           "text-primary hover:text-primary hover:bg-transparent",
           "after:absolute after:bottom-[-1px] after:left-2 after:right-2 after:h-[2px]",

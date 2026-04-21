@@ -192,7 +192,7 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
         <PreviewCard.Positioner side="bottom" sideOffset={4} align="start">
           <PreviewCard.Popup
             className={cn(
-              'z-50 w-72 rounded-2xl p-4 shadow-2xl',
+              'z-50 w-72 rounded-2xl p-4 shadow-[0_40px_60px_oklch(0_0_0_/_0.06)]',
               'bg-[oklch(0.16_0_0)] border border-white/[0.10]',
               'origin-[var(--transform-origin)]',
               'transition-[opacity,scale,translate] duration-200 ease-out',
@@ -234,7 +234,7 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
                     data.todayStatus === 'gig'
                       ? 'bg-destructive/10 text-destructive'
                       : data.todayStatus === 'blocked'
-                      ? 'bg-amber-500/10 text-amber-400'
+                      ? 'bg-spotlight-gold/10 text-spotlight-gold'
                       : 'bg-emerald-500/10 text-emerald-400',
                   )}
                 >
@@ -244,7 +244,7 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
                       data.todayStatus === 'gig'
                         ? 'bg-destructive animate-pulse'
                         : data.todayStatus === 'blocked'
-                        ? 'bg-amber-500'
+                        ? 'bg-spotlight-gold'
                         : 'bg-emerald-500',
                     )}
                   />
@@ -297,11 +297,11 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
                       {data.upcomingBlocks.map((block) => (
                         <li
                           key={block.id}
-                          className="flex items-start gap-2 rounded-lg bg-amber-500/[0.06] px-2.5 py-2"
+                          className="flex items-start gap-2 rounded-lg bg-spotlight-gold/[0.06] px-2.5 py-2"
                         >
-                          <BanIcon className="size-3 mt-0.5 shrink-0 text-amber-500" />
+                          <BanIcon className="size-3 mt-0.5 shrink-0 text-spotlight-gold" />
                           <div className="min-w-0">
-                            <p className="text-xs font-medium leading-tight text-amber-400">
+                            <p className="text-xs font-medium leading-tight text-spotlight-gold">
                               {format(new Date(block.blocked_from), 'd. MMM', { locale: nb })}
                               {block.blocked_from !== block.blocked_until && (
                                 <> – {format(new Date(block.blocked_until), 'd. MMM', { locale: nb })}</>

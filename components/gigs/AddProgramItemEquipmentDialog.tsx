@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import {
   Dialog,
@@ -344,8 +345,8 @@ export default function AddProgramItemEquipmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={(value) => { setOpen(value); if (!value) setSearch('') }}>
-      <DialogTrigger render={<Button size="sm" variant="outline" />}>
-        Legg til utstyr
+      <DialogTrigger render={<Button size="icon-sm" variant="ghost" aria-label="Legg til utstyr" />}>
+        <Plus className="size-4" />
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl" showCloseButton={false}>
         <DialogHeader>

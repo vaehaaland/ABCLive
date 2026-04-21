@@ -57,6 +57,7 @@ export interface Database {
           price_notes: string | null
           created_by: string | null
           created_at: string
+          icloud_uid: string | null
         }
         Insert: {
           id?: string
@@ -75,6 +76,7 @@ export interface Database {
           price_notes?: string | null
           created_by?: string | null
           created_at?: string
+          icloud_uid?: string | null
         }
         Update: {
           name?: string
@@ -90,6 +92,7 @@ export interface Database {
           status?: GigStatus
           price?: number | null
           price_notes?: string | null
+          icloud_uid?: string | null
         }
       }
       equipment: {
@@ -99,6 +102,8 @@ export interface Database {
           category: string | null
           description: string | null
           quantity: number
+          needs_service: boolean
+          needs_reorder: boolean
           created_at: string
         }
         Insert: {
@@ -107,6 +112,8 @@ export interface Database {
           category?: string | null
           description?: string | null
           quantity?: number
+          needs_service?: boolean
+          needs_reorder?: boolean
           created_at?: string
         }
         Update: {
@@ -114,6 +121,8 @@ export interface Database {
           category?: string | null
           description?: string | null
           quantity?: number
+          needs_service?: boolean
+          needs_reorder?: boolean
         }
       }
       gig_personnel: {
@@ -321,6 +330,25 @@ export interface Database {
           reason?: string | null
         }
       }
+      icloud_settings: {
+        Row: {
+          id: string
+          apple_id: string
+          app_password: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          apple_id: string
+          app_password: string
+          updated_at?: string
+        }
+        Update: {
+          apple_id?: string
+          app_password?: string
+          updated_at?: string
+        }
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -364,3 +392,4 @@ export type NotificationWithContext = Notification & {
 }
 
 export type AvailabilityBlock = Database['public']['Tables']['availability_blocks']['Row']
+export type ICloudSettings = Database['public']['Tables']['icloud_settings']['Row']

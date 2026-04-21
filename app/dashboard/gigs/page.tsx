@@ -61,9 +61,9 @@ export default async function GigsPage({
   const [{ data: profile }, { data: myAssignments }] = await Promise.all([
     supabase
       .from('profiles')
-      .select('role')
+      .select('role, is_superadmin')
       .eq('id', user!.id)
-      .single() as Promise<{ data: { role: string } | null, error: unknown }>,
+      .single() as Promise<{ data: { role: string; is_superadmin: boolean } | null, error: unknown }>,
     supabase
       .from('gig_personnel')
       .select('gig_id, role_on_gig')
@@ -71,6 +71,7 @@ export default async function GigsPage({
   ])
 
   const isAdmin = profile?.role === 'admin'
+  const isSuperadmin = profile?.is_superadmin === true
   const viewMine = isAdmin && sp.view === 'mine'
 
   const myRoleMap = new Map((myAssignments ?? []).map((a) => [a.gig_id, a.role_on_gig]))
@@ -117,9 +118,16 @@ export default async function GigsPage({
       <div className="flex items-center justify-between">
         <h1 className="font-heading text-3xl font-bold tracking-tight">Oppdrag</h1>
         {isAdmin && (
-          <Button asChild>
-            <Link href="/dashboard/gigs/new">Nytt arrangement</Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            {isSuperadmin && (
+              <Button asChild variant="outline">
+                <Link href="/dashboard/gigs/import">Importer frå iCloud</Link>
+              </Button>
+            )}
+            <Button asChild>
+              <Link href="/dashboard/gigs/new">Nytt arrangement</Link>
+            </Button>
+          </div>
         )}
       </div>
 

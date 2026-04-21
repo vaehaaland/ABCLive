@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -142,8 +143,8 @@ export default function AddProgramItemPersonnelDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="sm" variant="outline" />}>
-        Legg til teknikar
+      <DialogTrigger render={<Button size="icon-sm" variant="ghost" aria-label="Legg til teknikar" />}>
+        <Plus className="size-4" />
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

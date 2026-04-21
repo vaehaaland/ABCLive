@@ -89,8 +89,8 @@ export default function NotificationBell() {
       </Button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 z-50 w-80 rounded-xl bg-popover ring-1 ring-foreground/10 shadow-2xl overflow-hidden">
-          <div className="px-4 py-3 border-b border-white/[0.06]">
+        <div className="absolute right-0 top-full mt-2 z-50 w-80 rounded-xl bg-popover ring-1 ring-foreground/10 shadow-[0_40px_60px_oklch(0_0_0_/_0.06)] overflow-hidden">
+          <div className="px-4 py-3 bg-surface-high rounded-t-xl">
             <span className="text-sm font-medium font-heading">Varslingar</span>
           </div>
 
@@ -108,7 +108,7 @@ export default function NotificationBell() {
             {!loading && notifications.map(n => (
               <div
                 key={n.id}
-                className={`flex gap-3 px-4 py-3 border-b border-white/[0.06] last:border-0 ${!n.read ? 'bg-primary/[0.05]' : ''}`}
+                className={`flex gap-3 px-4 py-3 ${!n.read ? 'bg-primary/[0.05]' : ''}`}
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm leading-snug">{notificationText(n)}</p>

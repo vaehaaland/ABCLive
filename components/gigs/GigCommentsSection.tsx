@@ -392,7 +392,7 @@ export default function GigCommentsSection({
                 />
 
                 {(thread.replies.length > 0 || showReplyBox) && (
-                  <div className="ml-9 flex flex-col gap-2 border-l border-border pl-3">
+                  <div className="ml-9 flex flex-col gap-2 rounded-lg bg-surface-container-low pl-3 pr-2 py-2">
                     {thread.replies.map(reply => {
                       const replyTarget =
                         reply.parent_id !== thread.id
@@ -450,7 +450,7 @@ export default function GigCommentsSection({
             )
           })}
 
-          <div className="flex gap-2.5 pt-2 border-t border-border">
+          <div className="flex gap-2.5 pt-4 mt-2">
             <Avatar src={currentUserAvatarUrl} name={currentUserName} size="sm" className="mt-1 shrink-0" />
             <div className="flex-1 flex gap-2">
               <Textarea

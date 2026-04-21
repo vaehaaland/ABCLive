@@ -94,7 +94,7 @@ export default function AvailabilityBlocksManager({ blocks }: Props) {
               className="flex items-center justify-between gap-3 rounded-lg bg-surface-container px-4 py-3"
             >
               <div className="flex items-center gap-3">
-                <BanIcon className="size-4 text-amber-500 shrink-0" />
+                <BanIcon className="size-4 text-spotlight-gold shrink-0" />
                 <div className="flex flex-col gap-0.5">
                   <span className="text-sm font-medium">
                     {formatDateRange(block.blocked_from, block.blocked_until)}

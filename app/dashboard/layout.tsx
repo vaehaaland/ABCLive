@@ -45,7 +45,10 @@ export default async function DashboardLayout({
               )}
               <NavLink href="/dashboard/calendar">Kalender</NavLink>
               {isSuperadmin && (
-                <NavLink href="/dashboard/admin/users">Brukarar</NavLink>
+                <>
+                  <NavLink href="/dashboard/admin/users">Brukarar</NavLink>
+                  <NavLink href="/dashboard/admin/icloud">iCloud</NavLink>
+                </>
               )}
             </nav>
           </div>

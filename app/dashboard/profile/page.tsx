@@ -12,8 +12,7 @@ import {
   PhoneIcon,
   CalendarIcon,
   MapPinIcon,
-  LayoutGridIcon,
-  UserIcon,
+  BanIcon,
 } from 'lucide-react'
 import type { GigStatus, AvailabilityBlock } from '@/types/database'
 import AvailabilityBlocksManager from '@/components/profile/AvailabilityBlocksManager'
@@ -30,6 +29,68 @@ const statusVariants: Record<GigStatus, 'default' | 'secondary' | 'outline' | 's
   confirmed: 'default',
   completed: 'secondary',
   cancelled: 'status-alert',
+}
+
+const DAY = 86_400_000
+const DAY_LETTERS = ['Ma', 'Ti', 'On', 'To', 'Fr', 'Lø', 'Sø']
+
+type SlotStatus = 'free' | 'gig' | 'blocked'
+
+function getDayLetter(todayMs: number, offset: number): string {
+  const d = new Date(todayMs + offset * DAY)
+  return DAY_LETTERS[d.getDay() === 0 ? 6 : d.getDay() - 1]
+}
+
+function parseLocalDate(dateStr: string): Date {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+function formatBlockRange(from: string, until: string): string {
+  const f = parseLocalDate(from)
+  const u = parseLocalDate(until)
+  if (from === until) return format(f, 'd. MMM yyyy', { locale: nb })
+  if (f.getFullYear() === u.getFullYear()) {
+    return `${format(f, 'd. MMM', { locale: nb })} – ${format(u, 'd. MMM yyyy', { locale: nb })}`
+  }
+  return `${format(f, 'd. MMM yyyy', { locale: nb })} – ${format(u, 'd. MMM yyyy', { locale: nb })}`
+}
+
+function calcBusySlots(
+  gigs: { start_date: string; end_date: string }[],
+  blocks: { blocked_from: string; blocked_until: string }[],
+  today: string,
+): { busyToday: SlotStatus; slots: SlotStatus[] } {
+  const todayMs = new Date(today).getTime()
+  const gigSet = new Set<number>()
+  const blockSet = new Set<number>()
+
+  for (const g of gigs) {
+    const gigStart = new Date(g.start_date).getTime()
+    const gigEnd = new Date(g.end_date).getTime()
+    for (let i = 0; i < 7; i++) {
+      const dayMs = todayMs + i * DAY
+      if (dayMs >= gigStart && dayMs <= gigEnd) gigSet.add(i)
+    }
+  }
+
+  for (const b of blocks) {
+    const blockStart = new Date(b.blocked_from).getTime()
+    const blockEnd = new Date(b.blocked_until).getTime()
+    for (let i = 0; i < 7; i++) {
+      const dayMs = todayMs + i * DAY
+      if (dayMs >= blockStart && dayMs <= blockEnd) blockSet.add(i)
+    }
+  }
+
+  const slots: SlotStatus[] = Array.from({ length: 7 }, (_, i) => {
+    if (gigSet.has(i)) return 'gig'
+    if (blockSet.has(i)) return 'blocked'
+    return 'free'
+  })
+
+  const todayStatus: SlotStatus = gigSet.has(0) ? 'gig' : blockSet.has(0) ? 'blocked' : 'free'
+  return { busyToday: todayStatus, slots }
 }
 
 // Deterministic gradient hue from gig id
@@ -130,25 +191,34 @@ export default async function ProfilePage() {
 
   const itemParentGigMap = new Map((itemParentGigs ?? []).map((gig) => [gig.id, gig]))
 
-  const itemLevelAssignments = (rawItemAssignments ?? [])
-    .map((assignment): AssignmentCard | null => {
-      if (!assignment.gig_program_items) return null
-      const parentGig = itemParentGigMap.get(assignment.gig_program_items.gig_id)
+  const itemsByGigId = new Map<string, { role_on_item: string | null }[]>()
+  for (const a of rawItemAssignments ?? []) {
+    const gid = a.gig_program_items?.gig_id
+    if (!gid) continue
+    if (!itemsByGigId.has(gid)) itemsByGigId.set(gid, [])
+    itemsByGigId.get(gid)!.push({ role_on_item: a.role_on_item })
+  }
+
+  const itemLevelAssignments = [...itemsByGigId.entries()]
+    .map(([gig_id, items]): AssignmentCard | null => {
+      const parentGig = itemParentGigMap.get(gig_id)
       if (!parentGig) return null
+      const roles = [...new Set(items.map((i) => i.role_on_item).filter(Boolean))].join(', ')
       return {
         id: parentGig.id,
         name: parentGig.name,
-        venue: assignment.gig_program_items.venue ?? parentGig.venue,
-        start_date: assignment.gig_program_items.start_at.slice(0, 10),
-        end_date: assignment.gig_program_items.end_at.slice(0, 10),
+        venue: parentGig.venue,
+        start_date: parentGig.start_date,
+        end_date: parentGig.end_date,
         status: parentGig.status,
-        role_label: assignment.role_on_item,
-        item_name: assignment.gig_program_items.name,
-        sort_key: assignment.gig_program_items.start_at,
+        role_label: roles || null,
+        item_name: null,
+        sort_key: parentGig.start_date,
       }
     })
     .filter((assignment): assignment is AssignmentCard => assignment !== null)
 
+  const seen = new Set<string>()
   const assignments: AssignmentCard[] = [
     ...(rawAssignments ?? [])
       .filter((assignment) => assignment.gigs !== null)
@@ -166,7 +236,21 @@ export default async function ProfilePage() {
     ...itemLevelAssignments,
   ]
     .sort((a, b) => b.sort_key.localeCompare(a.sort_key))
+    .filter((a) => { if (seen.has(a.id)) return false; seen.add(a.id); return true })
     .slice(0, 6)
+
+  const today = new Date().toISOString().split('T')[0]
+  const windowEnd = new Date(new Date(today).getTime() + 6 * DAY).toISOString().split('T')[0]
+
+  const upcomingBlocks = (availabilityBlocks ?? []).filter((b) => b.blocked_until >= today)
+  const upcomingForAvailability = assignments
+    .filter((a) => a.end_date >= today && a.start_date <= windowEnd && a.status !== 'cancelled')
+    .map((a) => ({ start_date: a.start_date, end_date: a.end_date }))
+  const blocksInWindow = upcomingBlocks.filter((b) => b.blocked_from <= windowEnd)
+
+  const { busyToday, slots } = calcBusySlots(upcomingForAvailability, blocksInWindow, today)
+  const gigCount = slots.filter((s) => s === 'gig').length
+  const todayMs = new Date(today).getTime()
 
   const displayName = profile?.full_name ?? user.email ?? 'Ukjent brukar'
   const roleLabel = profile?.role === 'admin' ? 'Administrator' : 'Lydtekniker'
@@ -222,23 +306,63 @@ export default async function ProfilePage() {
           <PrimaryRoleEditor userId={user.id} initialValue={profile?.primary_role ?? null} />
         </div>
 
-        {/* Nav */}
-        <nav className="flex flex-col gap-0.5 mt-auto">
-          <Link
-            href="/dashboard/profile"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-primary bg-primary/10"
-          >
-            <UserIcon className="size-4" />
-            Profil
-          </Link>
-          <Link
-            href="/dashboard/gigs"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-surface-high transition-colors"
-          >
-            <LayoutGridIcon className="size-4" />
-            Oppdrag
-          </Link>
-        </nav>
+        {/* Availability */}
+        <div className="flex flex-col gap-3">
+          <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">Tilgjengelegheit</p>
+          <div className="flex items-center gap-1.5">
+            <span className={`size-1.5 rounded-full shrink-0 ${
+              busyToday === 'gig' ? 'bg-destructive' :
+              busyToday === 'blocked' ? 'bg-spotlight-gold' :
+              'bg-emerald-500'
+            }`} />
+            <span className="text-xs text-muted-foreground">
+              {busyToday === 'gig' ? 'Opptatt i dag' :
+               busyToday === 'blocked' ? 'Utilgjengeleg i dag' :
+               'Ledig i dag'}
+            </span>
+          </div>
+          <div className="flex gap-0.5">
+            {slots.map((status, i) => (
+              <div key={i} className="flex flex-col items-center gap-0.5">
+                <div
+                  className={`h-1.5 w-4 rounded-sm ${
+                    status === 'gig'
+                      ? gigCount >= 5
+                        ? 'bg-destructive/80'
+                        : gigCount >= 3
+                        ? 'bg-spotlight-gold/80'
+                        : 'bg-emerald-500/80'
+                      : status === 'blocked'
+                      ? 'bg-spotlight-gold/80'
+                      : i === 0
+                      ? 'bg-white/20'
+                      : 'bg-white/10'
+                  }`}
+                />
+                <span className={`text-[0.55rem] tabular-nums leading-none ${i === 0 ? 'text-foreground/60' : 'text-muted-foreground/50'}`}>
+                  {getDayLetter(todayMs, i)}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {upcomingBlocks.length > 0 && (
+            <div className="flex flex-col gap-1.5 mt-1">
+              <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">Blokkeringar</p>
+              {upcomingBlocks.map((block) => (
+                <div key={block.id} className="flex items-start gap-2">
+                  <BanIcon className="size-3 text-amber-500 shrink-0 mt-0.5" />
+                  <div className="flex flex-col">
+                    <span className="text-xs">{formatBlockRange(block.blocked_from, block.blocked_until)}</span>
+                    {block.reason && (
+                      <span className="text-[0.65rem] text-muted-foreground">{block.reason}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </aside>
 
       {/* ── Main content ─────────────────────────────────────────────── */}

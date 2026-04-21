@@ -12,6 +12,7 @@ import AddProgramItemPersonnelDialog from '@/components/gigs/AddProgramItemPerso
 import AddProgramItemEquipmentDialog from '@/components/gigs/AddProgramItemEquipmentDialog'
 import ProgramItemDialog from '@/components/gigs/ProgramItemDialog'
 import RemovePersonnelButton from '@/components/gigs/RemovePersonnelButton'
+import EditPersonnelRoleInline from '@/components/gigs/EditPersonnelRoleInline'
 import RemoveEquipmentButton from '@/components/gigs/RemoveEquipmentButton'
 import RemoveProgramItemButton from '@/components/gigs/RemoveProgramItemButton'
 import RemoveProgramItemPersonnelButton from '@/components/gigs/RemoveProgramItemPersonnelButton'
@@ -21,6 +22,7 @@ import { Avatar } from '@/components/ui/avatar'
 import FestivalReportSharingPanel from '@/components/gigs/FestivalReportSharingPanel'
 import GigFilesSection from '@/components/gigs/GigFilesSection'
 import GigCommentsSection from '@/components/gigs/GigCommentsSection'
+import GigActionsDropdown from '@/components/gigs/GigActionsDropdown'
 import type { GigFile, GigProgramItem, GigStatus, GigType, GigCommentWithAuthor } from '@/types/database'
 
 const statusLabels: Record<GigStatus, string> = {
@@ -226,7 +228,7 @@ export default async function GigDetailPage({
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="mb-2 flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-bold">{gig.name}</h1>
+            <h1 className="font-heading text-2xl font-bold">{gig.name}</h1>
             {isFestival && <Badge variant="gold">Festival</Badge>}
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -248,9 +250,12 @@ export default async function GigDetailPage({
             {statusLabels[gig.status as GigStatus]}
           </Badge>
           {isAdmin && (
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`/dashboard/gigs/${gig.id}/edit`}>Endre</Link>
-            </Button>
+            <>
+              <GigActionsDropdown gigId={gig.id} status={gig.status} gigType={gig.gig_type} />
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/dashboard/gigs/${gig.id}/edit`}>Endre</Link>
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -303,7 +308,6 @@ export default async function GigDetailPage({
                 gigStartDate={gig.start_date}
                 gigEndDate={gig.end_date}
                 currentUserId={user!.id}
-                buttonLabel={isFestival ? 'Legg til festivalcrew' : 'Legg til teknikar'}
                 dialogTitle={isFestival ? 'Legg til festivalcrew' : 'Legg til teknikar'}
               />
             )}
@@ -314,11 +318,11 @@ export default async function GigDetailPage({
                 {isFestival ? 'Ingen teknikarar lagt til på festivalnivå.' : 'Ingen teknikarar lagt til.'}
               </p>
             ) : (
-              <ul className="divide-y">
+              <ul className="flex flex-col gap-1">
                 {personnelRows.map((row) => {
                   const person = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles
                   return (
-                    <li key={row.id} className="flex items-center justify-between py-2">
+                    <li key={row.id} className="flex items-center justify-between py-1.5">
                       <div className="flex items-center gap-2.5">
                         {person?.id ? (
                           <PersonHoverCard profileId={person.id} name={person.full_name}>
@@ -330,7 +334,10 @@ export default async function GigDetailPage({
                         ) : (
                           <p className="text-sm font-medium">Ukjend</p>
                         )}
-                        {row.role_on_gig && <Badge variant="gold">{row.role_on_gig}</Badge>}
+                        {isAdmin
+                          ? <EditPersonnelRoleInline assignmentId={row.id} currentRole={row.role_on_gig ?? null} />
+                          : row.role_on_gig && <Badge variant="gold">{row.role_on_gig}</Badge>
+                        }
                       </div>
                       {isAdmin && <RemovePersonnelButton assignmentId={row.id} />}
                     </li>
@@ -349,7 +356,6 @@ export default async function GigDetailPage({
                 gigId={gig.id}
                 gigStartDate={gig.start_date}
                 gigEndDate={gig.end_date}
-                buttonLabel={isFestival ? 'Legg til festivalutstyr' : 'Legg til utstyr'}
                 dialogTitle={isFestival ? 'Utstyr i festivalpoolen' : 'Utstyr på oppdraget'}
               />
             )}
@@ -360,11 +366,11 @@ export default async function GigDetailPage({
                 {isFestival ? 'Ingen utstyr lagt til på festivalnivå.' : 'Ingen utstyr lagt til.'}
               </p>
             ) : (
-              <ul className="divide-y">
+              <ul className="flex flex-col gap-1">
                 {equipmentRows.map((row) => {
                   const item = Array.isArray(row.equipment) ? row.equipment[0] : row.equipment
                   return (
-                    <li key={row.id} className="flex items-center justify-between py-2">
+                    <li key={row.id} className="flex items-center justify-between py-1.5">
                       <div>
                         <p className="text-sm font-medium">{item?.name ?? 'Ukjend'}</p>
                         <p className="text-xs text-muted-foreground">

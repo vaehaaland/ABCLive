@@ -2,9 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { EquipmentGrid } from '@/components/equipment/EquipmentGrid'
+import { EquipmentTable } from '@/components/equipment/EquipmentTable'
 import type { Equipment } from '@/types/database'
-import type { EnrichedEquipment, ActiveBooking } from '@/components/equipment/EquipmentCard'
+import type { EnrichedEquipment, ActiveBooking } from '@/components/equipment/EquipmentTable'
 
 export default async function EquipmentPage() {
   const supabase = await createClient()
@@ -76,11 +76,6 @@ export default async function EquipmentPage() {
     activeBooking: bookingMap.get(e.id) ?? null,
   }))
 
-  // Unique categories (sorted, excluding nulls)
-  const categories = [
-    ...new Set(allEquipment.map((e) => e.category).filter(Boolean) as string[]),
-  ].sort()
-
   return (
     <div className="flex flex-col gap-8">
       {/* Header */}
@@ -118,19 +113,15 @@ export default async function EquipmentPage() {
         <Button asChild>
           <Link href="/dashboard/equipment/new">+ Add New Gear</Link>
         </Button>
-        <Button variant="secondary" disabled>
-          Run Audit
-        </Button>
       </div>
 
-      {/* Grid with filter tabs */}
       {allEquipment.length === 0 ? (
         <div className="rounded-xl bg-surface-container p-12 flex flex-col items-center gap-3 text-center">
           <p className="font-heading text-lg font-semibold text-foreground">Ingen utstyr registrert</p>
           <p className="text-sm text-muted-foreground max-w-xs">Legg til det første utstyret i inventaret for å kome i gang med sporing.</p>
         </div>
       ) : (
-        <EquipmentGrid equipment={enriched} categories={categories} />
+        <EquipmentTable equipment={enriched} />
       )}
     </div>
   )

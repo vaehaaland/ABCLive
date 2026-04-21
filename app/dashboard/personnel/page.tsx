@@ -252,7 +252,7 @@ function AvailabilityCell({ busyToday, slots, todayMs }: { busyToday: SlotStatus
 
   const todayDot =
     busyToday === 'gig' ? 'bg-destructive' :
-    busyToday === 'blocked' ? 'bg-amber-500' :
+    busyToday === 'blocked' ? 'bg-spotlight-gold' :
     'bg-emerald-500'
 
   const todayLabel =
@@ -279,7 +279,7 @@ function AvailabilityCell({ busyToday, slots, todayMs }: { busyToday: SlotStatus
                     ? 'bg-spotlight-gold/80'
                     : 'bg-emerald-500/80'
                   : status === 'blocked'
-                  ? 'bg-amber-500/80'
+                  ? 'bg-spotlight-gold/80'
                   : i === 0
                   ? 'bg-white/20'
                   : 'bg-white/10'
