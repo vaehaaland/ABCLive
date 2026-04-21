@@ -35,47 +35,59 @@ type GigSort = 'date' | 'name'
 export default async function GigsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sort?: string; showPast?: string }>
+  searchParams: Promise<{ sort?: string; showPast?: string; view?: string }>
 }) {
   const sp = await searchParams
   const sort: GigSort = sp.sort === 'name' ? 'name' : 'date'
   const showPast = sp.showPast === '1'
   const baseParams = new URLSearchParams()
-  if (sort === 'name') {
-    baseParams.set('sort', 'name')
-  }
-  if (showPast) {
-    baseParams.set('showPast', '1')
-  }
+  if (sort === 'name') baseParams.set('sort', 'name')
+  if (showPast) baseParams.set('showPast', '1')
+  if (sp.view === 'mine') baseParams.set('view', 'mine')
+
   const buildHref = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(baseParams)
     for (const [key, value] of Object.entries(updates)) {
-      if (value === null) {
-        params.delete(key)
-      } else {
-        params.set(key, value)
-      }
+      if (value === null) params.delete(key)
+      else params.set(key, value)
     }
     const query = params.toString()
     return query ? `/dashboard/gigs?${query}` : '/dashboard/gigs'
   }
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user!.id)
-    .single() as { data: { role: string } | null, error: unknown }
+  const [{ data: profile }, { data: myAssignments }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user!.id)
+      .single() as Promise<{ data: { role: string } | null, error: unknown }>,
+    supabase
+      .from('gig_personnel')
+      .select('gig_id, role_on_gig')
+      .eq('profile_id', user!.id) as Promise<{ data: { gig_id: string; role_on_gig: string | null }[] | null, error: unknown }>,
+  ])
 
   const isAdmin = profile?.role === 'admin'
+  const viewMine = isAdmin && sp.view === 'mine'
 
-  let gigsQuery = supabase
-    .from('gigs')
-    .select('*')
+  const myRoleMap = new Map((myAssignments ?? []).map((a) => [a.gig_id, a.role_on_gig]))
+  const myGigIds = [...myRoleMap.keys()]
+
+  let gigsQuery = supabase.from('gigs').select('*')
 
   if (!showPast) {
     gigsQuery = gigsQuery.gt('end_date', format(subDays(new Date(), 3), 'yyyy-MM-dd'))
+  }
+
+  if (viewMine) {
+    if (myGigIds.length === 0) {
+      gigsQuery = gigsQuery.eq('id', '00000000-0000-0000-0000-000000000000')
+    } else {
+      gigsQuery = gigsQuery.in('id', myGigIds)
+    }
   }
 
   gigsQuery = sort === 'name'
@@ -111,15 +123,27 @@ export default async function GigsPage({
         )}
       </div>
 
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Sorter etter</span>
-        <Button asChild size="sm" variant={sort === 'date' ? 'default' : 'outline'}>
-          <Link href={buildHref({ sort: null })}>Startdato</Link>
-        </Button>
-        <Button asChild size="sm" variant={sort === 'name' ? 'default' : 'outline'}>
-          <Link href={buildHref({ sort: 'name' })}>Namn</Link>
-        </Button>
-        <PastGigsToggle defaultChecked={showPast} />
+      <div className="flex flex-wrap items-center gap-3">
+        {isAdmin && (
+          <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-surface-high p-0.5">
+            <Button asChild size="sm" variant={!viewMine ? 'default' : 'ghost'}>
+              <Link href={buildHref({ view: null })}>Alle</Link>
+            </Button>
+            <Button asChild size="sm" variant={viewMine ? 'default' : 'ghost'}>
+              <Link href={buildHref({ view: 'mine' })}>Mine</Link>
+            </Button>
+          </div>
+        )}
+        <div className="flex items-center gap-2 ml-auto">
+          <span className="text-sm text-muted-foreground">Sorter etter</span>
+          <Button asChild size="sm" variant={sort === 'date' ? 'default' : 'outline'}>
+            <Link href={buildHref({ sort: null })}>Startdato</Link>
+          </Button>
+          <Button asChild size="sm" variant={sort === 'name' ? 'default' : 'outline'}>
+            <Link href={buildHref({ sort: 'name' })}>Namn</Link>
+          </Button>
+          <PastGigsToggle defaultChecked={showPast} />
+        </div>
       </div>
 
       {!gigList.length ? (
@@ -159,6 +183,11 @@ export default async function GigsPage({
                       </Badge>
                     )}
                   </div>
+                  {myRoleMap.get(gig.id) && (
+                    <p className="text-xs text-primary font-medium">
+                      {myRoleMap.get(gig.id)}
+                    </p>
+                  )}
                   {gig.client && (
                     <p className="flex items-center gap-1.5 text-xs text-primary font-medium">
                       <BuildingIcon className="size-3 shrink-0" />

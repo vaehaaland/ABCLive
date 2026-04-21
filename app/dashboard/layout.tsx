@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NavLink } from '@/components/NavLink'
 import { Avatar } from '@/components/ui/avatar'
 import LogoutButton from '@/components/LogoutButton'
+import NotificationBell from '@/components/NotificationBell'
 
 export default async function DashboardLayout({
   children,
@@ -49,6 +50,7 @@ export default async function DashboardLayout({
             </nav>
           </div>
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <Link
               href="/dashboard/profile"
               className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"

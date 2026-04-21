@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import type { Equipment } from '@/types/database'
+import { buildAllocatedMap, computeAvailability } from '@/lib/gigs/equipment-availability'
 
 interface Props {
   gigId: string
@@ -72,23 +73,8 @@ export default function AddEquipmentDialog({
         .select('equipment_id, quantity_needed, gigs!inner(start_date, end_date)')
         .neq('gig_id', gigId)
 
-      const allocatedMap = new Map<string, number>()
-      allocations?.forEach((a) => {
-        const gigs = Array.isArray(a.gigs) ? a.gigs : [a.gigs]
-        gigs.forEach((g: { start_date: string; end_date: string }) => {
-          if (g.start_date <= gigEndDate && g.end_date >= gigStartDate) {
-            const cur = allocatedMap.get(a.equipment_id) ?? 0
-            allocatedMap.set(a.equipment_id, cur + a.quantity_needed)
-          }
-        })
-      })
-
-      setItems(
-        allEquipment.map((eq) => ({
-          ...eq,
-          available: eq.quantity - (allocatedMap.get(eq.id) ?? 0),
-        }))
-      )
+      const allocatedMap = buildAllocatedMap(allocations ?? [], gigStartDate, gigEndDate)
+      setItems(computeAvailability(allEquipment, allocatedMap))
 
       // Pre-populate selections from existing rows
       const init: Selections = new Map()

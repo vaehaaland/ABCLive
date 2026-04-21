@@ -17,27 +17,44 @@ import {
 
 const DAY = 86_400_000
 
-// Returns which of the next 7 days (index 0 = today) are busy
+export type SlotStatus = 'free' | 'gig' | 'blocked'
+
 function calcBusySlots(
   gigs: { start_date: string; end_date: string }[],
+  blocks: { blocked_from: string; blocked_until: string }[],
   today: string,
-): { busyToday: boolean; slots: boolean[] } {
+): { busyToday: SlotStatus; slots: SlotStatus[] } {
   const todayMs = new Date(today).getTime()
-  const busySet = new Set<number>()
+  const gigSet = new Set<number>()
+  const blockSet = new Set<number>()
 
   for (const g of gigs) {
     const gigStart = new Date(g.start_date).getTime()
     const gigEnd = new Date(g.end_date).getTime()
     for (let i = 0; i < 7; i++) {
       const dayMs = todayMs + i * DAY
-      if (dayMs >= gigStart && dayMs <= gigEnd) busySet.add(i)
+      if (dayMs >= gigStart && dayMs <= gigEnd) gigSet.add(i)
     }
   }
 
-  return {
-    busyToday: busySet.has(0),
-    slots: Array.from({ length: 7 }, (_, i) => busySet.has(i)),
+  for (const b of blocks) {
+    const blockStart = new Date(b.blocked_from).getTime()
+    const blockEnd = new Date(b.blocked_until).getTime()
+    for (let i = 0; i < 7; i++) {
+      const dayMs = todayMs + i * DAY
+      if (dayMs >= blockStart && dayMs <= blockEnd) blockSet.add(i)
+    }
   }
+
+  const slots: SlotStatus[] = Array.from({ length: 7 }, (_, i) => {
+    if (gigSet.has(i)) return 'gig'
+    if (blockSet.has(i)) return 'blocked'
+    return 'free'
+  })
+
+  const todayStatus: SlotStatus = gigSet.has(0) ? 'gig' : blockSet.has(0) ? 'blocked' : 'free'
+
+  return { busyToday: todayStatus, slots }
 }
 
 export default async function PersonnelPage() {
@@ -108,6 +125,23 @@ export default async function PersonnelPage() {
     gigDatesMap.set(row.profile_id, dates)
   }
 
+  // Fetch availability blocks for the 7-day window
+  const { data: availabilityBlocks } = await (supabase
+    .from('availability_blocks')
+    .select('profile_id, blocked_from, blocked_until')
+    .filter('blocked_until', 'gte', today)
+    .filter('blocked_from', 'lte', windowEnd)) as {
+      data: { profile_id: string; blocked_from: string; blocked_until: string }[] | null
+      error: unknown
+    }
+
+  const blocksMap = new Map<string, { blocked_from: string; blocked_until: string }[]>()
+  for (const block of availabilityBlocks ?? []) {
+    const list = blocksMap.get(block.profile_id) ?? []
+    list.push({ blocked_from: block.blocked_from, blocked_until: block.blocked_until })
+    blocksMap.set(block.profile_id, list)
+  }
+
   // Fetch all roles (not date-filtered)
   const { data: allGigRoles } = await supabase
     .from('gig_personnel')
@@ -157,6 +191,7 @@ export default async function PersonnelPage() {
               const gigRoleList = rolesMap.get(p.id) ?? []
               const { busyToday, slots } = calcBusySlots(
                 gigDatesMap.get(p.id) ?? [],
+                blocksMap.get(p.id) ?? [],
                 today,
               )
 
@@ -212,31 +247,39 @@ function getDayLetter(todayMs: number, offset: number): string {
   return DAY_LETTERS[d.getDay() === 0 ? 6 : d.getDay() - 1]
 }
 
-function AvailabilityCell({ busyToday, slots, todayMs }: { busyToday: boolean; slots: boolean[]; todayMs: number }) {
-  const busyCount = slots.filter(Boolean).length
+function AvailabilityCell({ busyToday, slots, todayMs }: { busyToday: SlotStatus; slots: SlotStatus[]; todayMs: number }) {
+  const gigCount = slots.filter((s) => s === 'gig').length
+
+  const todayDot =
+    busyToday === 'gig' ? 'bg-destructive' :
+    busyToday === 'blocked' ? 'bg-amber-500' :
+    'bg-emerald-500'
+
+  const todayLabel =
+    busyToday === 'gig' ? 'Opptatt i dag' :
+    busyToday === 'blocked' ? 'Utilgjengeleg i dag' :
+    'Ledig i dag'
 
   return (
     <div className="flex flex-col gap-1.5">
-      {/* Today indicator */}
       <div className="flex items-center gap-1.5">
-        <span className={`size-1.5 rounded-full shrink-0 ${busyToday ? 'bg-destructive' : 'bg-emerald-500'}`} />
-        <span className="text-xs text-muted-foreground">
-          {busyToday ? 'Opptatt i dag' : 'Ledig i dag'}
-        </span>
+        <span className={`size-1.5 rounded-full shrink-0 ${todayDot}`} />
+        <span className="text-xs text-muted-foreground">{todayLabel}</span>
       </div>
 
-      {/* 7-day grid — each segment = one specific day */}
       <div className="flex gap-0.5">
-        {slots.map((busy, i) => (
+        {slots.map((status, i) => (
           <div key={i} className="flex flex-col items-center gap-0.5">
             <div
               className={`h-1.5 w-4 rounded-sm ${
-                busy
-                  ? busyCount >= 5
+                status === 'gig'
+                  ? gigCount >= 5
                     ? 'bg-destructive/80'
-                    : busyCount >= 3
+                    : gigCount >= 3
                     ? 'bg-spotlight-gold/80'
                     : 'bg-emerald-500/80'
+                  : status === 'blocked'
+                  ? 'bg-amber-500/80'
                   : i === 0
                   ? 'bg-white/20'
                   : 'bg-white/10'

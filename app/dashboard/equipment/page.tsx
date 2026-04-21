@@ -30,6 +30,7 @@ export default async function EquipmentPage() {
   const { data: activeBookings } = await supabase
     .from('gig_equipment')
     .select('equipment_id, quantity_needed, gigs(venue, start_date, end_date, status)')
+    .filter('gigs.start_date', 'lte', today)
     .filter('gigs.end_date', 'gte', today)
     .filter('gigs.status', 'eq', 'confirmed') as {
       data: {

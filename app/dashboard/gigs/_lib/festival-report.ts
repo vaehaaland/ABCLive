@@ -181,7 +181,7 @@ function toEquipment(row: ReportEquipmentRow | ReportProgramItemEquipmentRow): F
   }
 }
 
-function buildFestivalReportData(
+export function buildFestivalReportData(
   gig: ReportGig,
   personnelRows: ReportCrewRow[],
   equipmentRows: ReportEquipmentRow[],

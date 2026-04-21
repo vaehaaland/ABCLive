@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { PreviewCard } from '@base-ui/react'
 import { Avatar } from '@/components/ui/avatar'
-import { PhoneIcon, MailIcon, CalendarIcon } from 'lucide-react'
+import { PhoneIcon, MailIcon, CalendarIcon, BanIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { nb } from 'date-fns/locale'
 import { cn, formatPhone } from '@/lib/utils'
@@ -20,14 +20,24 @@ interface UpcomingGig {
   item_name?: string | null
 }
 
+type TodayStatus = 'free' | 'gig' | 'blocked'
+
+interface AvailabilityBlockRow {
+  id: string
+  blocked_from: string
+  blocked_until: string
+  reason: string | null
+}
+
 interface FetchedData {
   full_name: string | null
   phone: string | null
   email: string | null
   avatar_url: string | null
   primary_role: string | null
-  busyToday: boolean
+  todayStatus: TodayStatus
   upcomingGigs: UpcomingGig[]
+  upcomingBlocks: AvailabilityBlockRow[]
 }
 
 type ProfilePreview = {
@@ -76,7 +86,7 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
     const today = new Date().toISOString().split('T')[0]
     const windowEnd = new Date(Date.now() + 6 * DAY).toISOString().split('T')[0]
 
-    const [{ data: profile }, { data: assignments }, { data: itemAssignments }] = await Promise.all([
+    const [{ data: profile }, { data: assignments }, { data: itemAssignments }, { data: blocks }] = await Promise.all([
       supabase
         .from('profiles')
         .select('full_name, phone, email, avatar_url, primary_role')
@@ -93,10 +103,17 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
         .from('gig_program_item_personnel')
         .select('gig_program_items!inner(id, gig_id, name, venue, start_at, end_at)')
         .eq('profile_id', profileId),
+      supabase
+        .from('availability_blocks')
+        .select('id, blocked_from, blocked_until, reason')
+        .eq('profile_id', profileId)
+        .gte('blocked_until', today)
+        .order('blocked_from'),
     ]) as [
       { data: ProfilePreview | null },
       { data: DirectAssignmentRow[] | null },
       { data: ItemAssignmentRow[] | null },
+      { data: AvailabilityBlockRow[] | null },
     ]
 
     const directGigs = (assignments ?? [])
@@ -142,11 +159,13 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
     const gigs = [...directGigs, ...itemGigs]
 
     const todayMs = new Date(today).getTime()
-    const busyToday = gigs.some((g) => {
+    const gigBusyToday = gigs.some((g) => {
       const start = new Date(g.start_date).getTime()
       const end = new Date(g.end_date).getTime()
       return todayMs >= start && todayMs <= end
     })
+    const blockedToday = (blocks ?? []).some((b) => b.blocked_from <= today && b.blocked_until >= today)
+    const todayStatus: TodayStatus = gigBusyToday ? 'gig' : blockedToday ? 'blocked' : 'free'
 
     setData({
       full_name: profile?.full_name ?? null,
@@ -154,8 +173,9 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
       email: profile?.email ?? null,
       avatar_url: profile?.avatar_url ?? null,
       primary_role: profile?.primary_role ?? null,
-      busyToday,
+      todayStatus,
       upcomingGigs: gigs,
+      upcomingBlocks: blocks ?? [],
     })
     setLoading(false)
   }
@@ -211,18 +231,28 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
                 <div
                   className={cn(
                     'flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-medium',
-                    data.busyToday
+                    data.todayStatus === 'gig'
                       ? 'bg-destructive/10 text-destructive'
+                      : data.todayStatus === 'blocked'
+                      ? 'bg-amber-500/10 text-amber-400'
                       : 'bg-emerald-500/10 text-emerald-400',
                   )}
                 >
                   <span
                     className={cn(
                       'size-1.5 rounded-full shrink-0',
-                      data.busyToday ? 'bg-destructive animate-pulse' : 'bg-emerald-500',
+                      data.todayStatus === 'gig'
+                        ? 'bg-destructive animate-pulse'
+                        : data.todayStatus === 'blocked'
+                        ? 'bg-amber-500'
+                        : 'bg-emerald-500',
                     )}
                   />
-                  {data.busyToday ? 'Opptatt i dag' : 'Ledig i dag'}
+                  {data.todayStatus === 'gig'
+                    ? 'Opptatt i dag'
+                    : data.todayStatus === 'blocked'
+                    ? 'Utilgjengeleg i dag'
+                    : 'Ledig i dag'}
                 </div>
 
                 {/* Upcoming gigs */}
@@ -250,6 +280,36 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
                               )}
                               {gig.venue && ` · ${gig.venue}`}
                             </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Upcoming availability blocks */}
+                {data.upcomingBlocks.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground mb-2 font-medium">
+                      Utilgjengelegheit
+                    </p>
+                    <ul className="flex flex-col gap-1.5">
+                      {data.upcomingBlocks.map((block) => (
+                        <li
+                          key={block.id}
+                          className="flex items-start gap-2 rounded-lg bg-amber-500/[0.06] px-2.5 py-2"
+                        >
+                          <BanIcon className="size-3 mt-0.5 shrink-0 text-amber-500" />
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium leading-tight text-amber-400">
+                              {format(new Date(block.blocked_from), 'd. MMM', { locale: nb })}
+                              {block.blocked_from !== block.blocked_until && (
+                                <> – {format(new Date(block.blocked_until), 'd. MMM', { locale: nb })}</>
+                              )}
+                            </p>
+                            {block.reason && (
+                              <p className="text-[0.65rem] text-muted-foreground mt-0.5">{block.reason}</p>
+                            )}
                           </div>
                         </li>
                       ))}

@@ -20,7 +20,8 @@ import PersonHoverCard from '@/components/PersonHoverCard'
 import { Avatar } from '@/components/ui/avatar'
 import FestivalReportSharingPanel from '@/components/gigs/FestivalReportSharingPanel'
 import GigFilesSection from '@/components/gigs/GigFilesSection'
-import type { GigFile, GigProgramItem, GigStatus, GigType } from '@/types/database'
+import GigCommentsSection from '@/components/gigs/GigCommentsSection'
+import type { GigFile, GigProgramItem, GigStatus, GigType, GigCommentWithAuthor } from '@/types/database'
 
 const statusLabels: Record<GigStatus, string> = {
   draft: 'Utkast',
@@ -131,9 +132,9 @@ export default async function GigDetailPage({
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, full_name, avatar_url')
     .eq('id', user!.id)
-    .single() as { data: { role: string } | null, error: unknown }
+    .single() as { data: { role: string; full_name: string | null; avatar_url: string | null } | null, error: unknown }
 
   const isAdmin = profile?.role === 'admin'
 
@@ -164,6 +165,12 @@ export default async function GigDetailPage({
     .select('*')
     .eq('gig_id', id)
     .order('created_at', { ascending: false }) as { data: GigFile[] | null, error: unknown }
+
+  const { data: commentRows } = await supabase
+    .from('gig_comments')
+    .select('*, profiles(id, full_name, avatar_url)')
+    .eq('gig_id', id)
+    .order('created_at', { ascending: true }) as { data: GigCommentWithAuthor[] | null, error: unknown }
 
   const isFestival = gig.gig_type === 'festival'
 
@@ -214,7 +221,8 @@ export default async function GigDetailPage({
   }
 
   return (
-    <div className={`flex flex-col gap-6 ${isFestival ? 'max-w-5xl' : 'max-w-3xl'}`}>
+    <div className={`grid grid-cols-1 gap-6 ${isFestival ? 'max-w-7xl lg:grid-cols-2' : 'max-w-5xl lg:grid-cols-2'}`}>
+      <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -294,6 +302,7 @@ export default async function GigDetailPage({
                 gigId={gig.id}
                 gigStartDate={gig.start_date}
                 gigEndDate={gig.end_date}
+                currentUserId={user!.id}
                 buttonLabel={isFestival ? 'Legg til festivalcrew' : 'Legg til teknikar'}
                 dialogTitle={isFestival ? 'Legg til festivalcrew' : 'Legg til teknikar'}
               />
@@ -517,11 +526,23 @@ export default async function GigDetailPage({
         </Card>
       )}
 
-      <GigFilesSection
-        gigId={gig.id}
-        isAdmin={isAdmin}
-        initialFiles={fileRows ?? []}
-      />
+        <GigFilesSection
+          gigId={gig.id}
+          isAdmin={isAdmin}
+          initialFiles={fileRows ?? []}
+        />
+      </div>
+
+      <div className="lg:sticky lg:top-6 lg:self-start">
+        <GigCommentsSection
+          gigId={gig.id}
+          currentUserId={user!.id}
+          currentUserName={profile?.full_name ?? null}
+          currentUserAvatarUrl={profile?.avatar_url ?? null}
+          isAdmin={isAdmin}
+          initialComments={commentRows ?? []}
+        />
+      </div>
     </div>
   )
 }

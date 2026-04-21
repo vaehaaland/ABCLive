@@ -1,6 +1,7 @@
 export type UserRole = 'admin' | 'technician'
 export type GigStatus = 'draft' | 'confirmed' | 'completed' | 'cancelled'
 export type GigType = 'single' | 'festival'
+export type NotificationType = 'gig_added' | 'comment_mention'
 
 export interface Database {
   public: {
@@ -249,6 +250,77 @@ export interface Database {
           notes?: string | null
         }
       }
+      gig_comments: {
+        Row: {
+          id: string
+          gig_id: string
+          author_id: string
+          parent_id: string | null
+          root_id: string | null
+          body: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          gig_id: string
+          author_id: string
+          parent_id?: string | null
+          root_id?: string | null
+          body: string
+          created_at?: string
+        }
+        Update: {
+          body?: string
+        }
+      }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          actor_id: string | null
+          type: NotificationType
+          gig_id: string | null
+          comment_id: string | null
+          read: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          actor_id?: string | null
+          type: NotificationType
+          gig_id?: string | null
+          comment_id?: string | null
+          read?: boolean
+          created_at?: string
+        }
+        Update: {
+          read?: boolean
+        }
+      }
+      availability_blocks: {
+        Row: {
+          id: string
+          profile_id: string
+          blocked_from: string
+          blocked_until: string
+          reason: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          blocked_from: string
+          blocked_until: string
+          reason?: string | null
+          created_at?: string
+        }
+        Update: {
+          blocked_from?: string
+          blocked_until?: string
+          reason?: string | null
+        }
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -278,3 +350,17 @@ export type GigWithDetails = Gig & {
   gig_files: GigFile[]
   gig_program_items: GigProgramItemWithDetails[]
 }
+
+export type GigComment = Database['public']['Tables']['gig_comments']['Row']
+export type GigCommentWithAuthor = GigComment & {
+  profiles: { id: string; full_name: string | null; avatar_url: string | null }
+}
+export type CommentThread = GigCommentWithAuthor & { replies: GigCommentWithAuthor[] }
+
+export type Notification = Database['public']['Tables']['notifications']['Row']
+export type NotificationWithContext = Notification & {
+  actor: { id: string; full_name: string | null; avatar_url: string | null } | null
+  gig: { id: string; name: string } | null
+}
+
+export type AvailabilityBlock = Database['public']['Tables']['availability_blocks']['Row']

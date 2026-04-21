@@ -15,7 +15,8 @@ import {
   LayoutGridIcon,
   UserIcon,
 } from 'lucide-react'
-import type { GigStatus } from '@/types/database'
+import type { GigStatus, AvailabilityBlock } from '@/types/database'
+import AvailabilityBlocksManager from '@/components/profile/AvailabilityBlocksManager'
 
 const statusLabels: Record<GigStatus, string> = {
   draft: 'Utkast',
@@ -63,6 +64,12 @@ export default async function ProfilePage() {
     .select('full_name, role, primary_role, phone, avatar_url')
     .eq('id', user.id)
     .single() as { data: { full_name: string | null, role: string, primary_role: string | null, phone: string | null, avatar_url: string | null } | null, error: unknown }
+
+  const { data: availabilityBlocks } = await supabase
+    .from('availability_blocks')
+    .select('*')
+    .eq('profile_id', user.id)
+    .order('blocked_from') as { data: AvailabilityBlock[] | null, error: unknown }
 
   const { data: rawAssignments } = await supabase
     .from('gig_personnel')
@@ -266,6 +273,14 @@ export default async function ProfilePage() {
             )}
           </div>
         </div>
+
+        {/* Availability blocks */}
+        <section className="flex flex-col gap-6">
+          <h2 className="font-heading text-xl font-semibold tracking-tight">
+            Utilgjengelegheit
+          </h2>
+          <AvailabilityBlocksManager blocks={availabilityBlocks ?? []} />
+        </section>
 
         {/* Recent assignments */}
         <section className="flex flex-col gap-6">

@@ -20,11 +20,14 @@ import {
   SelectTrigger,
 } from '@/components/ui/select'
 import type { Profile } from '@/types/database'
+import { createGigAddedNotification } from '@/app/actions/notifications'
+import { buildConflictMap } from '@/lib/gigs/personnel-conflicts'
 
 interface Props {
   gigId: string
   gigStartDate: string
   gigEndDate: string
+  currentUserId: string
   buttonLabel?: string
   dialogTitle?: string
 }
@@ -32,12 +35,17 @@ interface Props {
 interface PersonWithConflict extends Profile {
   hasConflict: boolean
   conflictGigName?: string
+  hasBlock: boolean
+  blockFrom?: string
+  blockUntil?: string
+  blockReason?: string | null
 }
 
 export default function AddPersonnelDialog({
   gigId,
   gigStartDate,
   gigEndDate,
+  currentUserId,
   buttonLabel = 'Legg til teknikar',
   dialogTitle = 'Legg til teknikar',
 }: Props) {
@@ -76,23 +84,36 @@ export default function AddPersonnelDialog({
         .select('profile_id, gigs!inner(id, name, start_date, end_date)')
         .neq('gig_id', gigId)
 
-      const conflictMap = new Map<string, string>()
-      conflicts?.forEach((c) => {
-        const gigs = Array.isArray(c.gigs) ? c.gigs : [c.gigs]
-        gigs.forEach((g: { id: string; name: string; start_date: string; end_date: string }) => {
-          if (g.start_date <= gigEndDate && g.end_date >= gigStartDate) {
-            conflictMap.set(c.profile_id, g.name)
-          }
-        })
+      const conflictMap = buildConflictMap(conflicts ?? [], gigStartDate, gigEndDate)
+
+      // Check availability blocks overlapping the gig date range
+      const { data: blocks } = await supabase
+        .from('availability_blocks')
+        .select('profile_id, blocked_from, blocked_until, reason')
+        .lte('blocked_from', gigEndDate)
+        .gte('blocked_until', gigStartDate)
+
+      const blockMap = new Map<string, { blocked_from: string; blocked_until: string; reason: string | null }>()
+      blocks?.forEach((b) => {
+        if (!blockMap.has(b.profile_id)) {
+          blockMap.set(b.profile_id, { blocked_from: b.blocked_from, blocked_until: b.blocked_until, reason: b.reason })
+        }
       })
 
       const withConflicts: PersonWithConflict[] = profiles
         .filter((p) => !existingIds.has(p.id))
-        .map((p) => ({
-          ...p,
-          hasConflict: conflictMap.has(p.id),
-          conflictGigName: conflictMap.get(p.id),
-        }))
+        .map((p) => {
+          const block = blockMap.get(p.id)
+          return {
+            ...p,
+            hasConflict: conflictMap.has(p.id),
+            conflictGigName: conflictMap.get(p.id),
+            hasBlock: !!block,
+            blockFrom: block?.blocked_from,
+            blockUntil: block?.blocked_until,
+            blockReason: block?.reason,
+          }
+        })
 
       setPersonnel(withConflicts)
     }
@@ -113,6 +134,7 @@ export default function AddPersonnelDialog({
     if (error) {
       setError(error.message)
     } else {
+      createGigAddedNotification(gigId, selectedId, currentUserId).catch(() => {})
       setOpen(false)
       setSelectedId('')
       setRoleOnGig('')
@@ -149,6 +171,9 @@ export default function AddPersonnelDialog({
                     {p.hasConflict && (
                       <span className="ml-2 text-destructive text-xs">⚠ konflikt</span>
                     )}
+                    {!p.hasConflict && p.hasBlock && (
+                      <span className="ml-2 text-amber-500 text-xs">⚠ utilgjengeleg</span>
+                    )}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -156,6 +181,11 @@ export default function AddPersonnelDialog({
             {selected?.hasConflict && (
               <p className="text-sm text-destructive">
                 ⚠ {selected.full_name} er allereie booka på «{selected.conflictGigName}» i same periode.
+              </p>
+            )}
+            {!selected?.hasConflict && selected?.hasBlock && (
+              <p className="text-sm text-amber-500">
+                ⚠ {selected.full_name} har markert seg som utilgjengeleg {selected.blockFrom === selected.blockUntil ? `${selected.blockFrom}` : `${selected.blockFrom} – ${selected.blockUntil}`}{selected.blockReason ? ` (${selected.blockReason})` : ''}.
               </p>
             )}
           </div>
