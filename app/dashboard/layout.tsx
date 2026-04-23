@@ -39,13 +39,7 @@ export default async function DashboardLayout({
             <nav className="flex items-center gap-0.5">
               <NavLink href="/dashboard/gigs">Oppdrag</NavLink>
               {isAdmin && (
-                <NavDropdown
-                  label="Ressursar"
-                  links={[
-                    { href: '/dashboard/personnel', label: 'Personell' },
-                    { href: '/dashboard/equipment', label: 'Utstyr' },
-                  ]}
-                />
+                <NavLink href="/dashboard/equipment">Ressursar</NavLink>
               )}
               <NavLink href="/dashboard/calendar">Kalender</NavLink>
               {isSuperadmin && (
@@ -78,7 +72,7 @@ export default async function DashboardLayout({
           </div>
         </div>
       </header>
-      <main className="flex-1 container mx-auto px-4 py-8">{children}</main>
+      <main className="flex-1 px-4 py-8">{children}</main>
     </div>
   )
 }
