@@ -11,6 +11,8 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import { updateEquipmentField } from '@/app/dashboard/equipment/actions'
 import type { Equipment } from '@/types/database'
 
@@ -51,6 +53,7 @@ export function EquipmentTable({ equipment }: Props) {
   const [sortDir, setSortDir] = useState<SortDir>('asc')
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null)
   const [pendingValue, setPendingValue] = useState('')
+  const [catFilter, setCatFilter] = useState('Alle')
   const saving = useRef(false)
 
   const categories = useMemo(
@@ -77,8 +80,11 @@ export function EquipmentTable({ equipment }: Props) {
       if (av > bv) return sortDir === 'asc' ? 1 : -1
       return 0
     })
+    if (catFilter !== 'Alle') {
+      return copy.filter((item) => item.category === catFilter)
+    }
     return copy
-  }, [items, sortKey, sortDir])
+  }, [items, sortKey, sortDir, catFilter])
 
   function handleSort(key: SortKey) {
     if (key === sortKey) {
@@ -142,42 +148,60 @@ export function EquipmentTable({ equipment }: Props) {
         ))}
       </datalist>
 
+      {/* Category chips */}
+      <div className="flex flex-wrap gap-1.5 mb-4 px-4 pt-4">
+        {['Alle', ...categories].map(cat => (
+          <button
+            key={cat}
+            onClick={() => setCatFilter(cat)}
+            className={cn(
+              'text-xs font-medium px-3 py-1.5 rounded-full transition-colors border',
+              catFilter === cat
+                ? 'bg-primary text-white border-transparent'
+                : 'bg-transparent text-muted-foreground border-white/10 hover:text-foreground hover:bg-surface-high'
+            )}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
       <Table>
         <TableHeader>
-          <TableRow className="border-white/8 hover:bg-transparent">
+          <TableRow className="border-white/8 hover:bg-transparent bg-surface-high/50">
             <TableHead
-              className="cursor-pointer select-none"
+              className="cursor-pointer select-none text-xs font-semibold text-muted-foreground uppercase tracking-[0.06em]"
               onClick={() => handleSort('name')}
             >
-              <span className="flex items-center">
+              <span className="flex items-center gap-0.5">
                 Namn
                 <SortIcon col="name" sortKey={sortKey} sortDir={sortDir} />
               </span>
             </TableHead>
             <TableHead
-              className="cursor-pointer select-none w-36"
+              className="cursor-pointer select-none w-36 text-xs font-semibold text-muted-foreground uppercase tracking-[0.06em]"
               onClick={() => handleSort('category')}
             >
-              <span className="flex items-center">
+              <span className="flex items-center gap-0.5">
                 Kategori
                 <SortIcon col="category" sortKey={sortKey} sortDir={sortDir} />
               </span>
             </TableHead>
-            <TableHead>Beskriving</TableHead>
+            <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.06em]">Beskriving</TableHead>
             <TableHead
-              className="cursor-pointer select-none w-24"
+              className="cursor-pointer select-none w-24 text-xs font-semibold text-muted-foreground uppercase tracking-[0.06em]"
               onClick={() => handleSort('quantity')}
             >
-              <span className="flex items-center">
+              <span className="flex items-center gap-0.5">
                 Antal
                 <SortIcon col="quantity" sortKey={sortKey} sortDir={sortDir} />
               </span>
             </TableHead>
             <TableHead
-              className="cursor-pointer select-none w-28"
+              className="cursor-pointer select-none w-28 text-xs font-semibold text-muted-foreground uppercase tracking-[0.06em]"
               onClick={() => handleSort('status')}
             >
-              <span className="flex items-center">
+              <span className="flex items-center gap-0.5">
                 Status
                 <SortIcon col="status" sortKey={sortKey} sortDir={sortDir} />
               </span>
@@ -287,14 +311,13 @@ export function EquipmentTable({ equipment }: Props) {
 
                 {/* Status */}
                 <TableCell>
-                  {item.activeBooking ? (
-                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-widest bg-spotlight-gold/15 text-spotlight-gold">
+                  {item.activeBooking !== null ? (
+                    <Badge variant="default" className="gap-1.5">
+                      <span className="size-1.5 rounded-full bg-primary animate-pulse shrink-0" />
                       På tur
-                    </span>
+                    </Badge>
                   ) : (
-                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-widest bg-primary/15 text-primary">
-                      Ledig
-                    </span>
+                    <Badge variant="success">Ledig</Badge>
                   )}
                 </TableCell>
               </TableRow>

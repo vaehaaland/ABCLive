@@ -2,22 +2,13 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { formatPhone } from '@/lib/utils'
 import { redirect } from 'next/navigation'
-import { Badge } from '@/components/ui/badge'
-import { Avatar } from '@/components/ui/avatar'
-import PersonHoverCard from '@/components/PersonHoverCard'
+import { Button } from '@/components/ui/button'
+import { UserPlusIcon } from 'lucide-react'
+import { PersonnelGrid, type PersonWithSlots, type SlotStatus } from '@/components/personnel/PersonnelGrid'
 import type { Profile } from '@/types/database'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 
 const DAY = 86_400_000
-
-export type SlotStatus = 'free' | 'gig' | 'blocked'
+const ALL_DAYS_SHORT = ['Ma', 'Ti', 'On', 'To', 'Fr', 'Lø', 'Sø']
 
 function calcBusySlots(
   gigs: { start_date: string; end_date: string }[],
@@ -52,9 +43,24 @@ function calcBusySlots(
     return 'free'
   })
 
-  const todayStatus: SlotStatus = gigSet.has(0) ? 'gig' : blockSet.has(0) ? 'blocked' : 'free'
+  const busyToday: SlotStatus = gigSet.has(0) ? 'gig' : blockSet.has(0) ? 'blocked' : 'free'
+  return { busyToday, slots }
+}
 
-  return { busyToday: todayStatus, slots }
+function getInitials(fullName: string | null): string {
+  if (!fullName) return '?'
+  const words = fullName.trim().split(/\s+/)
+  if (words.length === 1) return words[0][0]?.toUpperCase() ?? '?'
+  return ((words[0][0] ?? '') + (words[words.length - 1][0] ?? '')).toUpperCase()
+}
+
+function getAvatarGradient(id: string): string {
+  let hash = 0
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) & 0xffffffff
+  }
+  const hue = Math.abs(hash) % 360
+  return `linear-gradient(135deg, oklch(0.68 0.22 ${hue}), oklch(0.55 0.18 ${hue + 20}))`
 }
 
 export default async function PersonnelPage() {
@@ -65,7 +71,7 @@ export default async function PersonnelPage() {
     .from('profiles')
     .select('role')
     .eq('id', user!.id)
-    .single() as { data: { role: string } | null, error: unknown }
+    .single() as { data: { role: string } | null; error: unknown }
 
   if (profile?.role !== 'admin') redirect('/dashboard/gigs')
 
@@ -73,12 +79,25 @@ export default async function PersonnelPage() {
   const todayMs = new Date(today).getTime()
   const windowEnd = new Date(todayMs + 6 * 86_400_000).toISOString().split('T')[0]
 
+  // Day labels starting from today's weekday
+  const todayDow = (new Date(today).getDay() + 6) % 7 // Mon=0 … Sun=6
+  const dayLabels = Array.from({ length: 7 }, (_, i) => ALL_DAYS_SHORT[(todayDow + i) % 7])
+
   const { data: profiles } = await supabase
     .from('profiles')
     .select('*')
-    .order('full_name') as { data: Profile[] | null, error: unknown }
+    .order('full_name') as { data: Profile[] | null; error: unknown }
 
-  // Fetch gig assignments with dates — active/confirmed gigs overlapping the next 7 days
+  // All-time roles per person (no date filter) — for "Roller på oppdrag" display
+  const { data: allRoles } = await (supabase
+    .from('gig_personnel')
+    .select('profile_id, role_on_gig')
+    .not('role_on_gig', 'is', null)) as {
+      data: { profile_id: string; role_on_gig: string | null }[] | null
+      error: unknown
+    }
+
+  // Gig assignments overlapping next 7 days (for availability calculation only)
   const { data: assignments } = await (supabase
     .from('gig_personnel')
     .select('profile_id, role_on_gig, gigs!inner(id, name, start_date, end_date, status, venue)')
@@ -104,10 +123,29 @@ export default async function PersonnelPage() {
       error: unknown
     }
 
+  // Availability blocks
+  const { data: availabilityBlocks } = await (supabase
+    .from('availability_blocks')
+    .select('profile_id, blocked_from, blocked_until')
+    .filter('blocked_until', 'gte', today)
+    .filter('blocked_from', 'lte', windowEnd)) as {
+      data: { profile_id: string; blocked_from: string; blocked_until: string }[] | null
+      error: unknown
+    }
+
   // Build per-person maps
   const gigDatesMap = new Map<string, { start_date: string; end_date: string }[]>()
-  const rolesMap = new Map<string, string[]>()
+  const rolesMap = new Map<string, Set<string>>()
 
+  // All-time roles (for display)
+  for (const row of allRoles ?? []) {
+    if (!row.role_on_gig) continue
+    const roles = rolesMap.get(row.profile_id) ?? new Set<string>()
+    roles.add(row.role_on_gig)
+    rolesMap.set(row.profile_id, roles)
+  }
+
+  // Date-windowed assignments (for availability only)
   for (const row of assignments ?? []) {
     if (!row.gigs) continue
     const dates = gigDatesMap.get(row.profile_id) ?? []
@@ -125,16 +163,6 @@ export default async function PersonnelPage() {
     gigDatesMap.set(row.profile_id, dates)
   }
 
-  // Fetch availability blocks for the 7-day window
-  const { data: availabilityBlocks } = await (supabase
-    .from('availability_blocks')
-    .select('profile_id, blocked_from, blocked_until')
-    .filter('blocked_until', 'gte', today)
-    .filter('blocked_from', 'lte', windowEnd)) as {
-      data: { profile_id: string; blocked_from: string; blocked_until: string }[] | null
-      error: unknown
-    }
-
   const blocksMap = new Map<string, { blocked_from: string; blocked_until: string }[]>()
   for (const block of availabilityBlocks ?? []) {
     const list = blocksMap.get(block.profile_id) ?? []
@@ -142,155 +170,59 @@ export default async function PersonnelPage() {
     blocksMap.set(block.profile_id, list)
   }
 
-  // Fetch all roles (not date-filtered)
-  const { data: allGigRoles } = await supabase
-    .from('gig_personnel')
-    .select('profile_id, role_on_gig') as {
-      data: { profile_id: string; role_on_gig: string | null }[] | null
-      error: unknown
+  // Build people array
+  const people: PersonWithSlots[] = (profiles ?? []).map((p) => {
+    const { busyToday, slots } = calcBusySlots(
+      gigDatesMap.get(p.id) ?? [],
+      blocksMap.get(p.id) ?? [],
+      today,
+    )
+    return {
+      id: p.id,
+      full_name: p.full_name,
+      phone: p.phone ? formatPhone(p.phone) : null,
+      primary_role: p.primary_role,
+      role: p.role,
+      roles: Array.from(rolesMap.get(p.id) ?? []).slice(0, 5),
+      busyToday,
+      slots,
+      avatar_url: p.avatar_url ?? null,
+      avatarGradient: getAvatarGradient(p.id),
+      initials: getInitials(p.full_name),
     }
-
-  for (const row of allGigRoles ?? []) {
-    if (!row.role_on_gig) continue
-    const list = rolesMap.get(row.profile_id) ?? []
-    if (!list.includes(row.role_on_gig)) list.push(row.role_on_gig)
-    rolesMap.set(row.profile_id, list)
-  }
-
-  for (const row of itemAssignments ?? []) {
-    if (!row.role_on_item) continue
-    const list = rolesMap.get(row.profile_id) ?? []
-    if (!list.includes(row.role_on_item)) list.push(row.role_on_item)
-    rolesMap.set(row.profile_id, list)
-  }
+  })
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="font-heading text-2xl font-bold">Personell</h1>
-        <p className="text-sm text-muted-foreground">
-          Oversikt over crew-medlemar, roller og tilgjengelegheit.
-        </p>
+    <>
+      {/* Subnav — full-bleed, matches main navbar width */}
+      <div className="border-b border-border bg-surface-low -mx-4 -mt-8">
+        <div className="px-6 flex gap-0">
+          <Link href="/dashboard/equipment" className="relative px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border-b-2 border-transparent -mb-px">Utstyr</Link>
+          <Link href="/dashboard/personnel" className="relative px-4 py-2.5 text-sm font-medium text-primary border-b-2 border-primary -mb-px">Personell</Link>
+        </div>
       </div>
 
-      {!profiles?.length ? (
-        <p className="text-muted-foreground text-sm">Ingen teknikarar registrert.</p>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Namn</TableHead>
-              <TableHead>Telefon</TableHead>
-              <TableHead>Hovudrolle</TableHead>
-              <TableHead>Roller på oppdrag</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {profiles.map((p) => {
-              const gigRoleList = rolesMap.get(p.id) ?? []
-              const { busyToday, slots } = calcBusySlots(
-                gigDatesMap.get(p.id) ?? [],
-                blocksMap.get(p.id) ?? [],
-                today,
-              )
-
-              return (
-                <TableRow key={p.id}>
-                  <TableCell>
-                    <PersonHoverCard profileId={p.id} name={p.full_name}>
-                      <Link
-                        href={`/dashboard/personnel/${p.id}`}
-                        className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-                      >
-                        <Avatar src={p.avatar_url} name={p.full_name} size="sm" />
-                        <span className="font-medium">{p.full_name ?? '—'}</span>
-                      </Link>
-                    </PersonHoverCard>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{p.phone ? formatPhone(p.phone) : '—'}</TableCell>
-                  <TableCell>
-                    {p.primary_role
-                      ? <Badge variant="default">{p.primary_role}</Badge>
-                      : <span className="text-xs text-muted-foreground">—</span>
-                    }
-                  </TableCell>
-                  <TableCell>
-                    {gigRoleList.length > 0
-                      ? (
-                        <div className="flex flex-wrap gap-1.5">
-                          {gigRoleList.map((r) => (
-                            <Badge key={r} variant="outline">{r}</Badge>
-                          ))}
-                        </div>
-                      )
-                      : <span className="text-xs text-muted-foreground">Ingen oppdrag enno</span>
-                    }
-                  </TableCell>
-                  <TableCell>
-                    <AvailabilityCell busyToday={busyToday} slots={slots} todayMs={todayMs} />
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      )}
-    </div>
-  )
-}
-
-const DAY_LETTERS = ['Ma', 'Ti', 'On', 'To', 'Fr', 'Lø', 'Sø']
-
-function getDayLetter(todayMs: number, offset: number): string {
-  const d = new Date(todayMs + offset * DAY)
-  return DAY_LETTERS[d.getDay() === 0 ? 6 : d.getDay() - 1]
-}
-
-function AvailabilityCell({ busyToday, slots, todayMs }: { busyToday: SlotStatus; slots: SlotStatus[]; todayMs: number }) {
-  const gigCount = slots.filter((s) => s === 'gig').length
-
-  const todayDot =
-    busyToday === 'gig' ? 'bg-destructive' :
-    busyToday === 'blocked' ? 'bg-spotlight-gold' :
-    'bg-emerald-500'
-
-  const todayLabel =
-    busyToday === 'gig' ? 'Opptatt i dag' :
-    busyToday === 'blocked' ? 'Utilgjengeleg i dag' :
-    'Ledig i dag'
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-center gap-1.5">
-        <span className={`size-1.5 rounded-full shrink-0 ${todayDot}`} />
-        <span className="text-xs text-muted-foreground">{todayLabel}</span>
-      </div>
-
-      <div className="flex gap-0.5">
-        {slots.map((status, i) => (
-          <div key={i} className="flex flex-col items-center gap-0.5">
-            <div
-              className={`h-1.5 w-4 rounded-sm ${
-                status === 'gig'
-                  ? gigCount >= 5
-                    ? 'bg-destructive/80'
-                    : gigCount >= 3
-                    ? 'bg-spotlight-gold/80'
-                    : 'bg-emerald-500/80'
-                  : status === 'blocked'
-                  ? 'bg-spotlight-gold/80'
-                  : i === 0
-                  ? 'bg-white/20'
-                  : 'bg-white/10'
-              }`}
-            />
-            <span className={`text-[0.55rem] tabular-nums leading-none ${i === 0 ? 'text-foreground/60' : 'text-muted-foreground/50'}`}>
-              {getDayLetter(todayMs, i)}
-            </span>
+      <div className="max-w-[1200px] mx-auto px-6 py-8 w-full">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="font-heading font-extrabold text-[1.75rem] leading-none tracking-[-0.035em]">
+              Personell
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Oversikt over crew-medlemar, roller og tilgjengelegheit
+            </p>
           </div>
-        ))}
+          <Button asChild>
+            <Link href="/dashboard/personnel/new">
+              <UserPlusIcon className="size-4" />
+              Legg til person
+            </Link>
+          </Button>
+        </div>
+
+        <PersonnelGrid people={people} dayLabels={dayLabels} isAdmin={profile?.role === 'admin'} />
       </div>
-    </div>
+    </>
   )
 }
