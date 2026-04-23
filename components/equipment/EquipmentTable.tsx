@@ -11,6 +11,8 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import { updateEquipmentField } from '@/app/dashboard/equipment/actions'
 import type { Equipment } from '@/types/database'
 
@@ -51,6 +53,7 @@ export function EquipmentTable({ equipment }: Props) {
   const [sortDir, setSortDir] = useState<SortDir>('asc')
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null)
   const [pendingValue, setPendingValue] = useState('')
+  const [catFilter, setCatFilter] = useState('Alle')
   const saving = useRef(false)
 
   const categories = useMemo(
@@ -77,8 +80,11 @@ export function EquipmentTable({ equipment }: Props) {
       if (av > bv) return sortDir === 'asc' ? 1 : -1
       return 0
     })
+    if (catFilter !== 'Alle') {
+      return copy.filter((item) => item.category === catFilter)
+    }
     return copy
-  }, [items, sortKey, sortDir])
+  }, [items, sortKey, sortDir, catFilter])
 
   function handleSort(key: SortKey) {
     if (key === sortKey) {
@@ -141,6 +147,24 @@ export function EquipmentTable({ equipment }: Props) {
           <option key={c} value={c} />
         ))}
       </datalist>
+
+      {/* Category chips */}
+      <div className="flex flex-wrap gap-2 mb-4 px-4 pt-4">
+        {['Alle', ...categories].map(cat => (
+          <button
+            key={cat}
+            onClick={() => setCatFilter(cat)}
+            className={cn(
+              'text-xs font-medium px-3 py-1.5 rounded-full transition-colors',
+              catFilter === cat
+                ? 'bg-primary/15 text-primary'
+                : 'bg-surface-high text-muted-foreground hover:text-foreground hover:bg-surface-highest'
+            )}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
 
       <Table>
         <TableHeader>
@@ -287,14 +311,13 @@ export function EquipmentTable({ equipment }: Props) {
 
                 {/* Status */}
                 <TableCell>
-                  {item.activeBooking ? (
-                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-widest bg-spotlight-gold/15 text-spotlight-gold">
+                  {item.activeBooking !== null ? (
+                    <Badge variant="default">
+                      <span className="inline-block size-1.5 rounded-full bg-primary animate-pulse mr-1" />
                       På tur
-                    </span>
+                    </Badge>
                   ) : (
-                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-widest bg-primary/15 text-primary">
-                      Ledig
-                    </span>
+                    <Badge variant="success">Ledig</Badge>
                   )}
                 </TableCell>
               </TableRow>

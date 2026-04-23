@@ -1,26 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO } from 'date-fns'
-import { nb } from 'date-fns/locale'
+import { format, addMonths, subMonths, parseISO } from 'date-fns'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from 'lucide-react'
 import { CalendarSearch } from '@/components/calendar/CalendarSearch'
-import type { GigStatus, GigType } from '@/types/database'
+import { CalendarGrid, type CalendarGig } from '@/components/calendar/CalendarGrid'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
-type CalendarGig = {
-  id: string
-  name: string
-  start_date: string
-  end_date: string
-  status: GigStatus
-  gig_type: GigType
-}
-
-const statusColors: Record<GigStatus, string> = {
-  draft: 'bg-muted text-muted-foreground',
-  confirmed: 'bg-primary text-primary-foreground',
-  completed: 'bg-secondary text-secondary-foreground',
-  cancelled: 'bg-destructive/10 text-destructive line-through',
-}
+const MONTHS_NO = [
+  'Januar', 'Februar', 'Mars', 'April', 'Mai', 'Juni',
+  'Juli', 'August', 'September', 'Oktober', 'November', 'Desember',
+]
 
 export default async function CalendarPage({
   searchParams,
@@ -29,125 +20,136 @@ export default async function CalendarPage({
 }) {
   const sp = await searchParams
   const now = new Date()
-  const year = sp.year ? parseInt(sp.year) : now.getFullYear()
-  const month = sp.month ? parseInt(sp.month) : now.getMonth()
-  const query = sp.q?.trim() ?? ''
-  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth()
 
-  const start = startOfMonth(new Date(year, month))
-  const end = endOfMonth(new Date(year, month))
-  const days = eachDayOfInterval({ start, end })
+  // Month in URL is 1-indexed (January = 1)
+  const year = sp.year ? parseInt(sp.year) : now.getFullYear()
+  const month = sp.month ? parseInt(sp.month) : now.getMonth() + 1
+  const query = sp.q?.trim() ?? ''
+
+  // Build date range for this month
+  const monthStart = new Date(year, month - 1, 1)
+  const monthEnd = new Date(year, month, 0)
 
   const supabase = await createClient()
+
   let gigsQuery = supabase
     .from('gigs')
-    .select('id, name, start_date, end_date, status, gig_type')
-    .lte('start_date', format(end, 'yyyy-MM-dd'))
-    .gte('end_date', format(start, 'yyyy-MM-dd'))
+    .select('id, name, start_date, end_date, status, gig_type, venue, client')
+    .lte('start_date', format(monthEnd, 'yyyy-MM-dd'))
+    .gte('end_date', format(monthStart, 'yyyy-MM-dd'))
     .neq('status', 'cancelled')
 
   if (query) {
     gigsQuery = gigsQuery.ilike('name', `%${query}%`)
   }
 
-  const { data: gigs } = await gigsQuery as { data: CalendarGig[] | null, error: unknown }
+  const { data: gigs } = (await gigsQuery) as {
+    data: CalendarGig[] | null
+    error: unknown
+  }
 
-  // If searching and no results this month, jump to nearest upcoming matching gig
+  // If searching and no results this month, jump to the nearest upcoming match
   if (query && (!gigs || gigs.length === 0)) {
     const { data: next } = await supabase
       .from('gigs')
       .select('start_date')
       .ilike('name', `%${query}%`)
       .neq('status', 'cancelled')
-      .gte('start_date', format(end, 'yyyy-MM-dd'))
+      .gte('start_date', format(monthEnd, 'yyyy-MM-dd'))
       .order('start_date', { ascending: true })
       .limit(1)
       .single()
 
     if (next) {
-      const d = parseISO(next.start_date)
-      redirect(`/dashboard/calendar?month=${d.getMonth()}&year=${d.getFullYear()}&q=${encodeURIComponent(query)}`)
+      const d = parseISO((next as unknown as { start_date: string }).start_date)
+      redirect(
+        `/dashboard/calendar?month=${d.getMonth() + 1}&year=${d.getFullYear()}&q=${encodeURIComponent(query)}`,
+      )
     }
   }
 
-  const prevMonth = month === 0 ? 11 : month - 1
-  const prevYear = month === 0 ? year - 1 : year
-  const nextMonth = month === 11 ? 0 : month + 1
-  const nextYear = month === 11 ? year + 1 : year
+  // Build prev/next hrefs using date-fns
+  const base = new Date(year, month - 1, 1)
+  const prevDate = subMonths(base, 1)
+  const nextDate = addMonths(base, 1)
+  const qParam = query ? `&q=${encodeURIComponent(query)}` : ''
+  const prevHref = `/dashboard/calendar?month=${prevDate.getMonth() + 1}&year=${prevDate.getFullYear()}${qParam}`
+  const nextHref = `/dashboard/calendar?month=${nextDate.getMonth() + 1}&year=${nextDate.getFullYear()}${qParam}`
+  const todayHref = `/dashboard/calendar${qParam ? `?${qParam.slice(1)}` : ''}`
+
+  const safeGigs: CalendarGig[] = gigs ?? []
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold capitalize">
-          {format(start, 'MMMM yyyy', { locale: nb })}
-        </h1>
-        <div className="flex items-center gap-2">
-          <CalendarSearch />
-          {(!isCurrentMonth || query) && (
-            <Link
-              href="/dashboard/calendar"
-              className="px-3 py-1 border rounded text-sm hover:bg-muted text-muted-foreground"
-            >
-              I dag
-            </Link>
-          )}
+    <div className="-mx-4 -mt-8 flex flex-col">
+      {/* Sticky page header */}
+      <div className="sticky top-14 z-30 bg-surface/85 backdrop-blur-xl border-b border-border">
+        <div className="max-w-[1200px] mx-auto px-6 py-3 flex items-center gap-3 flex-wrap">
+          <h1 className="font-heading font-extrabold text-xl leading-none tracking-[-0.035em]">
+            {MONTHS_NO[month - 1]} {year}
+          </h1>
+
           <Link
-            href={`/dashboard/calendar?month=${prevMonth}&year=${prevYear}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
-            className="px-3 py-1 border rounded text-sm hover:bg-muted"
+            href={prevHref}
+            className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-high transition-colors"
           >
-            ← Førre
+            <ChevronLeftIcon className="size-3.5" />
+            Førre
           </Link>
+
           <Link
-            href={`/dashboard/calendar?month=${nextMonth}&year=${nextYear}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
-            className="px-3 py-1 border rounded text-sm hover:bg-muted"
+            href={todayHref}
+            className="text-xs font-medium px-2.5 py-1.5 rounded-lg border border-white/10 text-muted-foreground hover:text-foreground hover:bg-surface-high transition-colors"
           >
-            Neste →
+            I dag
           </Link>
+
+          <Link
+            href={nextHref}
+            className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-high transition-colors"
+          >
+            Neste
+            <ChevronRightIcon className="size-3.5" />
+          </Link>
+
+          {/* Status legend */}
+          <div className="flex items-center gap-4 ml-2">
+            {[
+              { color: 'bg-primary', label: 'Bekrefta' },
+              { color: 'bg-spotlight-gold', label: 'Festival' },
+              { color: 'bg-emerald-500', label: 'Fullført' },
+              { color: 'bg-surface-highest', label: 'Utkast' },
+            ].map((l) => (
+              <div key={l.label} className="flex items-center gap-1.5">
+                <div className={cn('size-2 rounded-full', l.color)} />
+                <span className="text-[0.6875rem] text-muted-foreground">
+                  {l.label}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-[0.6875rem] font-mono text-muted-foreground/60">
+              {safeGigs.length} oppdrag
+            </span>
+            <CalendarSearch />
+            <Button asChild size="sm">
+              <Link href="/dashboard/gigs/new">
+                <PlusIcon className="size-3.5" />
+                Nytt
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-px bg-border rounded overflow-hidden text-sm">
-        {['Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør', 'Søn'].map((d) => (
-          <div key={d} className="bg-muted px-2 py-1 font-medium text-center text-muted-foreground">
-            {d}
-          </div>
-        ))}
-
-        {/* Empty cells before first day */}
-        {Array.from({ length: (start.getDay() + 6) % 7 }).map((_, i) => (
-          <div key={`empty-${i}`} className="bg-background min-h-20" />
-        ))}
-
-        {days.map((day) => {
-          const dayGigs = gigs?.filter((g) => {
-            const s = parseISO(g.start_date)
-            const e = parseISO(g.end_date)
-            return day >= s && day <= e
-          }) ?? []
-
-          return (
-            <div
-              key={day.toISOString()}
-              className={`bg-background min-h-20 p-1 flex flex-col gap-1 ${
-                isSameDay(day, now) ? 'ring-2 ring-primary ring-inset' : ''
-              }`}
-            >
-              <span className="text-xs font-medium text-muted-foreground px-1">
-                {format(day, 'd')}
-              </span>
-              {dayGigs.map((g) => (
-                <Link key={g.id} href={`/dashboard/gigs/${g.id}`}>
-                  <span
-                    className={`block truncate text-xs px-1 py-0.5 rounded cursor-pointer hover:opacity-80 ${statusColors[g.status as GigStatus]}`}
-                  >
-                    {g.gig_type === 'festival' ? `Festival · ${g.name}` : g.name}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          )
-        })}
-      </div>
+      {/* Calendar grid (client component) */}
+      <CalendarGrid
+        gigs={safeGigs}
+        year={year}
+        month={month}
+        searchQuery={query}
+      />
     </div>
   )
 }

@@ -1,19 +1,11 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { formatPhone } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { redirect } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
-import { Avatar } from '@/components/ui/avatar'
-import PersonHoverCard from '@/components/PersonHoverCard'
+import { PhoneIcon } from 'lucide-react'
 import type { Profile } from '@/types/database'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 
 const DAY = 86_400_000
 
@@ -55,6 +47,13 @@ function calcBusySlots(
   const todayStatus: SlotStatus = gigSet.has(0) ? 'gig' : blockSet.has(0) ? 'blocked' : 'free'
 
   return { busyToday: todayStatus, slots }
+}
+
+function getInitials(fullName: string | null): string {
+  if (!fullName) return '?'
+  const words = fullName.trim().split(/\s+/)
+  if (words.length === 1) return words[0][0]?.toUpperCase() ?? '?'
+  return ((words[0][0] ?? '') + (words[words.length - 1][0] ?? '')).toUpperCase()
 }
 
 export default async function PersonnelPage() {
@@ -106,7 +105,6 @@ export default async function PersonnelPage() {
 
   // Build per-person maps
   const gigDatesMap = new Map<string, { start_date: string; end_date: string }[]>()
-  const rolesMap = new Map<string, string[]>()
 
   for (const row of assignments ?? []) {
     if (!row.gigs) continue
@@ -142,155 +140,110 @@ export default async function PersonnelPage() {
     blocksMap.set(block.profile_id, list)
   }
 
-  // Fetch all roles (not date-filtered)
-  const { data: allGigRoles } = await supabase
-    .from('gig_personnel')
-    .select('profile_id, role_on_gig') as {
-      data: { profile_id: string; role_on_gig: string | null }[] | null
-      error: unknown
-    }
-
-  for (const row of allGigRoles ?? []) {
-    if (!row.role_on_gig) continue
-    const list = rolesMap.get(row.profile_id) ?? []
-    if (!list.includes(row.role_on_gig)) list.push(row.role_on_gig)
-    rolesMap.set(row.profile_id, list)
-  }
-
-  for (const row of itemAssignments ?? []) {
-    if (!row.role_on_item) continue
-    const list = rolesMap.get(row.profile_id) ?? []
-    if (!list.includes(row.role_on_item)) list.push(row.role_on_item)
-    rolesMap.set(row.profile_id, list)
-  }
-
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="font-heading text-2xl font-bold">Personell</h1>
-        <p className="text-sm text-muted-foreground">
-          Oversikt over crew-medlemar, roller og tilgjengelegheit.
-        </p>
+    <>
+      {/* Subnav — break out of layout padding to go full-width */}
+      <div className="border-b border-border bg-surface-low -mx-4 -mt-8">
+        <div className="max-w-[1200px] mx-auto px-6 flex gap-0">
+          <Link href="/dashboard/equipment" className="relative px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border-b-2 border-transparent -mb-px">Utstyr</Link>
+          <Link href="/dashboard/personnel" className="relative px-4 py-2.5 text-sm font-medium text-primary border-b-2 border-primary -mb-px">Personell</Link>
+        </div>
       </div>
 
-      {!profiles?.length ? (
-        <p className="text-muted-foreground text-sm">Ingen teknikarar registrert.</p>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Namn</TableHead>
-              <TableHead>Telefon</TableHead>
-              <TableHead>Hovudrolle</TableHead>
-              <TableHead>Roller på oppdrag</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+      <div className="max-w-[1200px] mx-auto px-6 py-8 w-full">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="font-heading font-extrabold text-[1.75rem] leading-none tracking-[-0.035em]">Personell</h1>
+        </div>
+
+        {!profiles?.length ? (
+          <p className="text-muted-foreground text-sm">Ingen teknikarar registrert.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {profiles.map((p) => {
-              const gigRoleList = rolesMap.get(p.id) ?? []
               const { busyToday, slots } = calcBusySlots(
                 gigDatesMap.get(p.id) ?? [],
                 blocksMap.get(p.id) ?? [],
                 today,
               )
 
+              const statusStripeClass =
+                busyToday === 'gig' ? 'bg-primary' :
+                busyToday === 'blocked' ? 'bg-live' :
+                'bg-emerald-500'
+
+              const statusBadgeVariant: 'success' | 'default' | 'live' =
+                busyToday === 'gig' ? 'default' :
+                busyToday === 'blocked' ? 'live' :
+                'success'
+
+              const statusLabel =
+                busyToday === 'gig' ? 'Opptatt' :
+                busyToday === 'blocked' ? 'Utilgjengeleg' :
+                'Ledig'
+
+              const initials = getInitials(p.full_name)
+
               return (
-                <TableRow key={p.id}>
-                  <TableCell>
-                    <PersonHoverCard profileId={p.id} name={p.full_name}>
-                      <Link
-                        href={`/dashboard/personnel/${p.id}`}
-                        className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                <Link key={p.id} href={`/dashboard/personnel/${p.id}`} className="flex flex-col rounded-xl overflow-hidden bg-surface-container hover:bg-surface-high transition-colors">
+                  {/* Top color stripe */}
+                  <div className={cn('h-[3px]', statusStripeClass)} />
+
+                  <div className="p-4 flex flex-col gap-3">
+                    {/* Avatar + name row */}
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="size-10 rounded-full flex items-center justify-center text-sm font-bold text-[oklch(0.08_0_0)] shrink-0"
+                        style={{ background: 'linear-gradient(135deg, oklch(0.68 0.26 292), oklch(0.58 0.20 312))' }}
                       >
-                        <Avatar src={p.avatar_url} name={p.full_name} size="sm" />
-                        <span className="font-medium">{p.full_name ?? '—'}</span>
-                      </Link>
-                    </PersonHoverCard>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{p.phone ? formatPhone(p.phone) : '—'}</TableCell>
-                  <TableCell>
-                    {p.primary_role
-                      ? <Badge variant="default">{p.primary_role}</Badge>
-                      : <span className="text-xs text-muted-foreground">—</span>
-                    }
-                  </TableCell>
-                  <TableCell>
-                    {gigRoleList.length > 0
-                      ? (
-                        <div className="flex flex-wrap gap-1.5">
-                          {gigRoleList.map((r) => (
-                            <Badge key={r} variant="outline">{r}</Badge>
-                          ))}
-                        </div>
-                      )
-                      : <span className="text-xs text-muted-foreground">Ingen oppdrag enno</span>
-                    }
-                  </TableCell>
-                  <TableCell>
-                    <AvailabilityCell busyToday={busyToday} slots={slots} todayMs={todayMs} />
-                  </TableCell>
-                </TableRow>
+                        {initials}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-heading font-semibold text-sm leading-snug truncate">{p.full_name ?? '—'}</p>
+                        {p.phone && (
+                          <p className="flex items-center gap-1 text-[0.6875rem] text-muted-foreground mt-0.5">
+                            <PhoneIcon className="size-3" />{formatPhone(p.phone)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Primary role */}
+                    <div>
+                      <p className="text-[0.6875rem] font-medium text-muted-foreground uppercase tracking-[0.07em] mb-1">Hovudrolle</p>
+                      <p className="text-xs font-medium text-foreground">{p.primary_role ?? p.role}</p>
+                    </div>
+
+                    {/* Week bar */}
+                    <div>
+                      <div className="flex gap-0.5 mb-1">
+                        {['Ma', 'Ti', 'On', 'To', 'Fr', 'Lø', 'Sø'].map((d) => (
+                          <span key={d} className="flex-1 text-center text-[0.5625rem] text-muted-foreground/50">{d}</span>
+                        ))}
+                      </div>
+                      <div className="flex gap-0.5">
+                        {slots.map((slot, i) => (
+                          <div key={i} className={cn('flex-1 h-1.5 rounded-sm', {
+                            'bg-emerald-500': slot === 'free',
+                            'bg-primary': slot === 'gig',
+                            'bg-live': slot === 'blocked',
+                            'bg-surface-highest': slot !== 'free' && slot !== 'gig' && slot !== 'blocked',
+                          })} />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="mt-auto px-4 py-2.5 bg-surface-high flex items-center justify-between">
+                    <Badge variant={statusBadgeVariant}>{statusLabel}</Badge>
+                  </div>
+                </Link>
               )
             })}
-          </TableBody>
-        </Table>
-      )}
-    </div>
-  )
-}
-
-const DAY_LETTERS = ['Ma', 'Ti', 'On', 'To', 'Fr', 'Lø', 'Sø']
-
-function getDayLetter(todayMs: number, offset: number): string {
-  const d = new Date(todayMs + offset * DAY)
-  return DAY_LETTERS[d.getDay() === 0 ? 6 : d.getDay() - 1]
-}
-
-function AvailabilityCell({ busyToday, slots, todayMs }: { busyToday: SlotStatus; slots: SlotStatus[]; todayMs: number }) {
-  const gigCount = slots.filter((s) => s === 'gig').length
-
-  const todayDot =
-    busyToday === 'gig' ? 'bg-destructive' :
-    busyToday === 'blocked' ? 'bg-spotlight-gold' :
-    'bg-emerald-500'
-
-  const todayLabel =
-    busyToday === 'gig' ? 'Opptatt i dag' :
-    busyToday === 'blocked' ? 'Utilgjengeleg i dag' :
-    'Ledig i dag'
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-center gap-1.5">
-        <span className={`size-1.5 rounded-full shrink-0 ${todayDot}`} />
-        <span className="text-xs text-muted-foreground">{todayLabel}</span>
-      </div>
-
-      <div className="flex gap-0.5">
-        {slots.map((status, i) => (
-          <div key={i} className="flex flex-col items-center gap-0.5">
-            <div
-              className={`h-1.5 w-4 rounded-sm ${
-                status === 'gig'
-                  ? gigCount >= 5
-                    ? 'bg-destructive/80'
-                    : gigCount >= 3
-                    ? 'bg-spotlight-gold/80'
-                    : 'bg-emerald-500/80'
-                  : status === 'blocked'
-                  ? 'bg-spotlight-gold/80'
-                  : i === 0
-                  ? 'bg-white/20'
-                  : 'bg-white/10'
-              }`}
-            />
-            <span className={`text-[0.55rem] tabular-nums leading-none ${i === 0 ? 'text-foreground/60' : 'text-muted-foreground/50'}`}>
-              {getDayLetter(todayMs, i)}
-            </span>
           </div>
-        ))}
+        )}
       </div>
-    </div>
+    </>
   )
 }

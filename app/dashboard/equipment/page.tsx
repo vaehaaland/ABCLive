@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { EquipmentTable } from '@/components/equipment/EquipmentTable'
+import { PlusIcon } from 'lucide-react'
 import type { Equipment } from '@/types/database'
 import type { EnrichedEquipment, ActiveBooking } from '@/components/equipment/EquipmentTable'
 
@@ -62,14 +63,6 @@ export default async function EquipmentPage() {
 
   const allEquipment: Equipment[] = equipment ?? []
 
-  // Compute stats
-  const totalUnits = allEquipment.reduce((sum, e) => sum + e.quantity, 0)
-  const onSiteUnits = allEquipment.reduce((sum, e) => {
-    const booking = bookingMap.get(e.id)
-    return sum + (booking ? Math.min(booking.quantity_needed, e.quantity) : 0)
-  }, 0)
-  const utilizationPct = totalUnits > 0 ? Math.round((onSiteUnits / totalUnits) * 100) : 0
-
   // Build enriched equipment list
   const enriched: EnrichedEquipment[] = allEquipment.map((e) => ({
     ...e,
@@ -77,52 +70,38 @@ export default async function EquipmentPage() {
   }))
 
   return (
-    <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-1">
-          <h1 className="font-heading text-2xl font-bold">Inventory Management</h1>
-          <p className="text-sm text-muted-foreground">
-            Real-time tracking of production assets across all venues.
-          </p>
-        </div>
-
-        {/* Stats */}
-        <div className="flex items-center gap-6 shrink-0">
-          <div className="text-right">
-            <div className="font-heading text-2xl font-bold text-primary">
-              {totalUnits.toLocaleString()}
-            </div>
-            <div className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">
-              Total units
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="font-heading text-2xl font-bold text-spotlight-gold">
-              {utilizationPct}%
-            </div>
-            <div className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">
-              Ute på tur
-            </div>
-          </div>
+    <>
+      {/* Subnav — break out of layout padding to go full-width */}
+      <div className="border-b border-border bg-surface-low -mx-4 -mt-8">
+        <div className="max-w-[1200px] mx-auto px-6 flex gap-0">
+          <Link href="/dashboard/equipment" className="relative px-4 py-2.5 text-sm font-medium text-primary border-b-2 border-primary -mb-px">Utstyr</Link>
+          <Link href="/dashboard/personnel" className="relative px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border-b-2 border-transparent -mb-px">Personell</Link>
         </div>
       </div>
 
-      {/* Action buttons */}
-      <div className="flex items-center gap-3">
-        <Button asChild>
-          <Link href="/dashboard/equipment/new">+ Add New Gear</Link>
-        </Button>
-      </div>
-
-      {allEquipment.length === 0 ? (
-        <div className="rounded-xl bg-surface-container p-12 flex flex-col items-center gap-3 text-center">
-          <p className="font-heading text-lg font-semibold text-foreground">Ingen utstyr registrert</p>
-          <p className="text-sm text-muted-foreground max-w-xs">Legg til det første utstyret i inventaret for å kome i gang med sporing.</p>
+      <div className="max-w-[1200px] mx-auto px-6 py-8 w-full">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <h1 className="font-heading font-extrabold text-[1.75rem] leading-none tracking-[-0.035em]">Utstyr</h1>
+            <p className="text-sm text-muted-foreground mt-1">Oversikt over produksjonsutstyr og tilgjengelegheit</p>
+          </div>
+          <Button asChild>
+            <Link href="/dashboard/equipment/new"><PlusIcon className="size-4" />Legg til utstyr</Link>
+          </Button>
         </div>
-      ) : (
-        <EquipmentTable equipment={enriched} />
-      )}
-    </div>
+
+        {allEquipment.length === 0 ? (
+          <div className="rounded-xl bg-surface-container p-12 flex flex-col items-center gap-3 text-center">
+            <p className="font-heading text-lg font-semibold text-foreground">Ingen utstyr registrert</p>
+            <p className="text-sm text-muted-foreground max-w-xs">Legg til det første utstyret i inventaret for å kome i gang med sporing.</p>
+          </div>
+        ) : (
+          <div className="rounded-2xl overflow-hidden bg-surface-container">
+            <EquipmentTable equipment={enriched} />
+          </div>
+        )}
+      </div>
+    </>
   )
 }
