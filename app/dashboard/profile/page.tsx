@@ -1,10 +1,11 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { formatPhone } from '@/lib/utils'
+import { formatPhone, getDisplayName } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import ProfileAvatar from '@/components/ProfileAvatar'
 import PrimaryRoleEditor from '@/components/profile/PrimaryRoleEditor'
+import NicknameEditor from '@/components/profile/NicknameEditor'
 import { format } from 'date-fns'
 import { nb } from 'date-fns/locale'
 import {
@@ -123,9 +124,9 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, role, primary_role, phone, avatar_url')
+    .select('full_name, nickname, role, primary_role, phone, avatar_url')
     .eq('id', user.id)
-    .single() as { data: { full_name: string | null, role: string, primary_role: string | null, phone: string | null, avatar_url: string | null } | null, error: unknown }
+    .single() as { data: { full_name: string | null, nickname: string | null, role: string, primary_role: string | null, phone: string | null, avatar_url: string | null } | null, error: unknown }
 
   const { data: availabilityBlocks } = await supabase
     .from('availability_blocks')
@@ -260,7 +261,7 @@ export default async function ProfilePage() {
   const gigCount = slots.filter((s) => s === 'gig').length
   const todayMs = new Date(today).getTime()
 
-  const displayName = profile?.full_name ?? user.email ?? 'Ukjent brukar'
+  const displayName = getDisplayName(profile, user.email ?? 'Ukjent brukar')
   const roleLabel = profile?.role === 'admin' ? 'Administrator' : 'Lydtekniker'
   const roleTagline = profile?.role === 'admin' ? 'ABC Studio — Admin' : 'Profesjonelt crew-medlem'
 
@@ -312,6 +313,12 @@ export default async function ProfilePage() {
         <div className="flex flex-col gap-1.5">
           <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">Hovudrolle</p>
           <PrimaryRoleEditor userId={user.id} initialValue={profile?.primary_role ?? null} />
+        </div>
+
+        {/* Nickname */}
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">Kallenavn</p>
+          <NicknameEditor userId={user.id} initialValue={profile?.nickname ?? null} />
         </div>
 
         {/* Availability */}

@@ -26,6 +26,7 @@ export interface EditableUser {
   id: string
   email: string
   full_name: string | null
+  nickname: string | null
   role: UserRole
   primary_role: string | null
   is_superadmin: boolean
@@ -47,6 +48,7 @@ export default function EditUserDialog({ open, onOpenChange, user, isSelf }: Pro
   const [status, setStatus] = useState<string | null>(null)
 
   const [fullName, setFullName] = useState(user.full_name ?? '')
+  const [nickname, setNickname] = useState(user.nickname ?? '')
   const [email, setEmail] = useState(user.email)
   const [phone, setPhone] = useState(user.phone ?? '')
   const [role, setRole] = useState<UserRole>(user.role)
@@ -62,6 +64,7 @@ export default function EditUserDialog({ open, onOpenChange, user, isSelf }: Pro
     startTransition(async () => {
       const result = await updateUser(user.id, {
         full_name: fullName.trim() || null,
+        nickname: nickname.trim() || null,
         email: trimmedEmail !== user.email ? trimmedEmail : undefined,
         phone: phone.trim() || null,
         role,
@@ -126,6 +129,16 @@ export default function EditUserDialog({ open, onOpenChange, user, isSelf }: Pro
               id="edit-name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="edit-nickname">Kallenavn</Label>
+            <Input
+              id="edit-nickname"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder="t.d. Tommy, Kalle…"
             />
           </div>
 

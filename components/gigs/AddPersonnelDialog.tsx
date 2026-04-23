@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import type { Profile } from '@/types/database'
+import { getDisplayName } from '@/lib/utils'
 import { createGigAddedNotification } from '@/app/actions/notifications'
 import { buildConflictMap } from '@/lib/gigs/personnel-conflicts'
 
@@ -149,9 +150,11 @@ export default function AddPersonnelDialog({
     setLoading(false)
   }
 
-  const filtered = personnel.filter((p) =>
-    !search || p.full_name?.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = personnel.filter((p) => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return p.full_name?.toLowerCase().includes(q) || p.nickname?.toLowerCase().includes(q)
+  })
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -194,7 +197,7 @@ export default function AddPersonnelDialog({
                     >
                       {checked && '✓'}
                     </span>
-                    <span className="flex-1 truncate">{p.full_name ?? p.id}</span>
+                    <span className="flex-1 truncate">{getDisplayName(p, p.id)}</span>
                     {p.hasConflict && (
                       <span className="text-destructive text-xs shrink-0">⚠ konflikt</span>
                     )}

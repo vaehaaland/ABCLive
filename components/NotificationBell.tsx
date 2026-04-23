@@ -7,6 +7,7 @@ import { nb } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import type { NotificationWithContext } from '@/types/database'
+import { getDisplayName } from '@/lib/utils'
 
 const POLL_INTERVAL_MS = 30_000
 
@@ -37,7 +38,7 @@ export default function NotificationBell() {
     const [{ data }] = await Promise.all([
       supabase
         .from('notifications')
-        .select('*, actor:actor_id(id, full_name, avatar_url), gig:gig_id(id, name)')
+        .select('*, actor:actor_id(id, full_name, nickname, avatar_url), gig:gig_id(id, name)')
         .order('created_at', { ascending: false })
         .limit(50),
       supabase
@@ -62,7 +63,7 @@ export default function NotificationBell() {
   }, [open])
 
   function notificationText(n: NotificationWithContext): string {
-    const actorName = n.actor?.full_name ?? 'Nokon'
+    const actorName = getDisplayName(n.actor, 'Nokon')
     const gigName = n.gig?.name ?? 'eit oppdrag'
     if (n.type === 'gig_added') {
       return `${actorName} la deg til på «${gigName}»`
