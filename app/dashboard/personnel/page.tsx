@@ -180,6 +180,7 @@ export default async function PersonnelPage() {
     return {
       id: p.id,
       full_name: p.full_name,
+      nickname: p.nickname,
       phone: p.phone ? formatPhone(p.phone) : null,
       primary_role: p.primary_role,
       role: p.role,

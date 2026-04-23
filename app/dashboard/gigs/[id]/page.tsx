@@ -24,6 +24,7 @@ import GigFilesSection from '@/components/gigs/GigFilesSection'
 import GigCommentsSection from '@/components/gigs/GigCommentsSection'
 import GigActionsDropdown from '@/components/gigs/GigActionsDropdown'
 import type { GigFile, GigProgramItem, GigStatus, GigType, GigCommentWithAuthor } from '@/types/database'
+import { getDisplayName } from '@/lib/utils'
 
 const statusLabels: Record<GigStatus, string> = {
   draft: 'Utkast',
@@ -51,6 +52,7 @@ type ProgramItemPersonRow = {
   profiles: {
     id: string
     full_name: string | null
+    nickname: string | null
     phone: string | null
     role: string
     avatar_url?: string | null
@@ -94,12 +96,14 @@ type GigPersonnelRow = {
   profiles: {
     id: string
     full_name: string | null
+    nickname: string | null
     phone: string | null
     role: string
     avatar_url?: string | null
   } | {
     id: string
     full_name: string | null
+    nickname: string | null
     phone: string | null
     role: string
     avatar_url?: string | null
@@ -154,7 +158,7 @@ export default async function GigDetailPage({
 
   const { data: personnelRows } = await supabase
     .from('gig_personnel')
-    .select('id, role_on_gig, notes, profiles(id, full_name, phone, role, avatar_url)')
+    .select('id, role_on_gig, notes, profiles(id, full_name, nickname, phone, role, avatar_url)')
     .eq('gig_id', id) as { data: GigPersonnelRow[] | null, error: unknown }
 
   const { data: equipmentRows } = await supabase
@@ -170,7 +174,7 @@ export default async function GigDetailPage({
 
   const { data: commentRows } = await supabase
     .from('gig_comments')
-    .select('*, profiles(id, full_name, avatar_url)')
+    .select('*, profiles(id, full_name, nickname, avatar_url)')
     .eq('gig_id', id)
     .order('created_at', { ascending: true }) as { data: GigCommentWithAuthor[] | null, error: unknown }
 
@@ -195,7 +199,7 @@ export default async function GigDetailPage({
       const [{ data: fetchedItemPersonnel }, { data: fetchedItemEquipment }] = await Promise.all([
         supabase
           .from('gig_program_item_personnel')
-          .select('id, program_item_id, role_on_item, notes, profiles(id, full_name, phone, role, avatar_url)')
+          .select('id, program_item_id, role_on_item, notes, profiles(id, full_name, nickname, phone, role, avatar_url)')
           .in('program_item_id', programItemIds),
         supabase
           .from('gig_program_item_equipment')
@@ -328,7 +332,7 @@ export default async function GigDetailPage({
                           <PersonHoverCard profileId={person.id} name={person.full_name}>
                             <div className="flex items-center gap-2.5">
                               <Avatar src={person.avatar_url} name={person.full_name} size="sm" />
-                              <p className="text-sm font-medium">{person.full_name ?? 'Ukjend'}</p>
+                              <p className="text-sm font-medium">{getDisplayName(person, 'Ukjend')}</p>
                             </div>
                           </PersonHoverCard>
                         ) : (
@@ -470,7 +474,7 @@ export default async function GigDetailPage({
                                         <PersonHoverCard profileId={person.id} name={person.full_name}>
                                           <div className="flex items-center gap-2.5">
                                             <Avatar src={person.avatar_url} name={person.full_name} size="sm" />
-                                            <p className="text-sm font-medium">{person.full_name ?? 'Ukjend'}</p>
+                                            <p className="text-sm font-medium">{getDisplayName(person, 'Ukjend')}</p>
                                           </div>
                                         </PersonHoverCard>
                                       ) : (

@@ -10,6 +10,7 @@ export interface Database {
         Row: {
           id: string
           full_name: string | null
+          nickname: string | null
           role: UserRole
           primary_role: string | null
           phone: string | null
@@ -21,6 +22,7 @@ export interface Database {
         Insert: {
           id: string
           full_name?: string | null
+          nickname?: string | null
           role?: UserRole
           primary_role?: string | null
           phone?: string | null
@@ -31,6 +33,7 @@ export interface Database {
         }
         Update: {
           full_name?: string | null
+          nickname?: string | null
           role?: UserRole
           primary_role?: string | null
           phone?: string | null
@@ -381,13 +384,13 @@ export type GigWithDetails = Gig & {
 
 export type GigComment = Database['public']['Tables']['gig_comments']['Row']
 export type GigCommentWithAuthor = GigComment & {
-  profiles: { id: string; full_name: string | null; avatar_url: string | null }
+  profiles: { id: string; full_name: string | null; nickname: string | null; avatar_url: string | null }
 }
 export type CommentThread = GigCommentWithAuthor & { replies: GigCommentWithAuthor[] }
 
 export type Notification = Database['public']['Tables']['notifications']['Row']
 export type NotificationWithContext = Notification & {
-  actor: { id: string; full_name: string | null; avatar_url: string | null } | null
+  actor: { id: string; full_name: string | null; nickname: string | null; avatar_url: string | null } | null
   gig: { id: string; name: string } | null
 }
 

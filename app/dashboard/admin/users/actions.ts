@@ -21,6 +21,7 @@ export interface CreateUserInput {
 
 export interface UpdateUserInput {
   full_name?: string | null
+  nickname?: string | null
   role?: UserRole
   primary_role?: string | null
   is_superadmin?: boolean
@@ -103,6 +104,7 @@ export async function updateUser(userId: string, input: UpdateUserInput): Promis
 
   const profileUpdate = {
     ...(input.full_name !== undefined && { full_name: input.full_name }),
+    ...(input.nickname !== undefined && { nickname: input.nickname }),
     ...(input.role !== undefined && { role: input.role }),
     ...(input.primary_role !== undefined && { primary_role: input.primary_role }),
     ...(input.is_superadmin !== undefined && { is_superadmin: input.is_superadmin }),

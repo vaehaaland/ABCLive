@@ -12,6 +12,7 @@ export type SlotStatus = 'free' | 'gig' | 'blocked'
 export type PersonWithSlots = {
   id: string
   full_name: string | null
+  nickname: string | null
   phone: string | null
   primary_role: string | null
   role: string
@@ -84,6 +85,9 @@ function PersonCard({ person, dayLabels }: { person: PersonWithSlots; dayLabels:
           <div className="min-w-0">
             <p className="font-heading font-bold text-[0.9375rem] leading-tight truncate">
               {person.full_name ?? '—'}
+              {person.nickname && (
+                <span className="font-normal text-muted-foreground"> ({person.nickname})</span>
+              )}
             </p>
             {person.phone ? (
               <p className="flex items-center gap-1 text-[0.6875rem] text-muted-foreground mt-0.5">
@@ -164,7 +168,12 @@ function PersonRow({ person, dayLabels }: { person: PersonWithSlots; dayLabels: 
           style={!person.avatar_url ? { background: person.avatarGradient, color: 'oklch(0.08 0 0)' } : undefined}
         />
         <div className="min-w-0">
-          <p className="font-heading font-semibold text-sm leading-tight truncate">{person.full_name ?? '—'}</p>
+          <p className="font-heading font-semibold text-sm leading-tight truncate">
+            {person.full_name ?? '—'}
+            {person.nickname && (
+              <span className="font-normal text-muted-foreground"> ({person.nickname})</span>
+            )}
+          </p>
           {person.phone && (
             <p className="flex items-center gap-1 text-[0.6875rem] text-muted-foreground">
               <PhoneIcon className="size-2.5" />{person.phone}
@@ -239,6 +248,7 @@ export function PersonnelGrid({ people, dayLabels, isAdmin }: Props) {
       list = list.filter(
         (p) =>
           p.full_name?.toLowerCase().includes(q) ||
+          p.nickname?.toLowerCase().includes(q) ||
           p.primary_role?.toLowerCase().includes(q) ||
           p.roles.some((r) => r.toLowerCase().includes(q)),
       )

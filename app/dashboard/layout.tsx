@@ -6,6 +6,7 @@ import { NavDropdown } from '@/components/NavDropdown'
 import { Avatar } from '@/components/ui/avatar'
 import LogoutButton from '@/components/LogoutButton'
 import NotificationBell from '@/components/NotificationBell'
+import { getDisplayName } from '@/lib/utils'
 
 export default async function DashboardLayout({
   children,
@@ -19,9 +20,9 @@ export default async function DashboardLayout({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, role, avatar_url, is_superadmin')
+    .select('full_name, nickname, role, avatar_url, is_superadmin')
     .eq('id', user.id)
-    .single() as { data: { full_name: string | null, role: string, avatar_url: string | null, is_superadmin: boolean } | null, error: unknown }
+    .single() as { data: { full_name: string | null, nickname: string | null, role: string, avatar_url: string | null, is_superadmin: boolean } | null, error: unknown }
 
   const isAdmin = profile?.role === 'admin'
   const isSuperadmin = profile?.is_superadmin === true
@@ -65,7 +66,7 @@ export default async function DashboardLayout({
                 size="sm"
               />
               <span className="hidden text-sm font-medium text-muted-foreground sm:block">
-                {profile?.full_name ?? user.email}
+                {getDisplayName(profile, user.email ?? '—')}
               </span>
             </Link>
             <LogoutButton />

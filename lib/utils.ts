@@ -5,6 +5,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function getDisplayName(
+  profile: { full_name?: string | null; nickname?: string | null } | null,
+  fallback = '—'
+): string {
+  return profile?.nickname ?? profile?.full_name ?? fallback
+}
+
 export function formatPhone(phone: string | null | undefined): string {
   if (!phone) return ''
   const digits = phone.replace(/\D/g, '')

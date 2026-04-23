@@ -21,6 +21,7 @@ import {
   SelectTrigger,
 } from '@/components/ui/select'
 import type { Profile } from '@/types/database'
+import { getDisplayName } from '@/lib/utils'
 
 interface Props {
   programItemId: string
@@ -156,14 +157,14 @@ export default function AddProgramItemPersonnelDialog({
             <Select value={selectedId} onValueChange={setSelectedId}>
               <SelectTrigger className="w-full">
                 {selectedId
-                  ? <span className="flex-1 truncate text-left text-sm">{selected?.full_name ?? selectedId}</span>
+                  ? <span className="flex-1 truncate text-left text-sm">{getDisplayName(selected, selectedId)}</span>
                   : <span className="flex-1 text-left text-sm text-muted-foreground">Vel ein teknikar…</span>
                 }
               </SelectTrigger>
               <SelectContent>
                 {personnel.map((person) => (
                   <SelectItem key={person.id} value={person.id}>
-                    <span>{person.full_name ?? person.id}</span>
+                    <span>{getDisplayName(person, person.id)}</span>
                     {person.hasConflict && (
                       <span className="ml-2 text-xs text-destructive">⚠ konflikt</span>
                     )}
@@ -173,7 +174,7 @@ export default function AddProgramItemPersonnelDialog({
             </Select>
             {selected?.hasConflict && (
               <p className="text-sm text-destructive">
-                ⚠ {selected.full_name} har allereie eit overlappande oppdrag eller programpost: «{selected.conflictLabel}».
+                ⚠ {getDisplayName(selected)} har allereie eit overlappande oppdrag eller programpost: «{selected.conflictLabel}».
               </p>
             )}
           </div>

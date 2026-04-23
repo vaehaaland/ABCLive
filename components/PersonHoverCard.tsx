@@ -6,7 +6,7 @@ import { Avatar } from '@/components/ui/avatar'
 import { PhoneIcon, MailIcon, CalendarIcon, BanIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { nb } from 'date-fns/locale'
-import { cn, formatPhone } from '@/lib/utils'
+import { cn, formatPhone, getDisplayName } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 
 const DAY = 86_400_000
@@ -31,6 +31,7 @@ interface AvailabilityBlockRow {
 
 interface FetchedData {
   full_name: string | null
+  nickname: string | null
   phone: string | null
   email: string | null
   avatar_url: string | null
@@ -42,6 +43,7 @@ interface FetchedData {
 
 type ProfilePreview = {
   full_name: string | null
+  nickname: string | null
   phone: string | null
   email: string | null
   avatar_url: string | null
@@ -89,7 +91,7 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
     const [{ data: profile }, { data: assignments }, { data: itemAssignments }, { data: blocks }] = await Promise.all([
       supabase
         .from('profiles')
-        .select('full_name, phone, email, avatar_url, primary_role')
+        .select('full_name, nickname, phone, email, avatar_url, primary_role')
         .eq('id', profileId)
         .single(),
       supabase
@@ -169,6 +171,7 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
 
     setData({
       full_name: profile?.full_name ?? null,
+      nickname: profile?.nickname ?? null,
       phone: profile?.phone ?? null,
       email: profile?.email ?? null,
       avatar_url: profile?.avatar_url ?? null,
@@ -180,7 +183,7 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
     setLoading(false)
   }
 
-  const displayName = data?.full_name ?? name
+  const displayName = data ? getDisplayName(data, name ?? '—') : name
 
   return (
     <PreviewCard.Root openDelay={250} closeDelay={300} onOpenChange={handleOpenChange}>

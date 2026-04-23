@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import Link from 'next/link'
 import { createMentionNotifications } from '@/app/actions/notifications'
 import type { GigCommentWithAuthor, CommentThread } from '@/types/database'
+import { getDisplayName } from '@/lib/utils'
 
 // ── Mention utilities ─────────────────────────────────────────────────────────
 
@@ -86,7 +87,7 @@ function CommentRow({
       <Avatar src={author.avatar_url} name={author.full_name} size="sm" />
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-1.5 flex-wrap">
-          <span className="text-sm font-medium">{author.full_name ?? 'Ukjend'}</span>
+          <span className="text-sm font-medium">{getDisplayName(author, 'Ukjend')}</span>
           <span className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: nb })}
           </span>
@@ -141,7 +142,7 @@ function CommentRow({
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-type MiniProfile = { id: string; full_name: string | null }
+type MiniProfile = { id: string; full_name: string | null; nickname: string | null }
 
 export default function GigCommentsSection({
   gigId,
@@ -173,7 +174,7 @@ export default function GigCommentsSection({
   useEffect(() => {
     supabase
       .from('profiles')
-      .select('id, full_name')
+      .select('id, full_name, nickname')
       .order('full_name')
       .then(({ data }) => setAllProfiles(data ?? []))
   }, [supabase])
@@ -202,7 +203,7 @@ export default function GigCommentsSection({
     if (atMatch) {
       const query = atMatch[1].toLowerCase()
       const filtered = allProfiles
-        .filter(p => p.full_name?.toLowerCase().includes(query))
+        .filter(p => p.full_name?.toLowerCase().includes(query) || p.nickname?.toLowerCase().includes(query))
         .slice(0, 8)
       if (filtered.length > 0) {
         const rect = e.target.getBoundingClientRect()
@@ -284,7 +285,7 @@ export default function GigCommentsSection({
     const { data: inserted, error } = await supabase
       .from('gig_comments')
       .insert({ gig_id: gigId, author_id: currentUserId, body })
-      .select('*, profiles(id, full_name, avatar_url)')
+      .select('*, profiles(id, full_name, nickname, avatar_url)')
       .single()
 
     if (error) {
@@ -313,7 +314,7 @@ export default function GigCommentsSection({
     const { data: inserted, error } = await supabase
       .from('gig_comments')
       .insert({ gig_id: gigId, author_id: currentUserId, parent_id: replyingToId, body })
-      .select('*, profiles(id, full_name, avatar_url)')
+      .select('*, profiles(id, full_name, nickname, avatar_url)')
       .single()
 
     if (error) {
@@ -403,7 +404,7 @@ export default function GigCommentsSection({
                         <CommentRow
                           key={reply.id}
                           comment={reply}
-                          replyTargetName={replyTarget?.profiles?.full_name ?? null}
+                          replyTargetName={replyTarget?.profiles ? getDisplayName(replyTarget.profiles) : null}
                           currentUserId={currentUserId}
                           isAdmin={isAdmin}
                           onReply={() => handleSetReplying(reply.id)}
@@ -497,7 +498,7 @@ export default function GigCommentsSection({
                 }}
                 className={`w-full px-3 py-2 text-left text-sm transition-colors hover:bg-accent ${i === mentionActiveIdx ? 'bg-accent' : ''}`}
               >
-                {p.full_name ?? p.id}
+                {getDisplayName(p, p.id)}
               </button>
             ))
           })()}
