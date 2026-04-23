@@ -238,10 +238,17 @@ export default async function ProfilePage() {
   ]
     .sort((a, b) => b.sort_key.localeCompare(a.sort_key))
     .filter((a) => { if (seen.has(a.id)) return false; seen.add(a.id); return true })
-    .slice(0, 6)
 
   const today = new Date().toISOString().split('T')[0]
   const windowEnd = new Date(new Date(today).getTime() + 6 * DAY).toISOString().split('T')[0]
+
+  const upcomingAssignments = assignments
+    .filter((a) => a.end_date >= today)
+    .sort((a, b) => a.sort_key.localeCompare(b.sort_key))
+
+  const pastAssignments = assignments
+    .filter((a) => a.end_date < today)
+    .slice(0, 6)
 
   const upcomingBlocks = (availabilityBlocks ?? []).filter((b) => b.blocked_until >= today)
   const upcomingForAvailability = assignments
@@ -412,17 +419,17 @@ export default async function ProfilePage() {
           <AvailabilityBlocksManager blocks={availabilityBlocks ?? []} />
         </section>
 
-        {/* Recent assignments */}
+        {/* Upcoming / active assignments */}
         <section className="flex flex-col gap-6">
           <h2 className="font-heading text-xl font-semibold tracking-tight">
-            Siste oppdrag
+            Neste oppdrag
           </h2>
 
-          {assignments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Ingen oppdrag å vise.</p>
+          {upcomingAssignments.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Ingen kommande oppdrag.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {assignments.map((assignment) => {
+              {upcomingAssignments.map((assignment) => {
                 const hue = getCardHue(assignment.id)
                 return (
                   <Link
@@ -430,7 +437,6 @@ export default async function ProfilePage() {
                     href={`/dashboard/gigs/${assignment.id}`}
                     className="group block rounded-xl overflow-hidden transition-transform hover:-translate-y-0.5"
                   >
-                    {/* Colored gradient banner */}
                     <div
                       className="h-28 flex items-end p-4"
                       style={{
@@ -441,8 +447,64 @@ export default async function ProfilePage() {
                         {statusLabels[assignment.status as GigStatus]}
                       </Badge>
                     </div>
+                    <div className="bg-surface-container group-hover:bg-surface-high transition-colors p-4 flex flex-col gap-2">
+                      <p className="font-heading font-semibold text-sm leading-snug line-clamp-1">
+                        {assignment.name}
+                      </p>
+                      {assignment.item_name && (
+                        <p className="text-xs text-primary font-medium">{assignment.item_name}</p>
+                      )}
+                      {assignment.role_label && (
+                        <p className="text-xs text-primary font-medium">{assignment.role_label}</p>
+                      )}
+                      <div className="flex flex-col gap-1 mt-0.5">
+                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <CalendarIcon className="size-3 shrink-0" />
+                          {format(new Date(assignment.start_date), 'd. MMM yyyy', { locale: nb })}
+                        </span>
+                        {assignment.venue && (
+                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <MapPinIcon className="size-3 shrink-0" />
+                            {assignment.venue}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+        </section>
 
-                    {/* Card body */}
+        {/* Past assignments */}
+        <section className="flex flex-col gap-6">
+          <h2 className="font-heading text-xl font-semibold tracking-tight">
+            Siste oppdrag
+          </h2>
+
+          {pastAssignments.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Ingen tidlegare oppdrag å vise.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {pastAssignments.map((assignment) => {
+                const hue = getCardHue(assignment.id)
+                return (
+                  <Link
+                    key={`${assignment.id}-${assignment.item_name ?? 'top'}`}
+                    href={`/dashboard/gigs/${assignment.id}`}
+                    className="group block rounded-xl overflow-hidden transition-transform hover:-translate-y-0.5"
+                  >
+                    <div
+                      className="h-28 flex items-end p-4"
+                      style={{
+                        background: `linear-gradient(135deg, oklch(0.28 0.12 ${hue}) 0%, oklch(0.13 0 0) 100%)`,
+                      }}
+                    >
+                      <Badge variant={statusVariants[assignment.status as GigStatus]}>
+                        {statusLabels[assignment.status as GigStatus]}
+                      </Badge>
+                    </div>
                     <div className="bg-surface-container group-hover:bg-surface-high transition-colors p-4 flex flex-col gap-2">
                       <p className="font-heading font-semibold text-sm leading-snug line-clamp-1">
                         {assignment.name}
