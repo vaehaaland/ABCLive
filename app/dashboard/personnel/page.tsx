@@ -186,6 +186,7 @@ export default async function PersonnelPage() {
       roles: Array.from(rolesMap.get(p.id) ?? []).slice(0, 5),
       busyToday,
       slots,
+      avatar_url: p.avatar_url ?? null,
       avatarGradient: getAvatarGradient(p.id),
       initials: getInitials(p.full_name),
     }

@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { PhoneIcon, LayoutGridIcon, ListIcon, SearchIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Avatar } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
 
 export type SlotStatus = 'free' | 'gig' | 'blocked'
@@ -17,6 +18,7 @@ export type PersonWithSlots = {
   roles: string[]
   busyToday: SlotStatus
   slots: SlotStatus[]
+  avatar_url: string | null
   avatarGradient: string
   initials: string
 }
@@ -73,12 +75,12 @@ function PersonCard({ person, dayLabels }: { person: PersonWithSlots; dayLabels:
       <div className="p-4 flex flex-col gap-3 flex-1">
         {/* Avatar + name */}
         <div className="flex items-center gap-3">
-          <div
-            className="size-[42px] rounded-full flex items-center justify-center text-[0.8125rem] font-bold shrink-0"
-            style={{ background: person.avatarGradient, color: 'oklch(0.08 0 0)' }}
-          >
-            {person.initials}
-          </div>
+          <Avatar
+            src={person.avatar_url}
+            name={person.full_name}
+            size="md"
+            style={!person.avatar_url ? { background: person.avatarGradient, color: 'oklch(0.08 0 0)' } : undefined}
+          />
           <div className="min-w-0">
             <p className="font-heading font-bold text-[0.9375rem] leading-tight truncate">
               {person.full_name ?? '—'}
@@ -155,12 +157,12 @@ function PersonRow({ person, dayLabels }: { person: PersonWithSlots; dayLabels: 
 
       {/* NAMN */}
       <div className="flex items-center gap-3 px-4 py-3 w-[220px] shrink-0">
-        <div
-          className="size-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-          style={{ background: person.avatarGradient, color: 'oklch(0.08 0 0)' }}
-        >
-          {person.initials}
-        </div>
+        <Avatar
+          src={person.avatar_url}
+          name={person.full_name}
+          size="sm"
+          style={!person.avatar_url ? { background: person.avatarGradient, color: 'oklch(0.08 0 0)' } : undefined}
+        />
         <div className="min-w-0">
           <p className="font-heading font-semibold text-sm leading-tight truncate">{person.full_name ?? '—'}</p>
           {person.phone && (
