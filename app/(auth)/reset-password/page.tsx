@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,13 @@ export default function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [sessionReady, setSessionReady] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setSessionReady(!!data.user)
+    })
+  }, [supabase])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -56,38 +64,58 @@ export default function ResetPasswordPage() {
           <CardTitle className="font-heading text-2xl font-bold tracking-tight">
             Nytt passord
           </CardTitle>
-          <CardDescription>Vel eit nytt passord for kontoen din.</CardDescription>
+          <CardDescription>
+            {sessionReady === false
+              ? 'Lenka er ugyldig eller har gått ut.'
+              : 'Vel eit nytt passord for kontoen din.'}
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="password">Nytt passord</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="new-password"
-                minLength={8}
-              />
+          {sessionReady === false ? (
+            <div className="flex flex-col gap-4">
+              <p className="text-sm text-muted-foreground text-center">
+                Tilbakestillingslenka er ikkje lenger gyldig. Be om ei ny lenke.
+              </p>
+              <Link
+                href="/forgot-password"
+                className="text-sm text-primary underline-offset-4 hover:underline text-center"
+              >
+                Send ny tilbakestillingslenke
+              </Link>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="confirm-password">Stadfest passord</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                autoComplete="new-password"
-              />
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Lagrar…' : 'Lagre nytt passord'}
-            </Button>
-          </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="password">Nytt passord</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="new-password"
+                  minLength={8}
+                  disabled={sessionReady === null}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="confirm-password">Stadfest passord</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  autoComplete="new-password"
+                  disabled={sessionReady === null}
+                />
+              </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <Button type="submit" disabled={loading || sessionReady === null}>
+                {loading ? 'Lagrar…' : 'Lagre nytt passord'}
+              </Button>
+            </form>
+          )}
         </CardContent>
       </Card>
     </div>
