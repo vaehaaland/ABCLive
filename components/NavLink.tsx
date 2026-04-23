@@ -17,13 +17,13 @@ export function NavLink({ href, children }: NavLinkProps) {
     <Link
       href={href}
       className={cn(
-        "relative px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-        "text-muted-foreground hover:text-primary hover:bg-surface-high",
+        "relative px-3 py-1.5 text-sm font-medium rounded-lg transition-colors",
+        "text-muted-foreground hover:text-foreground hover:bg-surface-high",
         isActive && [
           "text-primary hover:text-primary hover:bg-transparent",
           "after:absolute after:bottom-[-1px] after:left-2 after:right-2 after:h-[2px]",
           "after:rounded-full after:bg-primary",
-          "after:[box-shadow:0_0_6px_2px_oklch(0.74_0.18_295_/_0.4)]",
+          "after:[box-shadow:0_0_8px_2px_oklch(0.68_0.26_292_/_0.45)]",
         ]
       )}
     >

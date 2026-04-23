@@ -15,6 +15,7 @@ const badgeVariants = cva(
         "status-alert":"bg-destructive/15 text-destructive",
         success:       "bg-emerald-500/15 text-emerald-400",
         gold:          "bg-spotlight-gold/15 text-spotlight-gold",
+        live:          "bg-live-subtle text-live border-live/20",
         outline:       "border-white/15 text-foreground",
         ghost:         "hover:bg-surface-high hover:text-muted-foreground",
         link:          "text-primary underline-offset-4 hover:underline",
