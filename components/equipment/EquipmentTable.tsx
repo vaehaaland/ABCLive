@@ -149,16 +149,16 @@ export function EquipmentTable({ equipment }: Props) {
       </datalist>
 
       {/* Category chips */}
-      <div className="flex flex-wrap gap-2 mb-4 px-4 pt-4">
+      <div className="flex flex-wrap gap-1.5 mb-4 px-4 pt-4">
         {['Alle', ...categories].map(cat => (
           <button
             key={cat}
             onClick={() => setCatFilter(cat)}
             className={cn(
-              'text-xs font-medium px-3 py-1.5 rounded-full transition-colors',
+              'text-xs font-medium px-3 py-1.5 rounded-full transition-colors border',
               catFilter === cat
-                ? 'bg-primary/15 text-primary'
-                : 'bg-surface-high text-muted-foreground hover:text-foreground hover:bg-surface-highest'
+                ? 'bg-primary text-white border-transparent'
+                : 'bg-transparent text-muted-foreground border-white/10 hover:text-foreground hover:bg-surface-high'
             )}
           >
             {cat}
@@ -168,40 +168,40 @@ export function EquipmentTable({ equipment }: Props) {
 
       <Table>
         <TableHeader>
-          <TableRow className="border-white/8 hover:bg-transparent">
+          <TableRow className="border-white/8 hover:bg-transparent bg-surface-high/50">
             <TableHead
-              className="cursor-pointer select-none"
+              className="cursor-pointer select-none text-xs font-semibold text-muted-foreground uppercase tracking-[0.06em]"
               onClick={() => handleSort('name')}
             >
-              <span className="flex items-center">
+              <span className="flex items-center gap-0.5">
                 Namn
                 <SortIcon col="name" sortKey={sortKey} sortDir={sortDir} />
               </span>
             </TableHead>
             <TableHead
-              className="cursor-pointer select-none w-36"
+              className="cursor-pointer select-none w-36 text-xs font-semibold text-muted-foreground uppercase tracking-[0.06em]"
               onClick={() => handleSort('category')}
             >
-              <span className="flex items-center">
+              <span className="flex items-center gap-0.5">
                 Kategori
                 <SortIcon col="category" sortKey={sortKey} sortDir={sortDir} />
               </span>
             </TableHead>
-            <TableHead>Beskriving</TableHead>
+            <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.06em]">Beskriving</TableHead>
             <TableHead
-              className="cursor-pointer select-none w-24"
+              className="cursor-pointer select-none w-24 text-xs font-semibold text-muted-foreground uppercase tracking-[0.06em]"
               onClick={() => handleSort('quantity')}
             >
-              <span className="flex items-center">
+              <span className="flex items-center gap-0.5">
                 Antal
                 <SortIcon col="quantity" sortKey={sortKey} sortDir={sortDir} />
               </span>
             </TableHead>
             <TableHead
-              className="cursor-pointer select-none w-28"
+              className="cursor-pointer select-none w-28 text-xs font-semibold text-muted-foreground uppercase tracking-[0.06em]"
               onClick={() => handleSort('status')}
             >
-              <span className="flex items-center">
+              <span className="flex items-center gap-0.5">
                 Status
                 <SortIcon col="status" sortKey={sortKey} sortDir={sortDir} />
               </span>
@@ -312,8 +312,8 @@ export function EquipmentTable({ equipment }: Props) {
                 {/* Status */}
                 <TableCell>
                   {item.activeBooking !== null ? (
-                    <Badge variant="default">
-                      <span className="inline-block size-1.5 rounded-full bg-primary animate-pulse mr-1" />
+                    <Badge variant="default" className="gap-1.5">
+                      <span className="size-1.5 rounded-full bg-primary animate-pulse shrink-0" />
                       På tur
                     </Badge>
                   ) : (

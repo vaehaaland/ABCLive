@@ -70,7 +70,7 @@ function PersonCard({ person, dayLabels }: { person: PersonWithSlots; dayLabels:
       className="flex flex-col rounded-xl overflow-hidden bg-surface-container hover:bg-surface-high transition-colors"
     >
       {/* Top color stripe */}
-      <div className={cn('h-[3px]', accentClass(person.busyToday))} />
+      <div className={cn('h-[5px]', accentClass(person.busyToday))} />
 
       <div className="p-4 flex flex-col gap-3 flex-1">
         {/* Avatar + name */}
