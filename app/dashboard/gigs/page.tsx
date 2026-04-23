@@ -5,6 +5,7 @@ import { nb } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PastGigsToggle } from '@/components/gigs/PastGigsToggle'
+import { GigSearchInput } from '@/components/gigs/GigSearchInput'
 import { CalendarIcon, MapPinIcon, BuildingIcon } from 'lucide-react'
 import type { Gig, GigStatus } from '@/types/database'
 
@@ -35,15 +36,17 @@ type GigSort = 'date' | 'name'
 export default async function GigsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sort?: string; showPast?: string; view?: string }>
+  searchParams: Promise<{ sort?: string; showPast?: string; view?: string; search?: string }>
 }) {
   const sp = await searchParams
   const sort: GigSort = sp.sort === 'name' ? 'name' : 'date'
   const showPast = sp.showPast === '1'
+  const search = sp.search?.trim() ?? ''
   const baseParams = new URLSearchParams()
   if (sort === 'name') baseParams.set('sort', 'name')
   if (showPast) baseParams.set('showPast', '1')
   if (sp.view === 'mine') baseParams.set('view', 'mine')
+  if (search) baseParams.set('search', search)
 
   const buildHref = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(baseParams)
@@ -91,6 +94,12 @@ export default async function GigsPage({
     }
   }
 
+  if (search) {
+    gigsQuery = gigsQuery.or(
+      `name.ilike.%${search}%,venue.ilike.%${search}%,client.ilike.%${search}%`
+    )
+  }
+
   gigsQuery = sort === 'name'
     ? gigsQuery.order('name', { ascending: true }).order('start_date', { ascending: true })
     : gigsQuery.order('start_date', { ascending: true }).order('name', { ascending: true })
@@ -130,6 +139,8 @@ export default async function GigsPage({
           </div>
         )}
       </div>
+
+      <GigSearchInput defaultValue={search} />
 
       <div className="flex flex-wrap items-center gap-3">
         {isAdmin && (

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { NavLink } from '@/components/NavLink'
+import { NavDropdown } from '@/components/NavDropdown'
 import { Avatar } from '@/components/ui/avatar'
 import LogoutButton from '@/components/LogoutButton'
 import NotificationBell from '@/components/NotificationBell'
@@ -38,17 +39,23 @@ export default async function DashboardLayout({
             <nav className="flex items-center gap-0.5">
               <NavLink href="/dashboard/gigs">Oppdrag</NavLink>
               {isAdmin && (
-                <>
-                  <NavLink href="/dashboard/equipment">Utstyr</NavLink>
-                  <NavLink href="/dashboard/personnel">Personell</NavLink>
-                </>
+                <NavDropdown
+                  label="Ressursar"
+                  links={[
+                    { href: '/dashboard/personnel', label: 'Personell' },
+                    { href: '/dashboard/equipment', label: 'Utstyr' },
+                  ]}
+                />
               )}
               <NavLink href="/dashboard/calendar">Kalender</NavLink>
               {isSuperadmin && (
-                <>
-                  <NavLink href="/dashboard/admin/users">Brukarar</NavLink>
-                  <NavLink href="/dashboard/admin/icloud">iCloud</NavLink>
-                </>
+                <NavDropdown
+                  label="Admin"
+                  links={[
+                    { href: '/dashboard/admin/users', label: 'Brukarar' },
+                    { href: '/dashboard/admin/icloud', label: 'iCloud' },
+                  ]}
+                />
               )}
             </nav>
           </div>
