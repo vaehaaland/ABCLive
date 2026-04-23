@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-export default function ChangePasswordForm() {
+export default function ChangePasswordForm({ onSuccess }: { onSuccess?: () => void }) {
   const supabase = createClient()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -38,6 +38,7 @@ export default function ChangePasswordForm() {
       setSuccess(true)
       setPassword('')
       setConfirmPassword('')
+      onSuccess?.()
     }
     setLoading(false)
   }

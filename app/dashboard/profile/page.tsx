@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import type { GigStatus, AvailabilityBlock } from '@/types/database'
 import AvailabilityBlocksManager from '@/components/profile/AvailabilityBlocksManager'
-import ChangePasswordForm from '@/components/profile/ChangePasswordForm'
+import UserActionsMenu from '@/components/profile/UserActionsMenu'
 
 const statusLabels: Record<GigStatus, string> = {
   draft: 'Utkast',
@@ -371,6 +371,11 @@ export default async function ProfilePage() {
             </div>
           )}
         </div>
+
+        {/* User actions */}
+        <div className="mt-auto pt-4 border-t border-white/[0.06]">
+          <UserActionsMenu />
+        </div>
       </aside>
 
       {/* ── Main content ─────────────────────────────────────────────── */}
@@ -412,14 +417,6 @@ export default async function ProfilePage() {
             Utilgjengelegheit
           </h2>
           <AvailabilityBlocksManager blocks={availabilityBlocks ?? []} />
-        </section>
-
-        {/* Change password */}
-        <section className="flex flex-col gap-6">
-          <h2 className="font-heading text-xl font-semibold tracking-tight">
-            Endre passord
-          </h2>
-          <ChangePasswordForm />
         </section>
 
         {/* Upcoming / active assignments */}
