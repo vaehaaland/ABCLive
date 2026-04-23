@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { PhoneIcon, GridIcon, ListIcon, SearchIcon } from 'lucide-react'
+import { PhoneIcon, LayoutGridIcon, ListIcon, SearchIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
@@ -21,20 +21,39 @@ export type PersonWithSlots = {
   initials: string
 }
 
-const ALL_DAYS_SHORT = ['Ma', 'Ti', 'On', 'To', 'Fr', 'Lø', 'Sø']
-
 function slotColor(slot: SlotStatus) {
   if (slot === 'gig') return 'bg-primary'
   if (slot === 'blocked') return 'bg-live'
   return 'bg-emerald-500'
 }
 
+function accentClass(status: SlotStatus) {
+  if (status === 'gig') return 'bg-primary'
+  if (status === 'blocked') return 'bg-live'
+  return 'bg-emerald-500'
+}
+
 function StatusDot({ status }: { status: SlotStatus }) {
-  const cls =
-    status === 'gig' ? 'bg-primary' :
-    status === 'blocked' ? 'bg-live' :
-    'bg-emerald-500'
-  return <span className={cn('size-2 rounded-full shrink-0', cls)} />
+  return <span className={cn('size-2 rounded-full shrink-0', accentClass(status))} />
+}
+
+function WeekBar({ slots, dayLabels, compact = false }: { slots: SlotStatus[]; dayLabels: string[]; compact?: boolean }) {
+  return (
+    <div className={compact ? '' : 'shrink-0'}>
+      <div className="flex gap-[3px] mb-[3px]">
+        {dayLabels.map((d) => (
+          <span key={d} className={cn('text-center text-[0.5rem] text-muted-foreground/50', compact ? 'w-[14px]' : 'w-[18px]')}>
+            {d}
+          </span>
+        ))}
+      </div>
+      <div className="flex gap-[3px]">
+        {slots.map((slot, i) => (
+          <div key={i} className={cn('rounded-sm', slotColor(slot), compact ? 'w-[14px] h-[5px]' : 'w-[18px] h-[6px]')} />
+        ))}
+      </div>
+    </div>
+  )
 }
 
 function PersonCard({ person, dayLabels }: { person: PersonWithSlots; dayLabels: string[] }) {
@@ -43,20 +62,15 @@ function PersonCard({ person, dayLabels }: { person: PersonWithSlots; dayLabels:
     person.busyToday === 'blocked' ? 'Utilgjengeleg i dag' :
     'Ledig i dag'
 
-  const stripeClass =
-    person.busyToday === 'gig' ? 'bg-primary' :
-    person.busyToday === 'blocked' ? 'bg-live' :
-    'bg-emerald-500'
-
   return (
     <Link
       href={`/dashboard/personnel/${person.id}`}
       className="flex flex-col rounded-xl overflow-hidden bg-surface-container hover:bg-surface-high transition-colors"
     >
       {/* Top color stripe */}
-      <div className={cn('h-[3px]', stripeClass)} />
+      <div className={cn('h-[3px]', accentClass(person.busyToday))} />
 
-      <div className="p-4 flex flex-col gap-3">
+      <div className="p-4 flex flex-col gap-3 flex-1">
         {/* Avatar + name */}
         <div className="flex items-center gap-3">
           <div
@@ -85,7 +99,7 @@ function PersonCard({ person, dayLabels }: { person: PersonWithSlots; dayLabels:
           <p className="text-[0.6rem] font-semibold text-muted-foreground uppercase tracking-[0.08em] mb-1.5">
             Hovudrolle
           </p>
-          <Badge variant="default" className="uppercase text-[0.6rem] tracking-[0.05em]">
+          <Badge variant="default" className="uppercase text-[0.6rem] tracking-[0.05em] h-auto py-1 whitespace-normal text-left leading-tight">
             {person.primary_role ?? person.role}
           </Badge>
         </div>
@@ -109,67 +123,90 @@ function PersonCard({ person, dayLabels }: { person: PersonWithSlots; dayLabels:
           </div>
         )}
 
+        {/* Spacer pushes status+weekbar to bottom */}
+        <div className="flex-1" />
+
         {/* Status dot + week bar */}
-        <div className="flex items-end justify-between gap-3 pt-1">
-          <div className="flex items-center gap-1.5 min-w-0">
+        <div className="flex items-end justify-between gap-3">
+          <div className="flex items-center gap-1.5">
             <StatusDot status={person.busyToday} />
-            <span className="text-xs text-muted-foreground whitespace-nowrap">{statusLabel}</span>
+            <span className="text-xs text-muted-foreground">{statusLabel}</span>
           </div>
-          <div className="shrink-0">
-            <div className="flex gap-[3px] mb-[3px]">
-              {dayLabels.map((d) => (
-                <span key={d} className="w-[18px] text-center text-[0.5rem] text-muted-foreground/50">
-                  {d}
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-[3px]">
-              {person.slots.map((slot, i) => (
-                <div key={i} className={cn('w-[18px] h-[6px] rounded-sm', slotColor(slot))} />
-              ))}
-            </div>
-          </div>
+          <WeekBar slots={person.slots} dayLabels={dayLabels} />
         </div>
       </div>
     </Link>
   )
 }
 
-function PersonRow({ person }: { person: PersonWithSlots }) {
+function PersonRow({ person, dayLabels }: { person: PersonWithSlots; dayLabels: string[] }) {
   const statusLabel =
-    person.busyToday === 'gig' ? 'Opptatt' :
-    person.busyToday === 'blocked' ? 'Utilgjengeleg' :
-    'Ledig'
-  const badgeVariant: 'default' | 'live' | 'success' =
-    person.busyToday === 'gig' ? 'default' :
-    person.busyToday === 'blocked' ? 'live' :
-    'success'
+    person.busyToday === 'gig' ? 'Opptatt i dag' :
+    person.busyToday === 'blocked' ? 'Utilgjengeleg i dag' :
+    'Ledig i dag'
 
   return (
     <Link
       href={`/dashboard/personnel/${person.id}`}
-      className="flex items-center gap-4 px-4 py-3 rounded-xl bg-surface-container hover:bg-surface-high transition-colors"
+      className="group flex items-center gap-0 rounded-xl overflow-hidden bg-surface-container hover:bg-surface-high transition-colors"
     >
-      <div
-        className="size-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-        style={{ background: person.avatarGradient, color: 'oklch(0.08 0 0)' }}
-      >
-        {person.initials}
+      {/* Left accent bar */}
+      <div className={cn('w-[3px] self-stretch shrink-0', accentClass(person.busyToday))} />
+
+      {/* NAMN */}
+      <div className="flex items-center gap-3 px-4 py-3 w-[220px] shrink-0">
+        <div
+          className="size-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+          style={{ background: person.avatarGradient, color: 'oklch(0.08 0 0)' }}
+        >
+          {person.initials}
+        </div>
+        <div className="min-w-0">
+          <p className="font-heading font-semibold text-sm leading-tight truncate">{person.full_name ?? '—'}</p>
+          {person.phone && (
+            <p className="flex items-center gap-1 text-[0.6875rem] text-muted-foreground">
+              <PhoneIcon className="size-2.5" />{person.phone}
+            </p>
+          )}
+        </div>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-heading font-semibold text-sm truncate">{person.full_name ?? '—'}</p>
-        {person.primary_role && (
-          <p className="text-xs text-muted-foreground truncate">{person.primary_role}</p>
-        )}
+
+      {/* HOVUDROLLE */}
+      <div className="px-3 py-3 w-[180px] shrink-0">
+        <Badge variant="default" className="uppercase text-[0.6rem] tracking-[0.05em] h-auto py-1 whitespace-normal leading-tight">
+          {person.primary_role ?? person.role}
+        </Badge>
       </div>
-      <div className="flex flex-wrap gap-1 flex-1 min-w-0">
-        {person.roles.slice(0, 3).map((r) => (
-          <span key={r} className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-surface-highest text-muted-foreground">
-            {r}
-          </span>
-        ))}
+
+      {/* ROLLER PÅ OPPDRAG */}
+      <div className="px-3 py-3 flex-1 min-w-0">
+        <div className="flex flex-wrap gap-1">
+          {person.roles.map((r) => (
+            <span
+              key={r}
+              className="text-[0.6875rem] font-medium px-2 py-0.5 rounded-full bg-surface-highest text-muted-foreground whitespace-nowrap"
+            >
+              {r}
+            </span>
+          ))}
+          {person.roles.length === 0 && (
+            <span className="text-[0.6875rem] text-muted-foreground/40">—</span>
+          )}
+        </div>
       </div>
-      <Badge variant={badgeVariant} className="shrink-0">{statusLabel}</Badge>
+
+      {/* STATUS I DAG */}
+      <div className="px-3 py-3 w-[160px] shrink-0">
+        <div className="flex items-center gap-1.5">
+          <StatusDot status={person.busyToday} />
+          <span className="text-xs text-muted-foreground">{statusLabel}</span>
+        </div>
+      </div>
+
+      {/* DENNE VEKA */}
+      <div className="px-4 py-3 shrink-0">
+        <WeekBar slots={person.slots} dayLabels={dayLabels} compact />
+      </div>
     </Link>
   )
 }
@@ -236,10 +273,10 @@ export function PersonnelGrid({ people, dayLabels, isAdmin }: Props) {
               key={f.key}
               onClick={() => setStatusFilter(f.key)}
               className={cn(
-                'text-xs font-medium px-3 py-1.5 rounded-full transition-colors',
+                'text-xs font-medium px-3 py-1.5 rounded-full transition-colors border',
                 statusFilter === f.key
-                  ? 'bg-surface-highest text-foreground'
-                  : 'bg-surface-high text-muted-foreground hover:text-foreground',
+                  ? 'bg-surface-highest text-foreground border-white/15'
+                  : 'bg-transparent text-muted-foreground border-white/10 hover:text-foreground hover:bg-surface-high',
               )}
             >
               {f.label} ({f.count})
@@ -256,7 +293,7 @@ export function PersonnelGrid({ people, dayLabels, isAdmin }: Props) {
               view === 'grid' ? 'bg-surface-highest text-foreground' : 'text-muted-foreground hover:text-foreground',
             )}
           >
-            <GridIcon className="size-3.5" />
+            <LayoutGridIcon className="size-3.5" />
           </button>
           <button
             onClick={() => setView('list')}
@@ -280,10 +317,31 @@ export function PersonnelGrid({ people, dayLabels, isAdmin }: Props) {
           ))}
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
-          {filtered.map((p) => (
-            <PersonRow key={p.id} person={p} />
-          ))}
+        <div className="rounded-2xl overflow-hidden bg-surface-container">
+          {/* Table headers */}
+          <div className="flex items-center gap-0 px-4 py-2 border-b border-border">
+            <div className="w-[3px] shrink-0" /> {/* accent bar spacer */}
+            <div className="w-[220px] shrink-0 pl-3">
+              <span className="text-[0.6rem] font-semibold text-muted-foreground uppercase tracking-[0.08em]">Namn</span>
+            </div>
+            <div className="w-[180px] shrink-0 px-3">
+              <span className="text-[0.6rem] font-semibold text-muted-foreground uppercase tracking-[0.08em]">Hovudrolle</span>
+            </div>
+            <div className="flex-1 px-3">
+              <span className="text-[0.6rem] font-semibold text-muted-foreground uppercase tracking-[0.08em]">Roller på oppdrag</span>
+            </div>
+            <div className="w-[160px] shrink-0 px-3">
+              <span className="text-[0.6rem] font-semibold text-muted-foreground uppercase tracking-[0.08em]">Status i dag</span>
+            </div>
+            <div className="shrink-0 px-4">
+              <span className="text-[0.6rem] font-semibold text-muted-foreground uppercase tracking-[0.08em]">Denne veka</span>
+            </div>
+          </div>
+          <div className="divide-y divide-border">
+            {filtered.map((p) => (
+              <PersonRow key={p.id} person={p} dayLabels={dayLabels} />
+            ))}
+          </div>
         </div>
       )}
 

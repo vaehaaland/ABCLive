@@ -88,7 +88,16 @@ export default async function PersonnelPage() {
     .select('*')
     .order('full_name') as { data: Profile[] | null; error: unknown }
 
-  // Gig assignments overlapping next 7 days
+  // All-time roles per person (no date filter) — for "Roller på oppdrag" display
+  const { data: allRoles } = await (supabase
+    .from('gig_personnel')
+    .select('profile_id, role_on_gig')
+    .not('role_on_gig', 'is', null)) as {
+      data: { profile_id: string; role_on_gig: string | null }[] | null
+      error: unknown
+    }
+
+  // Gig assignments overlapping next 7 days (for availability calculation only)
   const { data: assignments } = await (supabase
     .from('gig_personnel')
     .select('profile_id, role_on_gig, gigs!inner(id, name, start_date, end_date, status, venue)')
@@ -128,17 +137,20 @@ export default async function PersonnelPage() {
   const gigDatesMap = new Map<string, { start_date: string; end_date: string }[]>()
   const rolesMap = new Map<string, Set<string>>()
 
+  // All-time roles (for display)
+  for (const row of allRoles ?? []) {
+    if (!row.role_on_gig) continue
+    const roles = rolesMap.get(row.profile_id) ?? new Set<string>()
+    roles.add(row.role_on_gig)
+    rolesMap.set(row.profile_id, roles)
+  }
+
+  // Date-windowed assignments (for availability only)
   for (const row of assignments ?? []) {
     if (!row.gigs) continue
     const dates = gigDatesMap.get(row.profile_id) ?? []
     dates.push({ start_date: row.gigs.start_date, end_date: row.gigs.end_date })
     gigDatesMap.set(row.profile_id, dates)
-
-    if (row.role_on_gig) {
-      const roles = rolesMap.get(row.profile_id) ?? new Set<string>()
-      roles.add(row.role_on_gig)
-      rolesMap.set(row.profile_id, roles)
-    }
   }
 
   for (const row of itemAssignments ?? []) {
@@ -171,7 +183,7 @@ export default async function PersonnelPage() {
       phone: p.phone ? formatPhone(p.phone) : null,
       primary_role: p.primary_role,
       role: p.role,
-      roles: Array.from(rolesMap.get(p.id) ?? []),
+      roles: Array.from(rolesMap.get(p.id) ?? []).slice(0, 5),
       busyToday,
       slots,
       avatarGradient: getAvatarGradient(p.id),
