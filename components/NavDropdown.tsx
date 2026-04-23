@@ -58,7 +58,7 @@ export function NavDropdown({ label, links }: NavDropdownProps) {
           Dropdown panel — glassmorphic, matches nav bar aesthetic.
           rounded-xl (was rounded-lg), uses new surface tokens.
         */
-        <div className="absolute left-0 top-full mt-1.5 z-50 min-w-[160px] rounded-xl border border-border bg-[oklch(0.10_0.016_282/0.95)] backdrop-blur-xl shadow-[0_16px_48px_oklch(0_0_0/0.4)] py-1 overflow-hidden">
+        <div className="absolute left-0 top-full mt-1.5 z-50 min-w-[160px] rounded-xl border border-border bg-[oklch(0.10_0.016_282/0.95)] backdrop-blur-xl shadow-[0_4px_16px_oklch(0_0_0/0.25)] py-1 overflow-hidden">
           {links.map((link) => {
             const active = pathname === link.href || pathname.startsWith(link.href + '/')
             return (
