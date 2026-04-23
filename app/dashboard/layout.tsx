@@ -28,11 +28,11 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-background/60 backdrop-blur-[20px]">
-        <div className="container mx-auto flex h-14 items-center justify-between px-4">
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-[oklch(0.09_0.016_282/0.85)] backdrop-blur-xl">
+        <div className="flex h-[52px] items-center justify-between px-6">
           <div className="flex items-center gap-8">
-            <Link href="/dashboard/gigs">
-              <span className="font-heading font-bold text-lg tracking-tight text-foreground">
+            <Link href="/dashboard/gigs" className="shrink-0">
+              <span className="font-heading font-extrabold text-[1rem] tracking-tight bg-gradient-to-r from-primary to-spotlight-gold bg-clip-text text-transparent">
                 ABC Studio
               </span>
             </Link>
@@ -59,18 +59,18 @@ export default async function DashboardLayout({
               )}
             </nav>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <NotificationBell />
             <Link
               href="/dashboard/profile"
-              className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+              className="flex items-center gap-2 rounded-xl px-2.5 py-1 transition-colors hover:bg-surface-high"
             >
               <Avatar
                 src={profile?.avatar_url}
                 name={profile?.full_name}
                 size="sm"
               />
-              <span className="text-sm text-muted-foreground hidden sm:block">
+              <span className="hidden text-sm font-medium text-muted-foreground sm:block">
                 {profile?.full_name ?? user.email}
               </span>
             </Link>
