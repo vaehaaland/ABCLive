@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -9,21 +8,30 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-export default function LoginPage() {
+export default function ResetPasswordPage() {
   const router = useRouter()
   const supabase = createClient()
-
-  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    if (password !== confirmPassword) {
+      setError('Passorda stemmer ikkje overeins.')
+      return
+    }
+    if (password.length < 8) {
+      setError('Passordet må vere minst 8 teikn.')
+      return
+    }
+
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.updateUser({ password })
 
     if (error) {
       setError(error.message)
@@ -36,7 +44,6 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-background overflow-hidden">
-      {/* Stage-light radial glow */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
@@ -46,46 +53,39 @@ export default function LoginPage() {
       />
       <Card className="relative z-10 w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="font-heading text-2xl font-bold tracking-tight">ABC Studio</CardTitle>
-          <CardDescription>Logg inn for å planlegge oppdrag</CardDescription>
+          <CardTitle className="font-heading text-2xl font-bold tracking-tight">
+            Nytt passord
+          </CardTitle>
+          <CardDescription>Vel eit nytt passord for kontoen din.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">E-post</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Passord</Label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-muted-foreground underline-offset-4 hover:underline"
-                >
-                  Glemt passord?
-                </Link>
-              </div>
+              <Label htmlFor="password">Nytt passord</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                autoComplete="current-password"
+                autoComplete="new-password"
+                minLength={8}
               />
             </div>
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
+            <div className="grid gap-2">
+              <Label htmlFor="confirm-password">Stadfest passord</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+              />
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" disabled={loading}>
-              {loading ? 'Logger inn…' : 'Logg inn'}
+              {loading ? 'Lagrar…' : 'Lagre nytt passord'}
             </Button>
           </form>
         </CardContent>
@@ -93,4 +93,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

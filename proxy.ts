@@ -29,14 +29,17 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login')
-  const isDashboard = request.nextUrl.pathname.startsWith('/dashboard')
+  const { pathname } = request.nextUrl
+  const isLoginPage = pathname === '/login'
+  const isDashboard = pathname.startsWith('/dashboard')
 
   if (!user && isDashboard) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && isAuthPage) {
+  // Only redirect logged-in users away from the login page itself, not from
+  // /forgot-password or /reset-password (needed to complete the reset flow)
+  if (user && isLoginPage) {
     return NextResponse.redirect(new URL('/dashboard/gigs', request.url))
   }
 
@@ -44,5 +47,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/login'],
+  matcher: ['/dashboard/:path*', '/login', '/forgot-password', '/reset-password'],
 }
