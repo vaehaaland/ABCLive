@@ -198,7 +198,9 @@ export default async function PersonnelPage() {
       {/* Subnav — full-bleed, matches main navbar width */}
       <div className="border-b border-border bg-surface-low -mx-4 -mt-8">
         <div className="px-6 flex gap-0">
+          {/* TODO: /dashboard/equipment → /app/resource/equipment */}
           <Link href="/dashboard/equipment" className="relative px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border-b-2 border-transparent -mb-px">Utstyr</Link>
+          {/* TODO: /dashboard/personnel → /app/resource/persons */}
           <Link href="/dashboard/personnel" className="relative px-4 py-2.5 text-sm font-medium text-primary border-b-2 border-primary -mb-px">Personell</Link>
         </div>
       </div>

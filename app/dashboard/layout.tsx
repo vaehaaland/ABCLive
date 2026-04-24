@@ -32,18 +32,24 @@ export default async function DashboardLayout({
       <header className="sticky top-0 z-50 w-full border-b border-border bg-[oklch(0.09_0.016_282/0.85)] backdrop-blur-xl">
         <div className="flex h-[52px] items-center justify-between px-6">
           <div className="flex items-center gap-8">
+            {/* TODO: migrate layout to app/app/layout.tsx — update all hrefs from /dashboard/* to /app/* */}
             <Link href="/dashboard/gigs" className="shrink-0">
               <span className="font-heading font-extrabold text-[1rem] tracking-tight bg-gradient-to-r from-primary to-spotlight-gold bg-clip-text text-transparent">
                 ABC Studio
               </span>
             </Link>
             <nav className="flex items-center gap-0.5">
+              {/* TODO: /dashboard/gigs → /app/gigs */}
               <NavLink href="/dashboard/gigs">Oppdrag</NavLink>
               {isAdmin && (
+                // TODO: /dashboard/equipment → /app/resource/equipment
+                // Note: /app/resource/equipment and /app/resource/persons share the /app/resource parent
                 <NavLink href="/dashboard/equipment">Ressursar</NavLink>
               )}
+              {/* TODO: /dashboard/calendar → /app/calendar */}
               <NavLink href="/dashboard/calendar">Kalender</NavLink>
               {isSuperadmin && (
+                // TODO: /dashboard/admin/* → /app/admin/*
                 <NavDropdown
                   label="Admin"
                   links={[
@@ -56,6 +62,7 @@ export default async function DashboardLayout({
           </div>
           <div className="flex items-center gap-2">
             <NotificationBell />
+            {/* TODO: /dashboard/profile → /app/profile */}
             <Link
               href="/dashboard/profile"
               className="flex items-center gap-2 rounded-xl px-2.5 py-1 transition-colors hover:bg-surface-high"

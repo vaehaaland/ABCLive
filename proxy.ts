@@ -31,6 +31,8 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl
   const isLoginPage = pathname === '/login'
+  // TODO: migrate routing from /dashboard/* to /app/* — update matcher and all isDashboard checks
+  // New structure: /app/gigs, /app/resource/equipment, /app/resource/persons, /app/calendar, /app/profile, /app/admin/*
   const isDashboard = pathname.startsWith('/dashboard')
 
   if (!user && isDashboard) {
@@ -40,6 +42,7 @@ export async function proxy(request: NextRequest) {
   // Only redirect logged-in users away from the login page itself, not from
   // /forgot-password or /reset-password (needed to complete the reset flow)
   if (user && isLoginPage) {
+    // TODO: change redirect target to '/app/gigs'
     return NextResponse.redirect(new URL('/dashboard/gigs', request.url))
   }
 
@@ -47,5 +50,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // TODO: update matcher to '/app/:path*' when route migration is complete
   matcher: ['/dashboard/:path*', '/login', '/forgot-password', '/reset-password'],
 }
