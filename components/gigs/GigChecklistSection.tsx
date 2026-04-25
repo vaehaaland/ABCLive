@@ -80,7 +80,7 @@ function ChecklistItemRow({ item, isAdmin, gigId, onOptimisticUpdate, onRemove }
     startTransition(async () => {
       try {
         await removeChecklistItem(item.id, gigId)
-      } catch (e) {
+      } catch {
         toast.error('Kunne ikkje slette punkt')
       }
     })
@@ -218,8 +218,6 @@ export default function GigChecklistSection({
   const [addingItem, setAddingItem] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [initializing, setInitializing] = useState(false)
-  const [isPending, startTransition] = useTransition()
-
   const checkedCount = items.filter(i => i.is_checked).length
   const naCount = items.filter(i => i.is_na).length
   const totalCount = items.length

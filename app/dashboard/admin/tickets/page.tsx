@@ -1,6 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireSuperadmin } from '@/lib/auth/requireSuperadmin'
-import { Badge } from '@/components/ui/badge'
 import {
   Table,
   TableBody,
@@ -22,7 +21,7 @@ export default async function AdminTicketsPage({
 }: {
   searchParams: { status?: string }
 }) {
-  const caller = await requireSuperadmin()
+  await requireSuperadmin()
 
   const admin = createAdminClient()
 

@@ -224,7 +224,7 @@ export default async function PersonnelPage() {
           </Button>
         </div>
 
-        <PersonnelGrid people={people} dayLabels={dayLabels} isAdmin={profile?.role === 'admin'} />
+        <PersonnelGrid people={people} dayLabels={dayLabels} />
       </div>
     </>
   )

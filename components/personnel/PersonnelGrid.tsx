@@ -225,10 +225,9 @@ function PersonRow({ person, dayLabels }: { person: PersonWithSlots; dayLabels: 
 interface Props {
   people: PersonWithSlots[]
   dayLabels: string[]
-  isAdmin: boolean
 }
 
-export function PersonnelGrid({ people, dayLabels, isAdmin }: Props) {
+export function PersonnelGrid({ people, dayLabels }: Props) {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'alle' | SlotStatus>('alle')
   const [view, setView] = useState<'grid' | 'list'>('grid')

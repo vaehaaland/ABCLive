@@ -21,7 +21,7 @@ export default async function TicketDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const caller = await requireSuperadmin()
+  await requireSuperadmin()
 
   const admin = createAdminClient()
 
