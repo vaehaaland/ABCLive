@@ -155,6 +155,7 @@ export interface Database {
           equipment_id: string
           quantity_needed: number
           notes: string | null
+          packed: boolean
         }
         Insert: {
           id?: string
@@ -162,10 +163,12 @@ export interface Database {
           equipment_id: string
           quantity_needed?: number
           notes?: string | null
+          packed?: boolean
         }
         Update: {
           quantity_needed?: number
           notes?: string | null
+          packed?: boolean
         }
       }
       gig_files: {
@@ -352,6 +355,70 @@ export interface Database {
           updated_at?: string
         }
       }
+      checklist_template_items: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          order_index: number
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          order_index?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          title?: string
+          description?: string | null
+          order_index?: number
+          is_active?: boolean
+        }
+        Relationships: []
+      }
+      gig_checklist_items: {
+        Row: {
+          id: string
+          gig_id: string
+          template_item_id: string | null
+          title: string
+          is_checked: boolean
+          is_na: boolean
+          checked_by: string | null
+          checked_at: string | null
+          comment: string | null
+          order_index: number
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          gig_id: string
+          template_item_id?: string | null
+          title: string
+          is_checked?: boolean
+          is_na?: boolean
+          checked_by?: string | null
+          checked_at?: string | null
+          comment?: string | null
+          order_index?: number
+          updated_at?: string
+        }
+        Update: {
+          title?: string
+          is_checked?: boolean
+          is_na?: boolean
+          checked_by?: string | null
+          checked_at?: string | null
+          comment?: string | null
+          order_index?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -396,3 +463,8 @@ export type NotificationWithContext = Notification & {
 
 export type AvailabilityBlock = Database['public']['Tables']['availability_blocks']['Row']
 export type ICloudSettings = Database['public']['Tables']['icloud_settings']['Row']
+export type ChecklistTemplateItem = Database['public']['Tables']['checklist_template_items']['Row']
+export type GigChecklistItem = Database['public']['Tables']['gig_checklist_items']['Row']
+export type GigChecklistItemWithChecker = GigChecklistItem & {
+  checker: { id: string; full_name: string | null; nickname: string | null } | null
+}

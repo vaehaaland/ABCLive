@@ -15,13 +15,7 @@ import {
 } from 'lucide-react'
 import type { GigStatus, AvailabilityBlock } from '@/types/database'
 import { BanIcon } from 'lucide-react'
-
-const statusLabels: Record<GigStatus, string> = {
-  draft: 'Utkast',
-  confirmed: 'Bekrefta',
-  completed: 'Fullført',
-  cancelled: 'Avlyst',
-}
+import { statusLabels } from '@/lib/gig-status'
 
 const statusVariants: Record<GigStatus, 'default' | 'secondary' | 'outline' | 'status-alert'> = {
   draft: 'outline',

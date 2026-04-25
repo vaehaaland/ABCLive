@@ -13,7 +13,6 @@ import AddProgramItemEquipmentDialog from '@/components/gigs/AddProgramItemEquip
 import ProgramItemDialog from '@/components/gigs/ProgramItemDialog'
 import RemovePersonnelButton from '@/components/gigs/RemovePersonnelButton'
 import EditPersonnelRoleInline from '@/components/gigs/EditPersonnelRoleInline'
-import RemoveEquipmentButton from '@/components/gigs/RemoveEquipmentButton'
 import RemoveProgramItemButton from '@/components/gigs/RemoveProgramItemButton'
 import RemoveProgramItemPersonnelButton from '@/components/gigs/RemoveProgramItemPersonnelButton'
 import RemoveProgramItemEquipmentButton from '@/components/gigs/RemoveProgramItemEquipmentButton'
@@ -22,16 +21,17 @@ import { Avatar } from '@/components/ui/avatar'
 import FestivalReportSharingPanel from '@/components/gigs/FestivalReportSharingPanel'
 import GigFilesSection from '@/components/gigs/GigFilesSection'
 import GigCommentsSection from '@/components/gigs/GigCommentsSection'
+import GigChecklistSection from '@/components/gigs/GigChecklistSection'
 import GigActionsDropdown from '@/components/gigs/GigActionsDropdown'
-import type { GigFile, GigProgramItem, GigStatus, GigType, GigCommentWithAuthor } from '@/types/database'
-import { getDisplayName } from '@/lib/utils'
+import GigEquipmentList from '@/components/gigs/GigEquipmentList'
+import type { GigFile, GigProgramItem, GigStatus, GigType, GigCommentWithAuthor, GigChecklistItem } from '@/types/database'
+import { statusLabels } from '@/lib/gig-status'
+import { Cloud } from 'lucide-react'
 
-const statusLabels: Record<GigStatus, string> = {
-  draft: 'Utkast',
-  confirmed: 'Bekrefta',
-  completed: 'Fullført',
-  cancelled: 'Avlyst',
+type GigChecklistItemWithChecker = GigChecklistItem & {
+  checker: { id: string; full_name: string | null; nickname: string | null } | null
 }
+import { getDisplayName } from '@/lib/utils'
 
 function formatProgramItemRange(startAt: string, endAt: string) {
   const start = new Date(startAt)
@@ -87,6 +87,7 @@ type GigDetailRow = {
   price_notes?: string | null
   created_by: string | null
   created_at: string
+  icloud_uid: string | null
 }
 
 type GigPersonnelRow = {
@@ -114,6 +115,7 @@ type GigEquipmentRow = {
   id: string
   quantity_needed: number
   notes: string | null
+  packed: boolean
   equipment: {
     id: string
     name: string
@@ -145,8 +147,8 @@ export default async function GigDetailPage({
   const isAdmin = profile?.role === 'admin'
 
   const gigSelect = isAdmin
-    ? 'id, name, gig_type, public_report_enabled, public_report_slug, venue, client, start_date, end_date, description, status, price, price_notes, created_by, created_at'
-    : 'id, name, gig_type, public_report_enabled, public_report_slug, venue, client, start_date, end_date, description, status, created_by, created_at'
+    ? 'id, name, gig_type, public_report_enabled, public_report_slug, venue, client, start_date, end_date, description, status, price, price_notes, created_by, created_at, icloud_uid'
+    : 'id, name, gig_type, public_report_enabled, public_report_slug, venue, client, start_date, end_date, description, status, created_by, created_at, icloud_uid'
 
   const { data: gig } = await supabase
     .from('gigs')
@@ -163,7 +165,7 @@ export default async function GigDetailPage({
 
   const { data: equipmentRows } = await supabase
     .from('gig_equipment')
-    .select('id, quantity_needed, notes, equipment(id, name, category, quantity)')
+    .select('id, quantity_needed, notes, packed, equipment(id, name, category, quantity)')
     .eq('gig_id', id) as { data: GigEquipmentRow[] | null, error: unknown }
 
   const { data: fileRows } = await supabase
@@ -177,6 +179,17 @@ export default async function GigDetailPage({
     .select('*, profiles(id, full_name, nickname, avatar_url)')
     .eq('gig_id', id)
     .order('created_at', { ascending: true }) as { data: GigCommentWithAuthor[] | null, error: unknown }
+
+  const { data: checklistRows } = await supabase
+    .from('gig_checklist_items')
+    .select('*, checker:checked_by(id, full_name, nickname)')
+    .eq('gig_id', id)
+    .order('order_index', { ascending: true }) as { data: GigChecklistItemWithChecker[] | null, error: unknown }
+
+  const { count: templateCount } = await supabase
+    .from('checklist_template_items')
+    .select('id', { count: 'exact', head: true })
+    .eq('is_active', true)
 
   const isFestival = gig.gig_type === 'festival'
 
@@ -245,6 +258,9 @@ export default async function GigDetailPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {gig.icloud_uid && (
+            <Cloud className="h-4 w-4 text-muted-foreground/50 shrink-0" aria-label="Synkronisert frå iCloud" />
+          )}
           <Badge variant={
             gig.status === 'confirmed' ? 'default' :
             gig.status === 'completed' ? 'success' :
@@ -365,29 +381,12 @@ export default async function GigDetailPage({
             )}
           </CardHeader>
           <CardContent>
-            {!equipmentRows?.length ? (
-              <p className="text-sm text-muted-foreground">
-                {isFestival ? 'Ingen utstyr lagt til på festivalnivå.' : 'Ingen utstyr lagt til.'}
-              </p>
-            ) : (
-              <ul className="flex flex-col gap-1">
-                {equipmentRows.map((row) => {
-                  const item = Array.isArray(row.equipment) ? row.equipment[0] : row.equipment
-                  return (
-                    <li key={row.id} className="flex items-center justify-between py-1.5">
-                      <div>
-                        <p className="text-sm font-medium">{item?.name ?? 'Ukjend'}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {row.quantity_needed} stk
-                          {item?.category && ` · ${item.category}`}
-                        </p>
-                      </div>
-                      {isAdmin && <RemoveEquipmentButton assignmentId={row.id} />}
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
+            <GigEquipmentList
+              initialRows={equipmentRows ?? []}
+              gigId={gig.id}
+              isAdmin={isAdmin}
+              emptyLabel={isFestival ? 'Ingen utstyr lagt til på festivalnivå.' : 'Ingen utstyr lagt til.'}
+            />
           </CardContent>
         </Card>
       </div>
@@ -543,7 +542,13 @@ export default async function GigDetailPage({
         />
       </div>
 
-      <div className="lg:sticky lg:top-6 lg:self-start">
+      <div className="flex flex-col gap-6 lg:sticky lg:top-6 lg:self-start">
+        <GigChecklistSection
+          gigId={gig.id}
+          isAdmin={isAdmin}
+          initialItems={checklistRows ?? []}
+          hasTemplate={(templateCount ?? 0) > 0}
+        />
         <GigCommentsSection
           gigId={gig.id}
           currentUserId={user!.id}

@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import Link from 'next/link'
-import { createMentionNotifications } from '@/app/actions/notifications'
 import type { GigCommentWithAuthor, CommentThread } from '@/types/database'
 import { getDisplayName } from '@/lib/utils'
 
@@ -18,13 +17,6 @@ import { getDisplayName } from '@/lib/utils'
 
 const MENTION_REGEX = /@\[([^\]]+)\]\(([a-f0-9-]{36})\)/g
 
-function parseMentionIds(body: string): string[] {
-  const ids: string[] = []
-  let m: RegExpExecArray | null
-  MENTION_REGEX.lastIndex = 0
-  while ((m = MENTION_REGEX.exec(body)) !== null) ids.push(m[2])
-  return [...new Set(ids)]
-}
 
 function renderCommentBody(body: string): React.ReactNode {
   const parts: React.ReactNode[] = []
@@ -293,15 +285,6 @@ export default function GigCommentsSection({
     } else {
       setComments(prev => [...prev, inserted as GigCommentWithAuthor])
       setNewCommentBody('')
-      const mentionIds = parseMentionIds(body)
-      if (mentionIds.length > 0) {
-        createMentionNotifications(
-          (inserted as GigCommentWithAuthor).id,
-          gigId,
-          mentionIds,
-          currentUserId,
-        ).catch(() => {})
-      }
     }
     setSubmitting(false)
   }
@@ -323,15 +306,6 @@ export default function GigCommentsSection({
       setComments(prev => [...prev, inserted as GigCommentWithAuthor])
       setReplyBody('')
       setReplyingToId(null)
-      const mentionIds = parseMentionIds(body)
-      if (mentionIds.length > 0) {
-        createMentionNotifications(
-          (inserted as GigCommentWithAuthor).id,
-          gigId,
-          mentionIds,
-          currentUserId,
-        ).catch(() => {})
-      }
     }
     setSubmitting(false)
   }

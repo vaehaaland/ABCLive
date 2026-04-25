@@ -22,29 +22,17 @@ import {
   ListIcon,
   PlusIcon,
   CloudUploadIcon,
+  Cloud,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Gig, GigStatus } from '@/types/database'
-
-const statusLabels: Record<GigStatus, string> = {
-  draft: 'Utkast',
-  confirmed: 'Bekrefta',
-  completed: 'Fullført',
-  cancelled: 'Avlyst',
-}
+import { statusLabels, statusAccentClass } from '@/lib/gig-status'
 
 const statusVariants: Record<GigStatus, 'default' | 'secondary' | 'success' | 'destructive'> = {
   draft: 'secondary',
   confirmed: 'default',
   completed: 'success',
   cancelled: 'destructive',
-}
-
-const accentClass: Record<GigStatus, string> = {
-  confirmed: 'bg-primary',
-  completed: 'bg-emerald-500',
-  draft: 'bg-surface-highest',
-  cancelled: 'bg-destructive',
 }
 
 type GigSort = 'date' | 'name'
@@ -239,7 +227,7 @@ export default async function GigsPage({
   const renderGigCard = (gig: Gig) => {
     const statusLabel = statusLabels[gig.status as GigStatus]
     const statusVariant = statusVariants[gig.status as GigStatus]
-    const accent = accentClass[gig.status as GigStatus]
+    const accent = statusAccentClass[gig.status as GigStatus]
     const formattedDate =
       gig.start_date === gig.end_date
         ? format(new Date(gig.start_date), 'd. MMM yyyy', { locale: nb })
@@ -277,9 +265,12 @@ export default async function GigsPage({
                 </span>
               )}
             </div>
-            <Badge variant={statusVariant} className="shrink-0">
-              {statusLabel}
-            </Badge>
+            <div className="flex items-center gap-2 shrink-0">
+              {gig.icloud_uid && (
+                <Cloud className="h-3.5 w-3.5 text-muted-foreground/40" aria-label="Synkronisert frå iCloud" />
+              )}
+              <Badge variant={statusVariant}>{statusLabel}</Badge>
+            </div>
           </div>
         </Link>
       )
@@ -295,6 +286,9 @@ export default async function GigsPage({
         <div className="flex-1 p-4 min-w-0 flex flex-col gap-1.5">
           <div className="flex items-start justify-between gap-2">
             <Badge variant={statusVariant}>{statusLabel}</Badge>
+            {gig.icloud_uid && (
+              <Cloud className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0 mt-0.5" aria-label="Synkronisert frå iCloud" />
+            )}
           </div>
           <p className="font-heading font-bold text-[0.9375rem] leading-snug tracking-[-0.02em] text-foreground line-clamp-2">
             {gig.name}

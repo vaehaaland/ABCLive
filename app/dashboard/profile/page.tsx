@@ -18,13 +18,7 @@ import {
 import type { GigStatus, AvailabilityBlock } from '@/types/database'
 import AvailabilityBlocksManager from '@/components/profile/AvailabilityBlocksManager'
 import UserActionsMenu from '@/components/profile/UserActionsMenu'
-
-const statusLabels: Record<GigStatus, string> = {
-  draft: 'Utkast',
-  confirmed: 'Bekrefta',
-  completed: 'Fullført',
-  cancelled: 'Avlyst',
-}
+import { statusLabels } from '@/lib/gig-status'
 
 const statusVariants: Record<GigStatus, 'default' | 'secondary' | 'outline' | 'status-alert'> = {
   draft: 'outline',

@@ -55,6 +55,7 @@ export default async function DashboardLayout({
                   links={[
                     { href: '/dashboard/admin/users', label: 'Brukarar' },
                     { href: '/dashboard/admin/icloud', label: 'iCloud' },
+                    { href: '/dashboard/admin/checklist', label: 'Sjekkliste' },
                   ]}
                 />
               )}
