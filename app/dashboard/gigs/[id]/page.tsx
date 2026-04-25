@@ -26,7 +26,7 @@ import GigActionsDropdown from '@/components/gigs/GigActionsDropdown'
 import GigEquipmentList from '@/components/gigs/GigEquipmentList'
 import type { GigFile, GigProgramItem, GigStatus, GigType, GigCommentWithAuthor, GigChecklistItem } from '@/types/database'
 import { statusLabels } from '@/lib/gig-status'
-import { Cloud } from 'lucide-react'
+import { CheckCircle2, Clock3, Cloud, XCircle } from 'lucide-react'
 
 type GigChecklistItemWithChecker = GigChecklistItem & {
   checker: { id: string; full_name: string | null; nickname: string | null } | null
@@ -94,6 +94,9 @@ type GigPersonnelRow = {
   id: string
   role_on_gig: string | null
   notes: string | null
+  assignment_status: 'pending' | 'accepted' | 'declined'
+  responded_at: string | null
+  response_note: string | null
   profiles: {
     id: string
     full_name: string | null
@@ -131,11 +134,15 @@ type GigEquipmentRow = {
 
 export default async function GigDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ showDeclined?: string }>
 }) {
   const { id } = await params
+  const resolvedSearchParams = await searchParams
   const supabase = await createClient()
+  const showDeclined = resolvedSearchParams.showDeclined === '1'
 
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase
@@ -160,8 +167,11 @@ export default async function GigDetailPage({
 
   const { data: personnelRows } = await supabase
     .from('gig_personnel')
-    .select('id, role_on_gig, notes, profiles(id, full_name, nickname, phone, role, avatar_url)')
+    .select('id, role_on_gig, notes, assignment_status, responded_at, response_note, profiles(id, full_name, nickname, phone, role, avatar_url)')
     .eq('gig_id', id) as { data: GigPersonnelRow[] | null, error: unknown }
+
+  const visiblePersonnelRows = (personnelRows ?? []).filter((row) => showDeclined || row.assignment_status !== 'declined')
+  const declinedCount = (personnelRows ?? []).filter((row) => row.assignment_status === 'declined').length
 
   const { data: equipmentRows } = await supabase
     .from('gig_equipment')
@@ -321,7 +331,16 @@ export default async function GigDetailPage({
       <div className={`grid gap-6 ${isFestival ? 'xl:grid-cols-[1fr_1fr]' : ''}`}>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base">{isFestival ? 'Festivalcrew' : 'Personell'}</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-base">{isFestival ? 'Festivalcrew' : 'Personell'}</CardTitle>
+              {declinedCount > 0 && (
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href={showDeclined ? `/dashboard/gigs/${gig.id}` : `/dashboard/gigs/${gig.id}?showDeclined=1`}>
+                    {showDeclined ? 'Skjul avslått' : `Vis avslått (${declinedCount})`}
+                  </Link>
+                </Button>
+              )}
+            </div>
             {isAdmin && (
               <AddPersonnelDialog
                 gigId={gig.id}
@@ -332,14 +351,28 @@ export default async function GigDetailPage({
             )}
           </CardHeader>
           <CardContent>
-            {!personnelRows?.length ? (
+            {!visiblePersonnelRows.length ? (
               <p className="text-sm text-muted-foreground">
-                {isFestival ? 'Ingen teknikarar lagt til på festivalnivå.' : 'Ingen teknikarar lagt til.'}
+                {declinedCount > 0
+                  ? 'Alle forespurnader er avslått i gjeldande visning.'
+                  : isFestival ? 'Ingen teknikarar lagt til på festivalnivå.' : 'Ingen teknikarar lagt til.'}
               </p>
             ) : (
               <ul className="flex flex-col gap-1">
-                {personnelRows.map((row) => {
+                {visiblePersonnelRows.map((row) => {
                   const person = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles
+                  const statusBadge = row.assignment_status === 'accepted'
+                    ? <Badge variant="success"><CheckCircle2 className="h-3 w-3" /> Akseptert</Badge>
+                    : row.assignment_status === 'declined'
+                      ? <Badge variant="destructive"><XCircle className="h-3 w-3" /> Avslått</Badge>
+                      : <Badge variant="gold"><Clock3 className="h-3 w-3" /> Avventar</Badge>
+                  const declinedTooltip = row.assignment_status === 'declined'
+                    ? [
+                        row.response_note ? `Notat: ${row.response_note}` : null,
+                        row.responded_at ? `Svara: ${format(new Date(row.responded_at), 'd. MMM yyyy HH:mm', { locale: nb })}` : null,
+                      ].filter(Boolean).join(' · ')
+                    : ''
+
                   return (
                     <li key={row.id} className="flex items-center justify-between py-1.5">
                       <div className="flex items-center gap-2.5">
@@ -357,6 +390,9 @@ export default async function GigDetailPage({
                           ? <EditPersonnelRoleInline assignmentId={row.id} currentRole={row.role_on_gig ?? null} />
                           : row.role_on_gig && <Badge variant="gold">{row.role_on_gig}</Badge>
                         }
+                        <span title={declinedTooltip || undefined}>
+                          {statusBadge}
+                        </span>
                       </div>
                       {isAdmin && <RemovePersonnelButton assignmentId={row.id} />}
                     </li>
