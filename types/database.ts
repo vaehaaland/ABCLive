@@ -1,6 +1,7 @@
 export type UserRole = 'admin' | 'technician'
 export type GigStatus = 'draft' | 'confirmed' | 'completed' | 'cancelled'
 export type GigType = 'single' | 'festival'
+export type GigAssignmentStatus = 'pending' | 'accepted' | 'declined'
 export type NotificationType = 'gig_added' | 'comment_mention' | 'ticket_created'
 export type TicketStatus = 'reported' | 'open' | 'in_progress' | 'implemented' | 'not_implemented' | 'closed'
 
@@ -134,6 +135,11 @@ export interface Database {
           id: string
           gig_id: string
           profile_id: string
+          assignment_status: GigAssignmentStatus
+          assigned_by: string | null
+          assigned_at: string
+          responded_at: string | null
+          response_note: string | null
           role_on_gig: string | null
           notes: string | null
         }
@@ -141,10 +147,20 @@ export interface Database {
           id?: string
           gig_id: string
           profile_id: string
+          assignment_status?: GigAssignmentStatus
+          assigned_by?: string | null
+          assigned_at?: string
+          responded_at?: string | null
+          response_note?: string | null
           role_on_gig?: string | null
           notes?: string | null
         }
         Update: {
+          assignment_status?: GigAssignmentStatus
+          assigned_by?: string | null
+          assigned_at?: string
+          responded_at?: string | null
+          response_note?: string | null
           role_on_gig?: string | null
           notes?: string | null
         }
