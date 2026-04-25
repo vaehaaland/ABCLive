@@ -327,7 +327,6 @@ export default async function GigDetailPage({
                 gigId={gig.id}
                 gigStartDate={gig.start_date}
                 gigEndDate={gig.end_date}
-                currentUserId={user!.id}
                 dialogTitle={isFestival ? 'Legg til festivalcrew' : 'Legg til teknikar'}
               />
             )}
