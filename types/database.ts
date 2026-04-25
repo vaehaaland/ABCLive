@@ -2,7 +2,7 @@ export type UserRole = 'admin' | 'technician'
 export type GigStatus = 'draft' | 'confirmed' | 'completed' | 'cancelled'
 export type GigType = 'single' | 'festival'
 export type GigAssignmentStatus = 'pending' | 'accepted' | 'declined'
-export type NotificationType = 'gig_added' | 'comment_mention' | 'ticket_created'
+export type NotificationType = 'gig_added' | 'gig_assignment_request' | 'comment_mention' | 'ticket_created'
 export type TicketStatus = 'reported' | 'open' | 'in_progress' | 'implemented' | 'not_implemented' | 'closed'
 
 export interface Database {

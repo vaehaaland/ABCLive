@@ -17,6 +17,21 @@ export async function createGigAddedNotification(
   })
 }
 
+export async function createGigAssignmentRequestNotification(
+  gigId: string,
+  profileId: string,
+  actorId: string,
+): Promise<void> {
+  if (profileId === actorId) return
+  const db = createAdminClient()
+  await db.from('notifications').insert({
+    user_id: profileId,
+    actor_id: actorId,
+    type: 'gig_assignment_request',
+    gig_id: gigId,
+  })
+}
+
 export async function createTicketCreatedNotification(
   ticketId: string,
   profileId: string,
@@ -30,4 +45,3 @@ export async function createTicketCreatedNotification(
     ticket_id: ticketId,
   })
 }
-

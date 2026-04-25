@@ -57,8 +57,14 @@ export default function NotificationBell() {
     if (n.type === 'ticket_created' && n.ticket_id) {
       router.push(`/dashboard/admin/tickets/${n.ticket_id}`)
       setOpen(false)
+      return
     }
-    // Other notification types can be handled here if needed
+
+    if (n.type === 'gig_assignment_request' && n.gig_id) {
+      router.push(`/dashboard/gigs/${n.gig_id}/respond`)
+      setOpen(false)
+      return
+    }
   }
 
   function notificationText(n: NotificationWithContext): string {
@@ -66,6 +72,9 @@ export default function NotificationBell() {
     const gigName = n.gig?.name ?? 'eit oppdrag'
     if (n.type === 'gig_added') {
       return `${actorName} la deg til på «${gigName}»`
+    }
+    if (n.type === 'gig_assignment_request') {
+      return `${actorName} sende deg oppdragsførespurnad for «${gigName}»`
     }
     if (n.type === 'comment_mention') {
       return `${actorName} nemnte deg i ein kommentar på «${gigName}»`
@@ -115,7 +124,7 @@ export default function NotificationBell() {
             {!loading && notifications.map(n => (
               <div
                 key={n.id}
-                className={`flex gap-3 px-4 py-3 ${!n.read ? 'bg-primary/[0.05]' : ''} ${n.type === 'ticket_created' ? 'cursor-pointer hover:bg-primary/[0.08]' : ''}`}
+                className={`flex gap-3 px-4 py-3 ${!n.read ? 'bg-primary/[0.05]' : ''} ${(n.type === 'ticket_created' || n.type === 'gig_assignment_request') ? 'cursor-pointer hover:bg-primary/[0.08]' : ''}`}
                 onClick={() => handleNotificationClick(n)}
               >
                 <div className="flex-1 min-w-0">
