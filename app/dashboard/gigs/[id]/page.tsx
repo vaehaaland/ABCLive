@@ -167,7 +167,7 @@ export default async function GigDetailPage({
 
   const { data: personnelRows } = await supabase
     .from('gig_personnel')
-    .select('id, role_on_gig, notes, assignment_status, responded_at, response_note, profiles(id, full_name, nickname, phone, role, avatar_url)')
+    .select('id, role_on_gig, notes, assignment_status, responded_at, response_note, profiles!gig_personnel_profile_id_fkey(id, full_name, nickname, phone, role, avatar_url)')
     .eq('gig_id', id) as { data: GigPersonnelRow[] | null, error: unknown }
 
   const visiblePersonnelRows = (personnelRows ?? []).filter((row) => showDeclined || row.assignment_status !== 'declined')

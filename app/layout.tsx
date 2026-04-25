@@ -29,7 +29,7 @@ export default function RootLayout({
       lang="no"
       className={`${manrope.variable} ${inter.variable} dark h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background">{children}</body>
+      <body className="min-h-full flex flex-col bg-background" suppressHydrationWarning>{children}</body>
     </html>
   );
 }

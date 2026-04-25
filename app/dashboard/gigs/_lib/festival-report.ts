@@ -286,7 +286,7 @@ async function fetchFestivalReportDataByGigId(
   const [{ data: personnelRows }, { data: equipmentRows }, { data: programItems }] = await Promise.all([
     supabase
       .from('gig_personnel')
-      .select('id, role_on_gig, profiles(id, full_name)')
+      .select('id, role_on_gig, profiles!gig_personnel_profile_id_fkey(id, full_name)')
       .eq('gig_id', gigId) as Promise<{ data: ReportCrewRow[] | null }>,
     supabase
       .from('gig_equipment')
