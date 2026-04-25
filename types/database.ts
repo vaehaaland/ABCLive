@@ -338,6 +338,112 @@ export interface Database {
           read?: boolean
         }
       }
+      mobile_push_tokens: {
+        Row: {
+          id: string
+          profile_id: string
+          expo_push_token: string
+          platform: 'ios' | 'android'
+          is_active: boolean
+          last_seen_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          expo_push_token: string
+          platform: 'ios' | 'android'
+          is_active?: boolean
+          last_seen_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          profile_id?: string
+          expo_push_token?: string
+          platform?: 'ios' | 'android'
+          is_active?: boolean
+          last_seen_at?: string | null
+          updated_at?: string
+        }
+      }
+      notification_outbox: {
+        Row: {
+          id: string
+          notification_id: string | null
+          profile_id: string
+          title: string
+          body: string
+          payload: Record<string, unknown>
+          status: 'pending' | 'processing' | 'retry' | 'sent' | 'failed'
+          attempt_count: number
+          next_retry_at: string
+          last_error: string | null
+          sent_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          notification_id?: string | null
+          profile_id: string
+          title: string
+          body: string
+          payload?: Record<string, unknown>
+          status?: 'pending' | 'processing' | 'retry' | 'sent' | 'failed'
+          attempt_count?: number
+          next_retry_at?: string
+          last_error?: string | null
+          sent_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          notification_id?: string | null
+          profile_id?: string
+          title?: string
+          body?: string
+          payload?: Record<string, unknown>
+          status?: 'pending' | 'processing' | 'retry' | 'sent' | 'failed'
+          attempt_count?: number
+          next_retry_at?: string
+          last_error?: string | null
+          sent_at?: string | null
+          updated_at?: string
+        }
+      }
+      notification_push_attempts: {
+        Row: {
+          id: string
+          outbox_id: string
+          token_id: string | null
+          expo_ticket_id: string | null
+          status: 'ok' | 'error'
+          error_code: string | null
+          error_message: string | null
+          response: Record<string, unknown> | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          outbox_id: string
+          token_id?: string | null
+          expo_ticket_id?: string | null
+          status: 'ok' | 'error'
+          error_code?: string | null
+          error_message?: string | null
+          response?: Record<string, unknown> | null
+          created_at?: string
+        }
+        Update: {
+          expo_ticket_id?: string | null
+          status?: 'ok' | 'error'
+          error_code?: string | null
+          error_message?: string | null
+          response?: Record<string, unknown> | null
+        }
+      }
       availability_blocks: {
         Row: {
           id: string
@@ -577,3 +683,6 @@ export type GigChecklistItemWithChecker = GigChecklistItem & {
 
 export type Ticket = Database['public']['Tables']['tickets']['Row']
 export type TicketLog = Database['public']['Tables']['ticket_logs']['Row']
+export type MobilePushToken = Database['public']['Tables']['mobile_push_tokens']['Row']
+export type NotificationOutbox = Database['public']['Tables']['notification_outbox']['Row']
+export type NotificationPushAttempt = Database['public']['Tables']['notification_push_attempts']['Row']
