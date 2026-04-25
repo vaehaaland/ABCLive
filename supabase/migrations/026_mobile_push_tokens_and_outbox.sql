@@ -1,4 +1,4 @@
--- Migration 025: mobile push tokens and push outbox delivery pipeline
+-- Migration 026: mobile push tokens and push outbox delivery pipeline
 
 CREATE TABLE public.mobile_push_tokens (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
