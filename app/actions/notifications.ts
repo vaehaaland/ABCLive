@@ -17,3 +17,17 @@ export async function createGigAddedNotification(
   })
 }
 
+export async function createTicketCreatedNotification(
+  ticketId: string,
+  profileId: string,
+  actorId: string,
+): Promise<void> {
+  const db = createAdminClient()
+  await db.from('notifications').insert({
+    user_id: profileId,
+    actor_id: actorId,
+    type: 'ticket_created',
+    ticket_id: ticketId,
+  })
+}
+

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { BellIcon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { nb } from 'date-fns/locale'
@@ -13,6 +14,7 @@ const POLL_INTERVAL_MS = 30_000
 
 export default function NotificationBell() {
   const supabase = createClient()
+  const router = useRouter()
   const [unreadCount, setUnreadCount] = useState(0)
   const [open, setOpen] = useState(false)
   const [notifications, setNotifications] = useState<NotificationWithContext[]>([])
@@ -38,7 +40,7 @@ export default function NotificationBell() {
     const [{ data }] = await Promise.all([
       supabase
         .from('notifications')
-        .select('*, actor:actor_id(id, full_name, nickname, avatar_url), gig:gig_id(id, name)')
+        .select('*, actor:actor_id(id, full_name, nickname, avatar_url), gig:gig_id(id, name), ticket:ticket_id(id, title)')
         .order('created_at', { ascending: false })
         .limit(50),
       supabase
@@ -51,22 +53,26 @@ export default function NotificationBell() {
     setUnreadCount(0)
   }
 
-  useEffect(() => {
-    if (!open) return
-    function handleClick(e: MouseEvent) {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
+  function handleNotificationClick(n: NotificationWithContext) {
+    if (n.type === 'ticket_created' && n.ticket_id) {
+      router.push(`/dashboard/admin/tickets/${n.ticket_id}`)
+      setOpen(false)
     }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [open])
+    // Other notification types can be handled here if needed
+  }
 
   function notificationText(n: NotificationWithContext): string {
     const actorName = getDisplayName(n.actor, 'Nokon')
     const gigName = n.gig?.name ?? 'eit oppdrag'
     if (n.type === 'gig_added') {
       return `${actorName} la deg til på «${gigName}»`
+    }
+    if (n.type === 'comment_mention') {
+      return `${actorName} nemnte deg i ein kommentar på «${gigName}»`
+    }
+    if (n.type === 'ticket_created') {
+      const ticketTitle = n.ticket?.title ?? 'ein ticket'
+      return `Ny ticket: «${ticketTitle}»`
     }
     return `${actorName} nemnte deg i ein kommentar på «${gigName}»`
   }
@@ -109,7 +115,8 @@ export default function NotificationBell() {
             {!loading && notifications.map(n => (
               <div
                 key={n.id}
-                className={`flex gap-3 px-4 py-3 ${!n.read ? 'bg-primary/[0.05]' : ''}`}
+                className={`flex gap-3 px-4 py-3 ${!n.read ? 'bg-primary/[0.05]' : ''} ${n.type === 'ticket_created' ? 'cursor-pointer hover:bg-primary/[0.08]' : ''}`}
+                onClick={() => handleNotificationClick(n)}
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm leading-snug">{notificationText(n)}</p>

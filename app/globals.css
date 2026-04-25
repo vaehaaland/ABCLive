@@ -37,6 +37,7 @@
   --color-spotlight-gold:          oklch(0.82 0.17 82);
   --color-tertiary-cta:            oklch(0.82 0.17 82);
   --color-alert:                   var(--destructive);
+  --color-success:                 var(--success);
 
   /* Live accent — on-air / urgent states */
   --color-live:                    var(--live);
@@ -71,10 +72,10 @@
 :root {
   /* Surface hierarchy — purple-tinted darks for warmth and depth */
   --surface:                   oklch(0.08 0.016 282);
-  --surface-container-low:     oklch(0.10 0.016 282);
-  --surface-container:         oklch(0.13 0.016 282);
-  --surface-container-high:    oklch(0.16 0.016 282);
-  --surface-container-highest: oklch(0.21 0.016 282);
+  --surface-container-low:     oklch(0.11 0.016 282);
+  --surface-container:         oklch(0.16 0.016 282);
+  --surface-container-high:    oklch(0.21 0.016 282);
+  --surface-container-highest: oklch(0.27 0.016 282);
 
   /* Shadcn semantic aliases */
   --background:                var(--surface);
@@ -102,6 +103,7 @@
 
   /* Status */
   --destructive:               oklch(0.65 0.22 20);
+  --success:                   oklch(0.75 0.18 158);
 
   /* Borders — ghost only */
   --border:                    oklch(1 0 0 / 9%);

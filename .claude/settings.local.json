@@ -29,7 +29,17 @@
       "Bash(git commit -m ' *)",
       "Bash(mkdir -p /tmp/abc2)",
       "Bash(unzip -o \"/c/Users/aleks/Downloads/ABC \\(1\\).zip\")",
-      "Bash(git commit -m 'design: tone down NavDropdown shadow — tighter 4px/16px blur *)"
+      "Bash(git commit -m 'design: tone down NavDropdown shadow — tighter 4px/16px blur *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/dashboard/admin/checklist)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/dashboard/gigs)",
+      "Bash(curl -s http://localhost:3000/dashboard/admin/checklist)",
+      "Bash(curl -sI http://localhost:3000/dashboard/admin/checklist)",
+      "Bash(gh pr *)",
+      "Bash(gh issue *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(grep -v \"^$\")"
     ]
   }
 }

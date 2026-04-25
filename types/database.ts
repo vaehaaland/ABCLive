@@ -1,7 +1,8 @@
 export type UserRole = 'admin' | 'technician'
 export type GigStatus = 'draft' | 'confirmed' | 'completed' | 'cancelled'
 export type GigType = 'single' | 'festival'
-export type NotificationType = 'gig_added' | 'comment_mention'
+export type NotificationType = 'gig_added' | 'comment_mention' | 'ticket_created'
+export type TicketStatus = 'reported' | 'open' | 'in_progress' | 'implemented' | 'not_implemented' | 'closed'
 
 export interface Database {
   public: {
@@ -296,6 +297,7 @@ export interface Database {
           type: NotificationType
           gig_id: string | null
           comment_id: string | null
+          ticket_id: string | null
           read: boolean
           created_at: string
         }
@@ -306,6 +308,7 @@ export interface Database {
           type: NotificationType
           gig_id?: string | null
           comment_id?: string | null
+          ticket_id?: string | null
           read?: boolean
           created_at?: string
         }
@@ -419,6 +422,86 @@ export interface Database {
         }
         Relationships: []
       }
+      tickets: {
+        Row: {
+          id: string
+          title: string
+          description: string
+          status: TicketStatus
+          created_by: string
+          assigned_to: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description: string
+          status?: TicketStatus
+          created_by: string
+          assigned_to: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          title?: string
+          description?: string
+          status?: TicketStatus
+          assigned_to?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'tickets_created_by_fkey'
+            columns: ['created_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'tickets_assigned_to_fkey'
+            columns: ['assigned_to']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          }
+        ]
+      }
+      ticket_logs: {
+        Row: {
+          id: string
+          ticket_id: string
+          author_id: string
+          body: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          ticket_id: string
+          author_id: string
+          body: string
+          created_at?: string
+        }
+        Update: {
+          body?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'ticket_logs_ticket_id_fkey'
+            columns: ['ticket_id']
+            isOneToOne: false
+            referencedRelation: 'tickets'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'ticket_logs_author_id_fkey'
+            columns: ['author_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          }
+        ]
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -459,6 +542,7 @@ export type Notification = Database['public']['Tables']['notifications']['Row']
 export type NotificationWithContext = Notification & {
   actor: { id: string; full_name: string | null; nickname: string | null; avatar_url: string | null } | null
   gig: { id: string; name: string } | null
+  ticket: { id: string; title: string } | null
 }
 
 export type AvailabilityBlock = Database['public']['Tables']['availability_blocks']['Row']
@@ -468,3 +552,6 @@ export type GigChecklistItem = Database['public']['Tables']['gig_checklist_items
 export type GigChecklistItemWithChecker = GigChecklistItem & {
   checker: { id: string; full_name: string | null; nickname: string | null } | null
 }
+
+export type Ticket = Database['public']['Tables']['tickets']['Row']
+export type TicketLog = Database['public']['Tables']['ticket_logs']['Row']

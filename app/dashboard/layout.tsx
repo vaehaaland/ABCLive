@@ -6,6 +6,7 @@ import { NavDropdown } from '@/components/NavDropdown'
 import { Avatar } from '@/components/ui/avatar'
 import LogoutButton from '@/components/LogoutButton'
 import NotificationBell from '@/components/NotificationBell'
+import ReportIssueDialog from '@/components/ReportIssueDialog'
 import { getDisplayName } from '@/lib/utils'
 
 export default async function DashboardLayout({
@@ -29,7 +30,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-[oklch(0.09_0.016_282/0.85)] backdrop-blur-xl">
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-surface-low/85 backdrop-blur-xl">
         <div className="flex h-[52px] items-center justify-between px-6">
           <div className="flex items-center gap-8">
             {/* TODO: migrate layout to app/app/layout.tsx — update all hrefs from /dashboard/* to /app/* */}
@@ -54,6 +55,7 @@ export default async function DashboardLayout({
                   label="Admin"
                   links={[
                     { href: '/dashboard/admin/users', label: 'Brukarar' },
+                    { href: '/dashboard/admin/tickets', label: 'Tickets' },
                     { href: '/dashboard/admin/icloud', label: 'iCloud' },
                     { href: '/dashboard/admin/checklist', label: 'Sjekkliste' },
                   ]}
@@ -62,6 +64,7 @@ export default async function DashboardLayout({
             </nav>
           </div>
           <div className="flex items-center gap-2">
+            <ReportIssueDialog />
             <NotificationBell />
             {/* TODO: /dashboard/profile → /app/profile */}
             <Link

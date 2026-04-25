@@ -14,6 +14,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PastGigsToggle } from '@/components/gigs/PastGigsToggle'
 import { GigSearchInput } from '@/components/gigs/GigSearchInput'
+import { GigStatusFilter } from '@/components/gigs/GigStatusFilter'
+import { GigSortDropdown } from '@/components/gigs/GigSortDropdown'
 import {
   CalendarIcon,
   MapPinIcon,
@@ -66,6 +68,7 @@ export default async function GigsPage({
     view?: string
     search?: string
     layout?: string
+    status?: string
   }>
 }) {
   const sp = await searchParams
@@ -74,12 +77,18 @@ export default async function GigsPage({
   const search = sp.search?.trim() ?? ''
   const layout: GigLayout = sp.layout === 'list' ? 'list' : 'grid'
 
+  const ALL_STATUSES: GigStatus[] = ['draft', 'confirmed', 'completed', 'cancelled']
+  const statusFilter: GigStatus[] = sp.status
+    ? (sp.status.split(',').filter((s) => ALL_STATUSES.includes(s as GigStatus)) as GigStatus[])
+    : []
+
   const baseParams = new URLSearchParams()
   if (sort === 'name') baseParams.set('sort', 'name')
   if (showPast) baseParams.set('showPast', '1')
   if (sp.view === 'mine') baseParams.set('view', 'mine')
   if (search) baseParams.set('search', search)
   if (layout === 'list') baseParams.set('layout', 'list')
+  if (statusFilter.length > 0) baseParams.set('status', statusFilter.join(','))
 
   const buildHref = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(baseParams)
@@ -154,6 +163,10 @@ export default async function GigsPage({
     gigsQuery = gigsQuery.or(
       `name.ilike.%${search}%,venue.ilike.%${search}%,client.ilike.%${search}%`
     )
+  }
+
+  if (statusFilter.length > 0) {
+    gigsQuery = gigsQuery.in('status', statusFilter)
   }
 
   gigsQuery =
@@ -326,7 +339,7 @@ export default async function GigsPage({
         {isAdmin && (
           <div className="flex items-center gap-2.5">
             {isSuperadmin && (
-              <Button asChild variant="secondary">
+              <Button asChild variant="secondary" size="lg">
                 <Link href="/dashboard/gigs/import">
                   <CloudUploadIcon className="size-4" />
                   Importer frå iCloud
@@ -349,11 +362,11 @@ export default async function GigsPage({
           { label: 'Totalt', value: totalCount, colorClass: '' },
           { label: 'Bekrefta', value: confirmedCount, colorClass: 'text-primary' },
           { label: 'Utkast', value: draftCount, colorClass: 'text-muted-foreground' },
-          { label: 'Fullførte', value: completedCount, colorClass: 'text-emerald-400' },
+          { label: 'Fullførte', value: completedCount, colorClass: 'text-success' },
         ].map(({ label, value, colorClass }) => (
           <div
             key={label}
-            className="flex-1 bg-surface-container hover:bg-surface-high transition-colors px-4 py-3.5 flex flex-col gap-0.5 cursor-default"
+            className="flex-1 bg-surface-container hover:bg-surface-high transition-colors px-4 py-2.5 flex flex-col gap-0.5 cursor-default"
           >
             <span
               className={cn(
@@ -406,29 +419,10 @@ export default async function GigsPage({
         </div>
 
         {/* Sort */}
-        <span className="text-xs text-muted-foreground/60 ml-auto">Sorter</span>
-        <Link
-          href={buildHref({ sort: null })}
-          className={cn(
-            'text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors',
-            sort === 'date'
-              ? 'text-primary bg-primary/10'
-              : 'text-muted-foreground hover:text-foreground hover:bg-surface-high'
-          )}
-        >
-          Startdato
-        </Link>
-        <Link
-          href={buildHref({ sort: 'name' })}
-          className={cn(
-            'text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors',
-            sort === 'name'
-              ? 'text-primary bg-primary/10'
-              : 'text-muted-foreground hover:text-foreground hover:bg-surface-high'
-          )}
-        >
-          Namn
-        </Link>
+        <GigSortDropdown defaultValue={sort} />
+
+        {/* Status filter */}
+        <GigStatusFilter defaultValue={statusFilter} />
 
         {/* Past gigs toggle */}
         <PastGigsToggle defaultChecked={showPast} />
