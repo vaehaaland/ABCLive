@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
+import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -16,14 +17,13 @@ import {
 } from '@/components/ui/dialog'
 import type { Profile } from '@/types/database'
 import { getDisplayName } from '@/lib/utils'
-import { createGigAddedNotification } from '@/app/actions/notifications'
 import { buildConflictMap } from '@/lib/gigs/personnel-conflicts'
+import { upsertGigPersonnelAssignments } from '@/app/actions/gig-personnel'
 
 interface Props {
   gigId: string
   gigStartDate: string
   gigEndDate: string
-  currentUserId: string
   dialogTitle?: string
 }
 
@@ -40,7 +40,6 @@ export default function AddPersonnelDialog({
   gigId,
   gigStartDate,
   gigEndDate,
-  currentUserId,
   dialogTitle = 'Legg til teknikar',
 }: Props) {
   const router = useRouter()
@@ -125,28 +124,26 @@ export default function AddPersonnelDialog({
     setLoading(true)
     setError(null)
 
-    const rows = Array.from(selectedIds).map((profileId) => ({
-      gig_id: gigId,
-      profile_id: profileId,
-      role_on_gig: roleOnGig || null,
-    }))
+    try {
+      const summary = await upsertGigPersonnelAssignments(gigId, Array.from(selectedIds), roleOnGig || null)
 
-    const { error } = await supabase.from('gig_personnel').insert(rows)
-
-    if (error) {
-      setError(error.message)
-    } else {
-      await Promise.all(
-        Array.from(selectedIds).map((profileId) =>
-          createGigAddedNotification(gigId, profileId, currentUserId).catch(() => {})
+      if (summary.results.length > 0) {
+        toast.success(
+          `La til ${summary.insertedCount} og oppdaterte ${summary.updatedCount} teknikarar. ${summary.acceptedCount} akseptert, ${summary.pendingCount} ventar svar.`,
         )
-      )
+      }
+
       setOpen(false)
       setSelectedIds(new Set())
       setRoleOnGig('')
       setSearch('')
       router.refresh()
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Kunne ikkje legge til personell'
+      setError(message)
+      toast.error(message)
     }
+
     setLoading(false)
   }
 

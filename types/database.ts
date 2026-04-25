@@ -136,6 +136,8 @@ export interface Database {
           profile_id: string
           role_on_gig: string | null
           notes: string | null
+          assignment_status: 'pending' | 'accepted' | 'declined'
+          responded_at: string | null
         }
         Insert: {
           id?: string
@@ -143,10 +145,14 @@ export interface Database {
           profile_id: string
           role_on_gig?: string | null
           notes?: string | null
+          assignment_status?: 'pending' | 'accepted' | 'declined'
+          responded_at?: string | null
         }
         Update: {
           role_on_gig?: string | null
           notes?: string | null
+          assignment_status?: 'pending' | 'accepted' | 'declined'
+          responded_at?: string | null
         }
       }
       gig_equipment: {
