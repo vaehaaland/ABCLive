@@ -85,8 +85,8 @@ export default async function PersonnelPage() {
 
   const { data: profiles } = await supabase
     .from('profiles')
-    .select('*')
-    .order('full_name') as { data: Profile[] | null; error: unknown }
+    .select('*, primary_company:primary_company_id(id, name, slug)')
+    .order('full_name') as { data: (Profile & { primary_company: { id: string; name: string; slug: string } | null })[] | null; error: unknown }
 
   // All-time roles per person (no date filter) — for "Roller på oppdrag" display
   const { data: allRoles } = await (supabase
@@ -190,6 +190,7 @@ export default async function PersonnelPage() {
       avatar_url: p.avatar_url ?? null,
       avatarGradient: getAvatarGradient(p.id),
       initials: getInitials(p.full_name),
+      primaryCompany: p.primary_company ?? null,
     }
   })
 

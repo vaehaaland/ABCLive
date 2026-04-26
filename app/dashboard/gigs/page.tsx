@@ -27,6 +27,7 @@ import {
   Cloud,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { CompanyBadge } from '@/components/CompanyBadge'
 import type { Gig, GigStatus } from '@/types/database'
 import { statusLabels, statusAccentClass } from '@/lib/gig-status'
 
@@ -69,6 +70,7 @@ export default async function GigsPage({
     search?: string
     layout?: string
     status?: string
+    company?: string
   }>
 }) {
   const sp = await searchParams
@@ -76,6 +78,7 @@ export default async function GigsPage({
   const showPast = sp.showPast === '1'
   const search = sp.search?.trim() ?? ''
   const layout: GigLayout = sp.layout === 'list' ? 'list' : 'grid'
+  const companyFilter = sp.company ?? null
 
   const ALL_STATUSES: GigStatus[] = ['draft', 'confirmed', 'completed', 'cancelled']
   const statusFilter: GigStatus[] = sp.status
@@ -89,6 +92,7 @@ export default async function GigsPage({
   if (search) baseParams.set('search', search)
   if (layout === 'list') baseParams.set('layout', 'list')
   if (statusFilter.length > 0) baseParams.set('status', statusFilter.join(','))
+  if (companyFilter) baseParams.set('company', companyFilter)
 
   const buildHref = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(baseParams)
@@ -106,23 +110,39 @@ export default async function GigsPage({
     data: { user },
   } = await supabase.auth.getUser()
 
-  const [{ data: profile }, { data: myAssignments }] = await Promise.all([
+  type Company = { id: string; name: string; slug: string }
+
+  const [{ data: profile }, { data: myAssignments }, { data: memberships }] = await Promise.all([
     supabase
       .from('profiles')
       .select('role, is_superadmin')
       .eq('id', user!.id)
-      .single() as Promise<{
+      .single() as unknown as Promise<{
       data: { role: string; is_superadmin: boolean } | null
       error: unknown
     }>,
     supabase
       .from('gig_personnel')
       .select('gig_id, role_on_gig')
-      .eq('profile_id', user!.id) as Promise<{
+      .eq('profile_id', user!.id) as unknown as Promise<{
       data: { gig_id: string; role_on_gig: string | null }[] | null
       error: unknown
     }>,
+    supabase
+      .from('company_memberships')
+      .select('company_id, companies(id, name, slug)')
+      .eq('profile_id', user!.id) as unknown as Promise<{
+      data: { company_id: string; companies: Company | null }[] | null
+      error: unknown
+    }>,
   ])
+
+  const userCompanies: Company[] = (memberships ?? [])
+    .map((m) => m.companies)
+    .filter((c): c is Company => c !== null)
+
+  const companyById = new Map(userCompanies.map((c) => [c.id, c]))
+  const showCompanyFilter = userCompanies.length > 1
 
   const isAdmin = profile?.role === 'admin'
   const isSuperadmin = profile?.is_superadmin === true
@@ -134,10 +154,9 @@ export default async function GigsPage({
   const myGigIds = [...myRoleMap.keys()]
 
   // Stats query — all non-cancelled gigs, no date filter
-  const statsQueryPromise = supabase
-    .from('gigs')
-    .select('status')
-    .neq('status', 'cancelled') as Promise<{
+  let statsQuery = supabase.from('gigs').select('status').neq('status', 'cancelled')
+  if (companyFilter) statsQuery = statsQuery.eq('company_id', companyFilter)
+  const statsQueryPromise = statsQuery as unknown as Promise<{
     data: { status: string }[] | null
     error: unknown
   }>
@@ -169,6 +188,10 @@ export default async function GigsPage({
     gigsQuery = gigsQuery.in('status', statusFilter)
   }
 
+  if (companyFilter) {
+    gigsQuery = gigsQuery.eq('company_id', companyFilter)
+  }
+
   gigsQuery =
     sort === 'name'
       ? gigsQuery
@@ -179,7 +202,7 @@ export default async function GigsPage({
           .order('name', { ascending: true })
 
   const [{ data: gigs }, { data: statsData }] = await Promise.all([
-    gigsQuery as Promise<{ data: Gig[] | null; error: unknown }>,
+    gigsQuery as unknown as Promise<{ data: Gig[] | null; error: unknown }>,
     statsQueryPromise,
   ])
 
@@ -237,7 +260,7 @@ export default async function GigsPage({
     ).map((label) => ({ label, gigs: groupMap.get(label)! }))
   }
 
-  const renderGigCard = (gig: Gig) => {
+  const renderGigCard = (gig: Gig, showCompany: boolean) => {
     const statusLabel = statusLabels[gig.status as GigStatus]
     const statusVariant = statusVariants[gig.status as GigStatus]
     const accent = statusAccentClass[gig.status as GigStatus]
@@ -245,6 +268,8 @@ export default async function GigsPage({
       gig.start_date === gig.end_date
         ? format(new Date(gig.start_date), 'd. MMM yyyy', { locale: nb })
         : `${format(new Date(gig.start_date), 'd. MMM', { locale: nb })} – ${format(new Date(gig.end_date), 'd. MMM yyyy', { locale: nb })}`
+
+    const gigCompany = companyById.get(gig.company_id)
 
     if (layout === 'list') {
       return (
@@ -279,6 +304,7 @@ export default async function GigsPage({
               )}
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              {showCompany && gigCompany && <CompanyBadge company={gigCompany} size="xs" />}
               {gig.icloud_uid && (
                 <Cloud className="h-3.5 w-3.5 text-muted-foreground/40" aria-label="Synkronisert frå iCloud" />
               )}
@@ -298,7 +324,10 @@ export default async function GigsPage({
         <div className={cn('w-[3px] shrink-0 self-stretch', accent)} />
         <div className="flex-1 p-4 min-w-0 flex flex-col gap-1.5">
           <div className="flex items-start justify-between gap-2">
-            <Badge variant={statusVariant}>{statusLabel}</Badge>
+            <div className="flex items-center gap-1.5">
+              <Badge variant={statusVariant}>{statusLabel}</Badge>
+              {showCompany && gigCompany && <CompanyBadge company={gigCompany} size="xs" />}
+            </div>
             {gig.icloud_uid && (
               <Cloud className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0 mt-0.5" aria-label="Synkronisert frå iCloud" />
             )}
@@ -382,6 +411,37 @@ export default async function GigsPage({
           </div>
         ))}
       </div>
+
+      {/* Company filter */}
+      {showCompanyFilter && (
+        <div className="flex items-center gap-1.5 mb-4">
+          <Link
+            href={buildHref({ company: null })}
+            className={cn(
+              'text-xs font-medium px-3 py-1.5 rounded-full transition-colors',
+              !companyFilter
+                ? 'bg-surface-highest text-foreground'
+                : 'bg-surface-high text-muted-foreground hover:text-foreground'
+            )}
+          >
+            Alle selskap
+          </Link>
+          {userCompanies.map((c) => (
+            <Link
+              key={c.id}
+              href={buildHref({ company: c.id })}
+              className={cn(
+                'text-xs font-medium px-3 py-1.5 rounded-full transition-colors',
+                companyFilter === c.id
+                  ? 'bg-surface-highest text-foreground'
+                  : 'bg-surface-high text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {c.name}
+            </Link>
+          ))}
+        </div>
+      )}
 
       {/* Toolbar */}
       <div className="flex items-center gap-3 flex-wrap mb-6">
@@ -477,7 +537,7 @@ export default async function GigsPage({
                     : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3'
                 }
               >
-                {groupGigs.map((gig) => renderGigCard(gig))}
+                {groupGigs.map((gig) => renderGigCard(gig, showCompanyFilter))}
               </div>
             </div>
           ))}
@@ -490,7 +550,7 @@ export default async function GigsPage({
               : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3'
           }
         >
-          {gigList.map((gig) => renderGigCard(gig))}
+          {gigList.map((gig) => renderGigCard(gig, showCompanyFilter))}
         </div>
       )}
     </div>

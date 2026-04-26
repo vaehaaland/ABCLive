@@ -6,6 +6,7 @@ import { PhoneIcon, LayoutGridIcon, ListIcon, SearchIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Avatar } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
+import { CompanyBadge } from '@/components/CompanyBadge'
 
 export type SlotStatus = 'free' | 'gig' | 'blocked'
 
@@ -22,6 +23,7 @@ export type PersonWithSlots = {
   avatar_url: string | null
   avatarGradient: string
   initials: string
+  primaryCompany?: { id: string; name: string; slug: string } | null
 }
 
 function slotColor(slot: SlotStatus) {
@@ -89,14 +91,17 @@ function PersonCard({ person, dayLabels }: { person: PersonWithSlots; dayLabels:
                 <span className="font-normal text-muted-foreground"> ({person.nickname})</span>
               )}
             </p>
-            {person.phone ? (
-              <p className="flex items-center gap-1 text-[0.6875rem] text-muted-foreground mt-0.5">
-                <PhoneIcon className="size-2.5" />
-                {person.phone}
-              </p>
-            ) : (
-              <p className="text-[0.6875rem] text-muted-foreground mt-0.5">—</p>
-            )}
+            <div className="flex items-center gap-1.5 mt-0.5">
+              {person.phone ? (
+                <p className="flex items-center gap-1 text-[0.6875rem] text-muted-foreground">
+                  <PhoneIcon className="size-2.5" />
+                  {person.phone}
+                </p>
+              ) : (
+                <p className="text-[0.6875rem] text-muted-foreground">—</p>
+              )}
+              {person.primaryCompany && <CompanyBadge company={person.primaryCompany} size="xs" />}
+            </div>
           </div>
         </div>
 
