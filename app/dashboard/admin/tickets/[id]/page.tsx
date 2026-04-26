@@ -7,10 +7,9 @@ import { requireSuperadmin } from '@/lib/auth/requireSuperadmin'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import TicketLogSection from '@/components/admin/TicketLogSection'
 import TicketStatusSelect from '@/components/admin/TicketStatusSelect'
 import { ArrowLeftIcon } from 'lucide-react'
-import type { Ticket, TicketLog } from '@/types/database'
+import type { Ticket } from '@/types/database'
 import { getDisplayName } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
@@ -25,39 +24,20 @@ export default async function TicketDetailPage({
 
   const admin = createAdminClient()
 
-  const [{ data: ticket }, { data: logs }] = await Promise.all([
-    admin
-      .from('tickets')
-      .select(`
-        *,
-        created_by_profile:profiles!tickets_created_by_fkey(id, full_name, nickname, email, avatar_url),
-        assigned_to_profile:profiles!tickets_assigned_to_fkey(id, full_name, nickname, email, avatar_url)
-      `)
-      .eq('id', id)
-      .single(),
-    admin
-      .from('ticket_logs')
-      .select('*, author:profiles!ticket_logs_author_id_fkey(id, full_name, nickname, email, avatar_url)')
-      .eq('ticket_id', id)
-      .order('created_at', { ascending: false }),
-  ]) as unknown as Promise<[
-    {
+  const { data: ticket } = await admin
+    .from('tickets')
+    .select(`
+      *,
+      created_by_profile:profiles!tickets_created_by_fkey(id, full_name, nickname, email, avatar_url),
+      assigned_to_profile:profiles!tickets_assigned_to_fkey(id, full_name, nickname, email, avatar_url)
+    `)
+    .eq('id', id)
+    .single() as unknown as {
       data: (Ticket & {
         created_by_profile: { id: string; full_name: string | null; nickname: string | null; email: string | null; avatar_url: string | null }
         assigned_to_profile: { id: string; full_name: string | null; nickname: string | null; email: string | null; avatar_url: string | null }
       }) | null
-    },
-    {
-      data: ({
-        id: string
-        ticket_id: string
-        author_id: string
-        body: string
-        created_at: string
-        author: { id: string; full_name: string | null; nickname: string | null; email: string | null } | null
-      })[] | null
     }
-  ]>
 
   if (!ticket) {
     notFound()
