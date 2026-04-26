@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { cn } from '@/lib/utils'
 
 export function PastGigsToggle({
@@ -13,11 +13,13 @@ export function PastGigsToggle({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [checked, setChecked] = useState(defaultChecked)
+  const [prevDefault, setPrevDefault] = useState(defaultChecked)
   const [isPending, startTransition] = useTransition()
 
-  useEffect(() => {
+  if (prevDefault !== defaultChecked) {
+    setPrevDefault(defaultChecked)
     setChecked(defaultChecked)
-  }, [defaultChecked])
+  }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const next = e.target.checked

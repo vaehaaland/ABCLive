@@ -26,17 +26,24 @@ export default function AvatarCropDialog({ open, onOpenChange, file, onCropped }
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
   const [busy, setBusy] = useState(false)
 
-  useEffect(() => {
-    if (!file) {
-      setImageSrc(null)
-      return
+  // Derive imageSrc from file during render (getDerivedStateFromProps pattern).
+  const [prevFile, setPrevFile] = useState<File | null>(null)
+  if (prevFile !== file) {
+    const newUrl = file ? URL.createObjectURL(file) : null
+    setImageSrc(newUrl)
+    setPrevFile(file)
+    if (file) {
+      setCrop({ x: 0, y: 0 })
+      setZoom(1)
     }
-    const url = URL.createObjectURL(file)
-    setImageSrc(url)
-    setCrop({ x: 0, y: 0 })
-    setZoom(1)
-    return () => URL.revokeObjectURL(url)
-  }, [file])
+  }
+
+  // Revoke the URL when it changes or on unmount (no setState — cleanup only).
+  useEffect(() => {
+    return () => {
+      if (imageSrc) URL.revokeObjectURL(imageSrc)
+    }
+  }, [imageSrc])
 
   const onCropComplete = useCallback((_: Area, pixels: Area) => {
     setCroppedAreaPixels(pixels)

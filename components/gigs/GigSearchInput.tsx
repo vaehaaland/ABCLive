@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { SearchIcon, XIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -10,12 +10,14 @@ export function GigSearchInput({ defaultValue }: { defaultValue: string }) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [value, setValue] = useState(defaultValue)
+  const [prevDefault, setPrevDefault] = useState(defaultValue)
   const [isPending, startTransition] = useTransition()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  useEffect(() => {
+  if (prevDefault !== defaultValue) {
+    setPrevDefault(defaultValue)
     setValue(defaultValue)
-  }, [defaultValue])
+  }
 
   function push(search: string) {
     const params = new URLSearchParams(searchParams.toString())
