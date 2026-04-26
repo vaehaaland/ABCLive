@@ -20,6 +20,7 @@ export default function PersonnelAddDropdown({ gigId, gigStartDate, gigEndDate, 
   const [freelanceOpen, setFreelanceOpen] = useState(false)
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 })
   const btnRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
     if (!menuOpen || !btnRef.current) return
@@ -33,9 +34,9 @@ export default function PersonnelAddDropdown({ gigId, gigStartDate, gigEndDate, 
   useEffect(() => {
     if (!menuOpen) return
     function handleClickOutside(e: MouseEvent) {
-      if (btnRef.current && !btnRef.current.contains(e.target as Node)) {
-        setMenuOpen(false)
-      }
+      const target = e.target as Node
+      if (btnRef.current?.contains(target) || menuRef.current?.contains(target)) return
+      setMenuOpen(false)
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
@@ -56,6 +57,7 @@ export default function PersonnelAddDropdown({ gigId, gigStartDate, gigEndDate, 
 
       {menuOpen && createPortal(
         <div
+          ref={menuRef}
           className="fixed z-50 min-w-[160px] rounded-md border border-white/10 bg-surface-high py-1 shadow-lg"
           style={{ top: menuPos.top, left: menuPos.left, transform: 'translateX(-100%)' }}
         >

@@ -58,7 +58,7 @@ export default function AddExternalPersonnelDialog({ gigId, open: controlledOpen
   const isControlled = controlledOpen !== undefined
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen} {...(isControlled ? { triggerId: null } : {})}>
       {!isControlled && (
         <DialogTrigger render={<Button size="icon-sm" variant="ghost" aria-label="Legg til ekstern person" />}>
           <Plus className="size-4" />

@@ -165,7 +165,7 @@ export default function AddPersonnelDialog({
   const isControlled = controlledOpen !== undefined
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen} {...(isControlled ? { triggerId: null } : {})}>
       {!isControlled && (
         <DialogTrigger render={<Button size="icon-sm" variant="ghost" aria-label={dialogTitle} />}>
           <Plus className="size-4" />
