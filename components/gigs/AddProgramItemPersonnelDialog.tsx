@@ -144,9 +144,7 @@ export default function AddProgramItemPersonnelDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="icon-sm" variant="ghost" aria-label="Legg til teknikar" />}>
-        <Plus className="size-4" />
-      </DialogTrigger>
+      <DialogTrigger render={<Button size="sm" variant="outline" aria-label="Legg til teknikar"><Plus className="size-4" />Legg til</Button>} />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Teknikar på programpost</DialogTitle>
