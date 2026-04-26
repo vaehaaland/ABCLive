@@ -355,16 +355,19 @@ export default async function GigDetailPage({
               )}
             </div>
             {isAdmin && (
-              <AddPersonnelDialog
-                gigId={gig.id}
-                gigStartDate={gig.start_date}
-                gigEndDate={gig.end_date}
-                dialogTitle={isFestival ? 'Legg til festivalcrew' : 'Legg til teknikar'}
-              />
+              <div className="flex items-center gap-1">
+                <AddPersonnelDialog
+                  gigId={gig.id}
+                  gigStartDate={gig.start_date}
+                  gigEndDate={gig.end_date}
+                  dialogTitle={isFestival ? 'Legg til festivalcrew' : 'Legg til teknikar'}
+                />
+                <AddExternalPersonnelDialog gigId={gig.id} />
+              </div>
             )}
           </CardHeader>
           <CardContent>
-            {!visiblePersonnelRows.length ? (
+            {!visiblePersonnelRows.length && !(externalPersonnelRows ?? []).length ? (
               <p className="text-sm text-muted-foreground">
                 {declinedCount > 0
                   ? 'Alle forespurnader er avslått i gjeldande visning.'
@@ -413,6 +416,26 @@ export default async function GigDetailPage({
                 })}
               </ul>
             )}
+            {(externalPersonnelRows ?? []).length > 0 && (
+              <>
+                <div className="my-3 border-t" />
+                <ul className="flex flex-col gap-1">
+                  {(externalPersonnelRows ?? []).map((row) => (
+                    <li key={row.id} className="flex items-center justify-between py-1.5">
+                      <div className="flex items-center gap-2.5">
+                        <p className="text-sm font-medium">{row.name}</p>
+                        {row.role_on_gig && <Badge variant="gold">{row.role_on_gig}</Badge>}
+                        <Badge variant="outline" className="text-xs">Ekstern</Badge>
+                        {row.company && (
+                          <span className="text-xs text-muted-foreground">{row.company}</span>
+                        )}
+                      </div>
+                      {isAdmin && <RemoveExternalPersonnelButton id={row.id} gigId={gig.id} />}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -440,32 +463,6 @@ export default async function GigDetailPage({
         </Card>
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base">Ekstern personell</CardTitle>
-          {isAdmin && <AddExternalPersonnelDialog gigId={gig.id} />}
-        </CardHeader>
-        <CardContent>
-          {!(externalPersonnelRows ?? []).length ? (
-            <p className="text-sm text-muted-foreground">Ingen ekstern personell lagt til.</p>
-          ) : (
-            <ul className="flex flex-col gap-1">
-              {(externalPersonnelRows ?? []).map((row) => (
-                <li key={row.id} className="flex items-center justify-between py-1.5">
-                  <div className="flex items-center gap-2.5">
-                    <p className="text-sm font-medium">{row.name}</p>
-                    {row.role_on_gig && <Badge variant="gold">{row.role_on_gig}</Badge>}
-                    {row.company && (
-                      <span className="text-xs text-muted-foreground">{row.company}</span>
-                    )}
-                  </div>
-                  {isAdmin && <RemoveExternalPersonnelButton id={row.id} gigId={gig.id} />}
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
 
       {isFestival && (
         <Card>
