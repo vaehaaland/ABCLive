@@ -26,6 +26,8 @@ interface Props {
   gigStartDate: string
   gigEndDate: string
   dialogTitle?: string
+  open?: boolean
+  onOpenChange?: (v: boolean) => void
 }
 
 interface PersonWithConflict extends Profile {
@@ -43,11 +45,15 @@ export default function AddPersonnelDialog({
   gigStartDate,
   gigEndDate,
   dialogTitle = 'Legg til teknikar',
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: Props) {
   const router = useRouter()
   const supabase = createClient()
 
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = controlledOpen ?? internalOpen
+  const setOpen = controlledOnOpenChange ?? setInternalOpen
   const [personnel, setPersonnel] = useState<PersonWithConflict[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [roleOnGig, setRoleOnGig] = useState('')
@@ -156,11 +162,15 @@ export default function AddPersonnelDialog({
     return p.full_name?.toLowerCase().includes(q) || p.nickname?.toLowerCase().includes(q)
   })
 
+  const isControlled = controlledOpen !== undefined
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="icon-sm" variant="ghost" aria-label={dialogTitle} />}>
-        <Plus className="size-4" />
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen} {...(isControlled ? { triggerId: null } : {})}>
+      {!isControlled && (
+        <DialogTrigger render={<Button size="icon-sm" variant="ghost" aria-label={dialogTitle} />}>
+          <Plus className="size-4" />
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>

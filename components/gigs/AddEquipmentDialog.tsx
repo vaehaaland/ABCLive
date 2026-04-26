@@ -192,9 +192,7 @@ export default function AddEquipmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setSearch(''); setShowAllCompanies(false) } }}>
-      <DialogTrigger render={<Button size="icon-sm" variant="ghost" aria-label={dialogTitle} />}>
-        <Plus className="size-4" />
-      </DialogTrigger>
+      <DialogTrigger render={<Button size="sm" variant="outline" aria-label={dialogTitle}><Plus className="size-4" />Legg til</Button>} />
       <DialogContent className="sm:max-w-2xl" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>

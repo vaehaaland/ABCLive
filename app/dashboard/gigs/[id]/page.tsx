@@ -6,12 +6,13 @@ import { createClient } from '@/lib/supabase/server'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import AddPersonnelDialog from '@/components/gigs/AddPersonnelDialog'
 import AddEquipmentDialog from '@/components/gigs/AddEquipmentDialog'
+import PersonnelAddDropdown from '@/components/gigs/PersonnelAddDropdown'
 import AddProgramItemPersonnelDialog from '@/components/gigs/AddProgramItemPersonnelDialog'
 import AddProgramItemEquipmentDialog from '@/components/gigs/AddProgramItemEquipmentDialog'
 import ProgramItemDialog from '@/components/gigs/ProgramItemDialog'
 import RemovePersonnelButton from '@/components/gigs/RemovePersonnelButton'
+import RemoveExternalPersonnelButton from '@/components/gigs/RemoveExternalPersonnelButton'
 import EditPersonnelRoleInline from '@/components/gigs/EditPersonnelRoleInline'
 import RemoveProgramItemButton from '@/components/gigs/RemoveProgramItemButton'
 import RemoveProgramItemPersonnelButton from '@/components/gigs/RemoveProgramItemPersonnelButton'
@@ -24,7 +25,7 @@ import GigCommentsSection from '@/components/gigs/GigCommentsSection'
 import GigChecklistSection from '@/components/gigs/GigChecklistSection'
 import GigActionsDropdown from '@/components/gigs/GigActionsDropdown'
 import GigEquipmentList from '@/components/gigs/GigEquipmentList'
-import type { GigFile, GigProgramItem, GigStatus, GigType, GigCommentWithAuthor, GigChecklistItem } from '@/types/database'
+import type { GigFile, GigProgramItem, GigStatus, GigType, GigCommentWithAuthor, GigChecklistItem, GigExternalPersonnel } from '@/types/database'
 import { statusLabels } from '@/lib/gig-status'
 import { CheckCircle2, Clock3, Cloud, XCircle } from 'lucide-react'
 import { CompanyBadge } from '@/components/CompanyBadge'
@@ -205,6 +206,12 @@ export default async function GigDetailPage({
     .select('id', { count: 'exact', head: true })
     .eq('is_active', true)
 
+  const { data: externalPersonnelRows } = await supabase
+    .from('gig_external_personnel')
+    .select('*')
+    .eq('gig_id', gig.id)
+    .order('created_at', { ascending: true }) as { data: GigExternalPersonnel[] | null, error: unknown }
+
   const isFestival = gig.gig_type === 'festival'
 
   let programItems: GigProgramItem[] = []
@@ -347,7 +354,7 @@ export default async function GigDetailPage({
               )}
             </div>
             {isAdmin && (
-              <AddPersonnelDialog
+              <PersonnelAddDropdown
                 gigId={gig.id}
                 gigStartDate={gig.start_date}
                 gigEndDate={gig.end_date}
@@ -356,7 +363,7 @@ export default async function GigDetailPage({
             )}
           </CardHeader>
           <CardContent>
-            {!visiblePersonnelRows.length ? (
+            {!visiblePersonnelRows.length && !(externalPersonnelRows ?? []).length ? (
               <p className="text-sm text-muted-foreground">
                 {declinedCount > 0
                   ? 'Alle forespurnader er avslått i gjeldande visning.'
@@ -405,6 +412,26 @@ export default async function GigDetailPage({
                 })}
               </ul>
             )}
+            {(externalPersonnelRows ?? []).length > 0 && (
+              <>
+                <div className="my-3 border-t" />
+                <ul className="flex flex-col gap-1">
+                  {(externalPersonnelRows ?? []).map((row) => (
+                    <li key={row.id} className="flex items-center justify-between py-1.5">
+                      <div className="flex items-center gap-2.5">
+                        <p className="text-sm font-medium">{row.name}</p>
+                        {row.role_on_gig && <Badge variant="gold">{row.role_on_gig}</Badge>}
+                        <Badge variant="outline" className="text-xs">Ekstern</Badge>
+                        {row.company && (
+                          <span className="text-xs text-muted-foreground">{row.company}</span>
+                        )}
+                      </div>
+                      {isAdmin && <RemoveExternalPersonnelButton id={row.id} gigId={gig.id} />}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -431,6 +458,7 @@ export default async function GigDetailPage({
           </CardContent>
         </Card>
       </div>
+
 
       {isFestival && (
         <Card>
