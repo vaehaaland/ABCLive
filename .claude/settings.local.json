@@ -51,7 +51,11 @@
       "Bash(sed -n '218,225p' \"components/gigs/GigChecklistSection.tsx\")",
       "Bash(sort -t. -k1)",
       "Bash(awk '{print $2}')",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(git stash *)",
+      "Bash(supabase --version)",
+      "Bash(npx supabase *)",
+      "PowerShell(Out-File *)"
     ]
   }
 }

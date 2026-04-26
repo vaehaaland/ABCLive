@@ -18,9 +18,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
 import { updateUser, resetPassword } from '@/app/dashboard/admin/users/actions'
+import {
+  addMembership,
+  updateMembershipRole,
+  removeMembership,
+} from '@/app/actions/company-memberships'
 import AdminAvatarUploader from '@/components/admin/AdminAvatarUploader'
+import { CompanyBadge } from '@/components/CompanyBadge'
 import type { UserRole } from '@/types/database'
+
+interface MembershipWithCompany {
+  id: string
+  profile_id: string
+  company_id: string
+  role: UserRole
+  companies: { id: string; name: string; slug: string } | null
+}
+
+interface Company {
+  id: string
+  name: string
+  slug: string
+}
 
 export interface EditableUser {
   id: string
@@ -32,16 +53,18 @@ export interface EditableUser {
   is_superadmin: boolean
   avatar_url: string | null
   phone: string | null
+  memberships: MembershipWithCompany[]
 }
 
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
   user: EditableUser
+  companies: Company[]
   isSelf: boolean
 }
 
-export default function EditUserDialog({ open, onOpenChange, user, isSelf }: Props) {
+export default function EditUserDialog({ open, onOpenChange, user, companies, isSelf }: Props) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -51,10 +74,15 @@ export default function EditUserDialog({ open, onOpenChange, user, isSelf }: Pro
   const [nickname, setNickname] = useState(user.nickname ?? '')
   const [email, setEmail] = useState(user.email)
   const [phone, setPhone] = useState(user.phone ?? '')
-  const [role, setRole] = useState<UserRole>(user.role)
   const [primaryRole, setPrimaryRole] = useState(user.primary_role ?? '')
   const [isSuperadmin, setIsSuperadmin] = useState(user.is_superadmin)
   const [newPassword, setNewPassword] = useState('')
+
+  // Membership state (local copy so changes feel instant before refresh)
+  const [memberships, setMemberships] = useState<MembershipWithCompany[]>(user.memberships)
+
+  const memberCompanyIds = new Set(memberships.map((m) => m.company_id))
+  const addableCompanies = companies.filter((c) => !memberCompanyIds.has(c.id))
 
   function handleSave(e: React.FormEvent) {
     e.preventDefault()
@@ -67,7 +95,6 @@ export default function EditUserDialog({ open, onOpenChange, user, isSelf }: Pro
         nickname: nickname.trim() || null,
         email: trimmedEmail !== user.email ? trimmedEmail : undefined,
         phone: phone.trim() || null,
-        role,
         primary_role: primaryRole.trim() || null,
         is_superadmin: isSelf ? undefined : isSuperadmin,
       })
@@ -76,6 +103,50 @@ export default function EditUserDialog({ open, onOpenChange, user, isSelf }: Pro
         return
       }
       onOpenChange(false)
+      router.refresh()
+    })
+  }
+
+  function handleRoleChange(membershipId: string, newRole: UserRole) {
+    startTransition(async () => {
+      const result = await updateMembershipRole(membershipId, newRole)
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+      setMemberships((prev) =>
+        prev.map((m) => (m.id === membershipId ? { ...m, role: newRole } : m))
+      )
+      router.refresh()
+    })
+  }
+
+  function handleRemoveMembership(membershipId: string) {
+    startTransition(async () => {
+      const result = await removeMembership(membershipId)
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+      setMemberships((prev) => prev.filter((m) => m.id !== membershipId))
+      router.refresh()
+    })
+  }
+
+  function handleAddCompany(companyId: string) {
+    const company = companies.find((c) => c.id === companyId)
+    if (!company) return
+    startTransition(async () => {
+      const result = await addMembership(user.id, companyId, 'technician')
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+      // Optimistically add a placeholder; refresh will fill in the real id
+      setMemberships((prev) => [
+        ...prev,
+        { id: 'pending', profile_id: user.id, company_id: companyId, role: 'technician', companies: company },
+      ])
       router.refresh()
     })
   }
@@ -100,7 +171,7 @@ export default function EditUserDialog({ open, onOpenChange, user, isSelf }: Pro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Rediger brukar</DialogTitle>
         </DialogHeader>
@@ -154,25 +225,67 @@ export default function EditUserDialog({ open, onOpenChange, user, isSelf }: Pro
           </div>
 
           <div className="grid gap-2">
-            <Label>Rolle</Label>
-            <Select value={role} onValueChange={(v) => setRole(v as UserRole)}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="technician">Teknikar</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid gap-2">
             <Label htmlFor="edit-primary">Hovudrolle</Label>
             <Input
               id="edit-primary"
               value={primaryRole}
               onChange={(e) => setPrimaryRole(e.target.value)}
             />
+          </div>
+
+          {/* Company memberships */}
+          <div className="flex flex-col gap-2">
+            <Label>Selskapsmedlemskap</Label>
+            <div className="flex flex-col gap-2 rounded-md border border-white/10 p-3">
+              {memberships.length === 0 && (
+                <p className="text-xs text-muted-foreground">Ingen tilgangar tildelt.</p>
+              )}
+              {memberships.map((m) => (
+                <div key={m.id} className="flex items-center gap-2">
+                  <CompanyBadge company={m.companies} size="xs" className="shrink-0" />
+                  <Select
+                    value={m.role}
+                    onValueChange={(v) => handleRoleChange(m.id, v as UserRole)}
+                    disabled={pending || m.id === 'pending'}
+                  >
+                    <SelectTrigger className="h-7 text-xs w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="technician">Teknikar</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-destructive hover:text-destructive ml-auto"
+                    disabled={pending || m.id === 'pending'}
+                    onClick={() => handleRemoveMembership(m.id)}
+                  >
+                    Fjern
+                  </Button>
+                </div>
+              ))}
+
+              {addableCompanies.length > 0 && (
+                <div className="flex flex-wrap gap-1 pt-1 border-t border-white/10 mt-1">
+                  <span className="text-xs text-muted-foreground self-center mr-1">Legg til:</span>
+                  {addableCompanies.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className="text-xs underline underline-offset-2 text-primary hover:opacity-80 disabled:opacity-40"
+                      disabled={pending}
+                      onClick={() => handleAddCompany(c.id)}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <label className="flex items-start gap-2 text-sm cursor-pointer">

@@ -27,6 +27,7 @@ import GigEquipmentList from '@/components/gigs/GigEquipmentList'
 import type { GigFile, GigProgramItem, GigStatus, GigType, GigCommentWithAuthor, GigChecklistItem } from '@/types/database'
 import { statusLabels } from '@/lib/gig-status'
 import { CheckCircle2, Clock3, Cloud, XCircle } from 'lucide-react'
+import { CompanyBadge } from '@/components/CompanyBadge'
 
 type GigChecklistItemWithChecker = GigChecklistItem & {
   checker: { id: string; full_name: string | null; nickname: string | null } | null
@@ -88,6 +89,8 @@ type GigDetailRow = {
   created_by: string | null
   created_at: string
   icloud_uid: string | null
+  company_id: string
+  company: { id: string; name: string; slug: string } | null
 }
 
 type GigPersonnelRow = {
@@ -119,6 +122,7 @@ type GigEquipmentRow = {
   quantity_needed: number
   notes: string | null
   packed: boolean
+  request_status: string | null
   equipment: {
     id: string
     name: string
@@ -154,8 +158,8 @@ export default async function GigDetailPage({
   const isAdmin = profile?.role === 'admin'
 
   const gigSelect = isAdmin
-    ? 'id, name, gig_type, public_report_enabled, public_report_slug, venue, client, start_date, end_date, description, status, price, price_notes, created_by, created_at, icloud_uid'
-    : 'id, name, gig_type, public_report_enabled, public_report_slug, venue, client, start_date, end_date, description, status, created_by, created_at, icloud_uid'
+    ? 'id, name, gig_type, public_report_enabled, public_report_slug, venue, client, start_date, end_date, description, status, price, price_notes, created_by, created_at, icloud_uid, company_id, company:company_id(id, name, slug)'
+    : 'id, name, gig_type, public_report_enabled, public_report_slug, venue, client, start_date, end_date, description, status, created_by, created_at, icloud_uid, company_id, company:company_id(id, name, slug)'
 
   const { data: gig } = await supabase
     .from('gigs')
@@ -175,7 +179,7 @@ export default async function GigDetailPage({
 
   const { data: equipmentRows } = await supabase
     .from('gig_equipment')
-    .select('id, quantity_needed, notes, packed, equipment(id, name, category, quantity)')
+    .select('id, quantity_needed, notes, packed, request_status, equipment(id, name, category, quantity)')
     .eq('gig_id', id) as { data: GigEquipmentRow[] | null, error: unknown }
 
   const { data: fileRows } = await supabase
@@ -257,6 +261,7 @@ export default async function GigDetailPage({
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <h1 className="font-heading text-2xl font-bold">{gig.name}</h1>
             {isFestival && <Badge variant="gold">Festival</Badge>}
+            <CompanyBadge company={gig.company} size="xs" />
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {format(new Date(gig.start_date), 'd. MMMM yyyy', { locale: nb })}
@@ -411,6 +416,7 @@ export default async function GigDetailPage({
                 gigId={gig.id}
                 gigStartDate={gig.start_date}
                 gigEndDate={gig.end_date}
+                gigCompanyId={gig.company_id}
                 dialogTitle={isFestival ? 'Utstyr i festivalpoolen' : 'Utstyr på oppdraget'}
               />
             )}

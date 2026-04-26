@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/table'
 import NewUserDialog from '@/components/admin/NewUserDialog'
 import UserRowActions from '@/components/admin/UserRowActions'
+import { CompanyBadge } from '@/components/CompanyBadge'
 import { format } from 'date-fns'
 import { nb } from 'date-fns/locale'
 import type { Profile } from '@/types/database'
@@ -23,14 +24,35 @@ export default async function AdminUsersPage() {
 
   const admin = createAdminClient()
 
-  const [{ data: authData }, { data: profiles }] = await Promise.all([
-    admin.auth.admin.listUsers({ page: 1, perPage: 200 }),
-    admin.from('profiles').select('*').order('full_name') as unknown as Promise<{
-      data: Profile[] | null
-    }>,
-  ])
+  const [{ data: authData }, { data: profiles }, { data: companies }, { data: allMemberships }] =
+    await Promise.all([
+      admin.auth.admin.listUsers({ page: 1, perPage: 200 }),
+      admin.from('profiles').select('*').order('full_name') as unknown as Promise<{
+        data: Profile[] | null
+      }>,
+      admin.from('companies').select('id, name, slug').order('name'),
+      admin
+        .from('company_memberships')
+        .select('id, profile_id, company_id, role, companies(id, name, slug)')
+        .order('created_at'),
+    ])
 
   const profileById = new Map((profiles ?? []).map((p) => [p.id, p]))
+
+  type MembershipWithCompany = {
+    id: string
+    profile_id: string
+    company_id: string
+    role: 'admin' | 'technician'
+    companies: { id: string; name: string; slug: string } | null
+  }
+  const membershipsByProfileId = new Map<string, MembershipWithCompany[]>()
+  for (const m of (allMemberships ?? []) as MembershipWithCompany[]) {
+    const list = membershipsByProfileId.get(m.profile_id) ?? []
+    list.push(m)
+    membershipsByProfileId.set(m.profile_id, list)
+  }
+
   const users = (authData?.users ?? []).map((u) => {
     const p = profileById.get(u.id)
     return {
@@ -46,6 +68,7 @@ export default async function AdminUsersPage() {
       avatar_url: p?.avatar_url ?? null,
       is_superadmin: p?.is_superadmin ?? false,
       phone: p?.phone ?? null,
+      memberships: membershipsByProfileId.get(u.id) ?? [],
     }
   })
 
@@ -73,7 +96,7 @@ export default async function AdminUsersPage() {
             <TableRow>
               <TableHead>Namn</TableHead>
               <TableHead>E-post</TableHead>
-              <TableHead>Rolle</TableHead>
+              <TableHead>Tilgang</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Oppretta</TableHead>
               <TableHead className="text-right">Handlingar</TableHead>
@@ -98,10 +121,15 @@ export default async function AdminUsersPage() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">{u.email}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1.5">
-                      <Badge variant={u.role === 'admin' ? 'default' : 'secondary'}>
-                        {u.role === 'admin' ? 'Admin' : 'Teknikar'}
-                      </Badge>
+                    <div className="flex flex-wrap items-center gap-1">
+                      {u.memberships.map((m) => (
+                        <div key={m.id} className="flex items-center gap-1">
+                          <CompanyBadge company={m.companies} size="xs" />
+                          <span className="text-xs text-muted-foreground">
+                            {m.role === 'admin' ? 'Admin' : 'Teknikar'}
+                          </span>
+                        </div>
+                      ))}
                       {u.is_superadmin && <Badge variant="gold">Superadmin</Badge>}
                     </div>
                   </TableCell>
@@ -122,13 +150,15 @@ export default async function AdminUsersPage() {
                         email: u.email,
                         full_name: u.full_name,
                         nickname: u.nickname,
-                        role: u.role,
+                        role: u.role as 'admin' | 'technician',
                         primary_role: u.primary_role,
                         is_superadmin: u.is_superadmin,
                         avatar_url: u.avatar_url,
                         phone: u.phone,
                         pending,
+                        memberships: u.memberships,
                       }}
+                      companies={companies ?? []}
                       isSelf={isSelf}
                     />
                   </TableCell>

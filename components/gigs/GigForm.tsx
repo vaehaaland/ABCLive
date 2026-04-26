@@ -16,23 +16,34 @@ import {
 } from '@/components/ui/select'
 import type { Gig, GigStatus, GigType } from '@/types/database'
 
+interface Company {
+  id: string
+  name: string
+  slug: string
+}
+
 interface GigFormProps {
   gig?: Gig
   isAdmin?: boolean
+  companies?: Company[]
+  defaultCompanyId?: string
 }
 
-export default function GigForm({ gig, isAdmin }: GigFormProps) {
+export default function GigForm({ gig, isAdmin, companies = [], defaultCompanyId }: GigFormProps) {
   const router = useRouter()
   const supabase = createClient()
 
   const [name, setName] = useState(gig?.name ?? '')
-  const [gigType, setGigType] = useState<GigType>(gig?.gig_type ?? 'single')
+  const [gigType, setGigType] = useState<GigType>((gig?.gig_type ?? 'single') as GigType)
+  const [companyId, setCompanyId] = useState<string>(
+    gig?.company_id ?? defaultCompanyId ?? companies[0]?.id ?? ''
+  )
   const [venue, setVenue] = useState(gig?.venue ?? '')
   const [client, setClient] = useState(gig?.client ?? '')
   const [startDate, setStartDate] = useState(gig?.start_date ?? '')
   const [endDate, setEndDate] = useState(gig?.end_date ?? '')
   const [description, setDescription] = useState(gig?.description ?? '')
-  const [status, setStatus] = useState<GigStatus>(gig?.status ?? 'draft')
+  const [status, setStatus] = useState<GigStatus>((gig?.status ?? 'draft') as GigStatus)
   const [price, setPrice] = useState<string>(gig?.price != null ? String(gig.price) : '')
   const [priceNotes, setPriceNotes] = useState(gig?.price_notes ?? '')
   const [error, setError] = useState<string | null>(null)
@@ -64,7 +75,7 @@ export default function GigForm({ gig, isAdmin }: GigFormProps) {
       const { data: { user } } = await supabase.auth.getUser()
       result = await supabase
         .from('gigs')
-        .insert({ ...payload, created_by: user!.id })
+        .insert({ ...payload, company_id: companyId, created_by: user!.id })
         .select('id, gig_type')
         .single()
     }
@@ -80,6 +91,24 @@ export default function GigForm({ gig, isAdmin }: GigFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      {!gig && companies.length > 1 && (
+        <div className="grid gap-2">
+          <Label htmlFor="company_id">Selskap</Label>
+          <Select value={companyId} onValueChange={(v) => { if (v) setCompanyId(v) }}>
+            <SelectTrigger id="company_id">
+              <SelectValue>
+                {companies.find((c) => c.id === companyId)?.name ?? ''}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {companies.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       <div className="grid gap-2">
         <Label htmlFor="name">Namn *</Label>
         <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
@@ -89,10 +118,12 @@ export default function GigForm({ gig, isAdmin }: GigFormProps) {
         <Label htmlFor="gig_type">Type</Label>
         <Select value={gigType} onValueChange={(value) => setGigType(value as GigType)}>
           <SelectTrigger id="gig_type">
-            <SelectValue />
+            <SelectValue>
+              {gigType === 'festival' ? 'Festival' : 'Enkelt Arrangement'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="single">Enkeltarrangement</SelectItem>
+            <SelectItem value="single">Enkelt Arrangement</SelectItem>
             <SelectItem value="festival">Festival</SelectItem>
           </SelectContent>
         </Select>
@@ -129,7 +160,9 @@ export default function GigForm({ gig, isAdmin }: GigFormProps) {
         <Label htmlFor="status">Status</Label>
         <Select value={status} onValueChange={(v) => setStatus(v as GigStatus)}>
           <SelectTrigger id="status">
-            <SelectValue />
+            <SelectValue>
+              {status === 'confirmed' ? 'Bekrefta' : status === 'completed' ? 'Fullført' : status === 'cancelled' ? 'Avlyst' : 'Utkast'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="draft">Utkast</SelectItem>

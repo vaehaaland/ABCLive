@@ -19,6 +19,7 @@ import type { Profile } from '@/types/database'
 import { getDisplayName } from '@/lib/utils'
 import { buildConflictMap } from '@/lib/gigs/personnel-conflicts'
 import { upsertGigPersonnelAssignments } from '@/app/actions/gig-personnel'
+import { CompanyBadge } from '@/components/CompanyBadge'
 
 interface Props {
   gigId: string
@@ -34,6 +35,7 @@ interface PersonWithConflict extends Profile {
   blockFrom?: string
   blockUntil?: string
   blockReason?: string | null
+  primaryCompany: { id: string; name: string; slug: string } | null
 }
 
 export default function AddPersonnelDialog({
@@ -58,7 +60,7 @@ export default function AddPersonnelDialog({
     async function load() {
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, primary_company:primary_company_id(id, name, slug)')
         .order('full_name')
 
       if (!profiles) return
@@ -102,6 +104,7 @@ export default function AddPersonnelDialog({
             blockFrom: block?.blocked_from,
             blockUntil: block?.blocked_until,
             blockReason: block?.reason,
+            primaryCompany: (p as Profile & { primary_company: { id: string; name: string; slug: string } | null }).primary_company ?? null,
           }
         })
 
@@ -195,6 +198,7 @@ export default function AddPersonnelDialog({
                       {checked && '✓'}
                     </span>
                     <span className="flex-1 truncate">{getDisplayName(p, p.id)}</span>
+                    <CompanyBadge company={p.primaryCompany} size="xs" />
                     {p.hasConflict && (
                       <span className="text-destructive text-xs shrink-0">⚠ konflikt</span>
                     )}

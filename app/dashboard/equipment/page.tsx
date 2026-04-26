@@ -3,11 +3,17 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { EquipmentTable } from '@/components/equipment/EquipmentTable'
+import { EquipmentRequestsSection } from '@/components/equipment/EquipmentRequestsSection'
 import { PlusIcon } from 'lucide-react'
 import type { Equipment } from '@/types/database'
 import type { EnrichedEquipment, ActiveBooking } from '@/components/equipment/EquipmentTable'
+import { getPendingRequestsForCompany } from '@/app/actions/equipment-requests'
 
-export default async function EquipmentPage() {
+export default async function EquipmentPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ company?: string }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -19,15 +25,41 @@ export default async function EquipmentPage() {
 
   if (profile?.role !== 'admin') redirect('/dashboard/gigs')
 
-  const { data: equipment } = await supabase
+  const resolvedParams = await searchParams
+
+  // Fetch user's company memberships to support per-company filter
+  const { data: memberships } = await supabase
+    .from('company_memberships')
+    .select('role, company_id, companies(id, name, slug)')
+    .eq('profile_id', user!.id)
+
+  type MemberCompany = { id: string; name: string; slug: string }
+  const userCompanies: MemberCompany[] = (memberships ?? [])
+    .map((m) => (m.companies as MemberCompany | null))
+    .filter((c): c is MemberCompany => c !== null)
+
+  const adminCompanies = (memberships ?? [])
+    .filter((m) => m.role === 'admin')
+    .map((m) => (m.companies as MemberCompany | null))
+    .filter((c): c is MemberCompany => c !== null)
+
+  const showCompanyFilter = userCompanies.length > 1
+  const companyFilter = resolvedParams.company ?? null
+
+  let equipmentQuery = supabase
     .from('equipment')
     .select('*')
     .order('category', { nullsFirst: false })
-    .order('name') as { data: Equipment[] | null; error: unknown }
+    .order('name')
+
+  if (companyFilter) {
+    equipmentQuery = equipmentQuery.eq('company_id', companyFilter) as typeof equipmentQuery
+  }
+
+  const { data: equipment } = await equipmentQuery as { data: Equipment[] | null; error: unknown }
 
   const today = new Date().toISOString().split('T')[0]
 
-  // Fetch active confirmed gig bookings overlapping with today
   const { data: activeBookings } = await supabase
     .from('gig_equipment')
     .select('equipment_id, quantity_needed, gigs(venue, start_date, end_date, status)')
@@ -47,10 +79,9 @@ export default async function EquipmentPage() {
       error: unknown
     }
 
-  // Build a map of equipment_id → first active booking (filter out rows where gigs relation didn't match)
   const bookingMap = new Map<string, ActiveBooking>()
   for (const row of activeBookings ?? []) {
-    if (!row.gigs) continue // gig didn't match the filter
+    if (!row.gigs) continue
     if (!bookingMap.has(row.equipment_id)) {
       bookingMap.set(row.equipment_id, {
         venue: row.gigs.venue,
@@ -63,26 +94,26 @@ export default async function EquipmentPage() {
 
   const allEquipment: Equipment[] = equipment ?? []
 
-  // Build enriched equipment list
   const enriched: EnrichedEquipment[] = allEquipment.map((e) => ({
     ...e,
     activeBooking: bookingMap.get(e.id) ?? null,
   }))
 
+  // Fetch pending requests for all companies the user admins
+  const pendingRequests = (
+    await Promise.all(adminCompanies.map((c) => getPendingRequestsForCompany(c.id)))
+  ).flat()
+
   return (
     <>
-      {/* Subnav — full-bleed, matches main navbar width */}
       <div className="border-b border-border bg-surface-low -mx-4 -mt-8">
         <div className="px-6 flex gap-0">
-          {/* TODO: /dashboard/equipment → /app/resource/equipment */}
           <Link href="/dashboard/equipment" className="relative px-4 py-2.5 text-sm font-medium text-primary border-b-2 border-primary -mb-px">Utstyr</Link>
-          {/* TODO: /dashboard/personnel → /app/resource/persons */}
           <Link href="/dashboard/personnel" className="relative px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border-b-2 border-transparent -mb-px">Personell</Link>
         </div>
       </div>
 
       <div className="max-w-[1200px] mx-auto px-6 py-8 w-full">
-        {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="font-heading font-extrabold text-[1.75rem] leading-none tracking-[-0.035em]">Utstyr</h1>
@@ -92,6 +123,36 @@ export default async function EquipmentPage() {
             <Link href="/dashboard/equipment/new"><PlusIcon className="size-4" />Legg til utstyr</Link>
           </Button>
         </div>
+
+        <EquipmentRequestsSection requests={pendingRequests} />
+
+        {showCompanyFilter && (
+          <div className="flex flex-wrap gap-2 mb-5">
+            <Link
+              href="/dashboard/equipment"
+              className={`rounded-full px-3 py-1 text-sm font-medium border transition-colors ${
+                !companyFilter
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'border-white/15 text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Alle
+            </Link>
+            {userCompanies.map((c) => (
+              <Link
+                key={c.id}
+                href={`/dashboard/equipment?company=${c.id}`}
+                className={`rounded-full px-3 py-1 text-sm font-medium border transition-colors ${
+                  companyFilter === c.id
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'border-white/15 text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {c.name}
+              </Link>
+            ))}
+          </div>
+        )}
 
         {allEquipment.length === 0 ? (
           <div className="rounded-xl bg-surface-container p-12 flex flex-col items-center gap-3 text-center">

@@ -6,12 +6,19 @@ import { Button } from '@/components/ui/button'
 import EditUserDialog, { type EditableUser } from '@/components/admin/EditUserDialog'
 import { deleteUser, resendInvite } from '@/app/dashboard/admin/users/actions'
 
+interface Company {
+  id: string
+  name: string
+  slug: string
+}
+
 interface Props {
   user: EditableUser & { pending: boolean }
+  companies: Company[]
   isSelf: boolean
 }
 
-export default function UserRowActions({ user, isSelf }: Props) {
+export default function UserRowActions({ user, companies, isSelf }: Props) {
   const router = useRouter()
   const [editOpen, setEditOpen] = useState(false)
   const [busy, startTransition] = useTransition()
@@ -57,6 +64,7 @@ export default function UserRowActions({ user, isSelf }: Props) {
         open={editOpen}
         onOpenChange={setEditOpen}
         user={user}
+        companies={companies}
         isSelf={isSelf}
       />
     </div>
