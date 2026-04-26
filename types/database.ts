@@ -463,6 +463,54 @@ export type Database = {
           },
         ]
       }
+      gig_external_personnel: {
+        Row: {
+          id: string
+          gig_id: string
+          name: string
+          company: string | null
+          role_on_gig: string | null
+          notes: string | null
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          gig_id: string
+          name: string
+          company?: string | null
+          role_on_gig?: string | null
+          notes?: string | null
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          gig_id?: string
+          name?: string
+          company?: string | null
+          role_on_gig?: string | null
+          notes?: string | null
+          created_at?: string
+          created_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gig_external_personnel_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gig_external_personnel_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gig_personnel: {
         Row: {
           assigned_at: string
@@ -1258,6 +1306,9 @@ export type Equipment = Database['public']['Tables']['equipment']['Row']
 export type GigPersonnel = Database['public']['Tables']['gig_personnel']['Row']
 export type GigEquipment = Database['public']['Tables']['gig_equipment']['Row']
 export type GigFile = Database['public']['Tables']['gig_files']['Row']
+export type GigExternalPersonnel = Database['public']['Tables']['gig_external_personnel']['Row']
+export type GigExternalPersonnelInsert = Database['public']['Tables']['gig_external_personnel']['Insert']
+export type GigExternalPersonnelUpdate = Database['public']['Tables']['gig_external_personnel']['Update']
 export type GigProgramItem = Database['public']['Tables']['gig_program_items']['Row']
 export type GigProgramItemPersonnel = Database['public']['Tables']['gig_program_item_personnel']['Row']
 export type GigProgramItemEquipment = Database['public']['Tables']['gig_program_item_equipment']['Row']
@@ -1272,6 +1323,7 @@ export type GigWithDetails = Gig & {
   gig_equipment: (GigEquipment & { equipment: Equipment })[]
   gig_files: GigFile[]
   gig_program_items: GigProgramItemWithDetails[]
+  gig_external_personnel: GigExternalPersonnel[]
 }
 
 export type GigEquipmentWithRequest = GigEquipment & {

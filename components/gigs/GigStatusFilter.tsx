@@ -18,13 +18,15 @@ export function GigStatusFilter({ defaultValue }: { defaultValue: GigStatus[] })
   const router = useRouter()
   const searchParams = useSearchParams()
   const [selected, setSelected] = useState<GigStatus[]>(defaultValue)
+  const [prevDefault, setPrevDefault] = useState<GigStatus[]>(defaultValue)
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const ref = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
+  if ([...prevDefault].sort().join(',') !== [...defaultValue].sort().join(',')) {
+    setPrevDefault(defaultValue)
     setSelected(defaultValue)
-  }, [defaultValue])
+  }
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

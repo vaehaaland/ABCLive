@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
 import { updateUser, resetPassword } from '@/app/dashboard/admin/users/actions'
 import {
   addMembership,

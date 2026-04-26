@@ -17,13 +17,15 @@ export function GigSortDropdown({ defaultValue }: { defaultValue: GigSort }) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [value, setValue] = useState<GigSort>(defaultValue)
+  const [prevDefault, setPrevDefault] = useState<GigSort>(defaultValue)
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const ref = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
+  if (prevDefault !== defaultValue) {
+    setPrevDefault(defaultValue)
     setValue(defaultValue)
-  }, [defaultValue])
+  }
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
