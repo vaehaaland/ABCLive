@@ -16,10 +16,15 @@ import { addExternalPersonnel } from '@/app/actions/gig-external-personnel'
 
 interface Props {
   gigId: string
+  open?: boolean
+  onOpenChange?: (v: boolean) => void
 }
 
-export default function AddExternalPersonnelDialog({ gigId }: Props) {
-  const [open, setOpen] = useState(false)
+export default function AddExternalPersonnelDialog({ gigId, open: controlledOpen, onOpenChange: controlledOnOpenChange }: Props) {
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = controlledOpen ?? internalOpen
+  const setOpen = controlledOnOpenChange ?? setInternalOpen
+
   const [name, setName] = useState('')
   const [company, setCompany] = useState('')
   const [role, setRole] = useState('')
@@ -50,11 +55,15 @@ export default function AddExternalPersonnelDialog({ gigId }: Props) {
     setLoading(false)
   }
 
+  const isControlled = controlledOpen !== undefined
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="icon-sm" variant="ghost" aria-label="Legg til ekstern person" />}>
-        <Plus className="size-4" />
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger render={<Button size="icon-sm" variant="ghost" aria-label="Legg til ekstern person" />}>
+          <Plus className="size-4" />
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Legg til ekstern person</DialogTitle>

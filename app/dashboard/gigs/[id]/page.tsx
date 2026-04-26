@@ -6,9 +6,8 @@ import { createClient } from '@/lib/supabase/server'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import AddPersonnelDialog from '@/components/gigs/AddPersonnelDialog'
 import AddEquipmentDialog from '@/components/gigs/AddEquipmentDialog'
-import AddExternalPersonnelDialog from '@/components/gigs/AddExternalPersonnelDialog'
+import PersonnelAddDropdown from '@/components/gigs/PersonnelAddDropdown'
 import AddProgramItemPersonnelDialog from '@/components/gigs/AddProgramItemPersonnelDialog'
 import AddProgramItemEquipmentDialog from '@/components/gigs/AddProgramItemEquipmentDialog'
 import ProgramItemDialog from '@/components/gigs/ProgramItemDialog'
@@ -355,15 +354,12 @@ export default async function GigDetailPage({
               )}
             </div>
             {isAdmin && (
-              <div className="flex items-center gap-1">
-                <AddPersonnelDialog
-                  gigId={gig.id}
-                  gigStartDate={gig.start_date}
-                  gigEndDate={gig.end_date}
-                  dialogTitle={isFestival ? 'Legg til festivalcrew' : 'Legg til teknikar'}
-                />
-                <AddExternalPersonnelDialog gigId={gig.id} />
-              </div>
+              <PersonnelAddDropdown
+                gigId={gig.id}
+                gigStartDate={gig.start_date}
+                gigEndDate={gig.end_date}
+                dialogTitle={isFestival ? 'Legg til festivalcrew' : 'Legg til teknikar'}
+              />
             )}
           </CardHeader>
           <CardContent>
