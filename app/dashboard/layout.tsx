@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { NavLink } from '@/components/NavLink'
 import { NavDropdown } from '@/components/NavDropdown'
@@ -34,7 +35,8 @@ export default async function DashboardLayout({
         <div className="flex h-[52px] items-center justify-between px-6">
           <div className="flex items-center gap-8">
             {/* TODO: migrate layout to app/app/layout.tsx — update all hrefs from /dashboard/* to /app/* */}
-            <Link href="/dashboard/gigs" className="shrink-0">
+            <Link href="/dashboard/gigs" className="shrink-0 flex items-center gap-2">
+              <Image src="/gemIcon.png" alt="ABC Studio" width={28} height={28} className="rounded-full" />
               <span className="font-heading font-extrabold text-[1rem] tracking-tight bg-gradient-to-r from-primary to-spotlight-gold bg-clip-text text-transparent">
                 ABC Studio
               </span>

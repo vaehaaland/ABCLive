@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -46,6 +47,9 @@ export default function LoginPage() {
       />
       <Card className="relative z-10 w-full max-w-sm">
         <CardHeader className="text-center">
+          <div className="flex justify-center mb-2">
+            <Image src="/gemIcon.png" alt="ABC Studio" width={56} height={56} className="rounded-full" />
+          </div>
           <CardTitle className="font-heading text-2xl font-bold tracking-tight">ABC Studio</CardTitle>
           <CardDescription>Logg inn for å planlegge oppdrag</CardDescription>
         </CardHeader>

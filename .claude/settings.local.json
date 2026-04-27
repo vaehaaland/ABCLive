@@ -55,7 +55,9 @@
       "Bash(git stash *)",
       "Bash(supabase --version)",
       "Bash(npx supabase *)",
-      "PowerShell(Out-File *)"
+      "PowerShell(Out-File *)",
+      "Bash(cp /home/aleks/projects/abclive/gemIcon.png /home/aleks/projects/abclive/public/gemIcon.png)",
+      "Bash(cp /home/aleks/projects/abclive/gemIcon.png /home/aleks/projects/abclive/app/icon.png)"
     ]
   }
 }
