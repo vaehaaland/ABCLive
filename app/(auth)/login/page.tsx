@@ -48,9 +48,9 @@ export default function LoginPage() {
       <Card className="relative z-10 w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-2">
-            <Image src="/gemIcon.png" alt="ABC Studio" width={56} height={56} className="rounded-full" />
+            <Image src="/gemIcon.png" alt="ABC Live" width={56} height={56} className="rounded-full" />
           </div>
-          <CardTitle className="font-heading text-2xl font-bold tracking-tight">ABC Studio</CardTitle>
+          <CardTitle className="font-heading text-2xl font-bold tracking-tight">ABC Live</CardTitle>
           <CardDescription>Logg inn for å planlegge oppdrag</CardDescription>
         </CardHeader>
         <CardContent>
