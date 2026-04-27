@@ -15,8 +15,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ABC Studio",
-  description: "Oppdragsplanlegging for ABC Studio",
+  title: "ABC Live",
+  description: "Oppdragsplanlegging for ABC Studio og Alvsvåg AS",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    title: "ABC Live",
+  },
 };
 
 export default function RootLayout({

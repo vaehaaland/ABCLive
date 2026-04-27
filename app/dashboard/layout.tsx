@@ -36,9 +36,9 @@ export default async function DashboardLayout({
           <div className="flex items-center gap-8">
             {/* TODO: migrate layout to app/app/layout.tsx — update all hrefs from /dashboard/* to /app/* */}
             <Link href="/dashboard/gigs" className="shrink-0 flex items-center gap-2">
-              <Image src="/gemIcon.png" alt="ABC Studio" width={28} height={28} className="rounded-full" />
+              <Image src="/gemIcon.png" alt="ABC Live" width={28} height={28} className="rounded-full" />
               <span className="font-heading font-extrabold text-[1rem] tracking-tight bg-gradient-to-r from-primary to-spotlight-gold bg-clip-text text-transparent">
-                ABC Studio
+                ABC Live
               </span>
             </Link>
             <nav className="flex items-center gap-0.5">

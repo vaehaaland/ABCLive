@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { Check, Package } from 'lucide-react'
 import { toggleEquipmentPacked } from '@/app/actions/equipment'
@@ -92,6 +92,10 @@ export default function GigEquipmentList({
   emptyLabel = 'Ingen utstyr lagt til.',
 }: GigEquipmentListProps) {
   const [rows, setRows] = useState(initialRows)
+
+  useEffect(() => {
+    setRows(initialRows)
+  }, [initialRows])
 
   const packedCount = rows.filter(r => r.packed).length
   const total = rows.length

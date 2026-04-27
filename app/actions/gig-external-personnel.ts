@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { refresh, revalidatePath } from 'next/cache'
 
 async function getCallerAndRole() {
   const supabase = await createClient()
@@ -42,6 +42,7 @@ export async function addExternalPersonnel(
   }
 
   revalidatePath(`/dashboard/gigs/${gigId}`)
+  refresh()
   return {}
 }
 
@@ -65,5 +66,6 @@ export async function removeExternalPersonnel(
   }
 
   revalidatePath(`/dashboard/gigs/${gigId}`)
+  refresh()
   return {}
 }

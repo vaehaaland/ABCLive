@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { refresh, revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -106,6 +106,7 @@ export async function upsertGigPersonnelAssignments(
   )
 
   revalidateGigAssignmentSurfaces(gigId)
+  refresh()
 
   const insertedCount = results.filter((result) => result.outcome === 'inserted').length
   const updatedCount = results.length - insertedCount
@@ -172,6 +173,7 @@ async function updateOwnGigAssignment(
   }
 
   revalidateGigAssignmentSurfaces(assignment.gig_id)
+  refresh()
 }
 
 export async function acceptGigAssignment(assignmentId: string): Promise<void> {
