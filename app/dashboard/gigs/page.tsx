@@ -208,6 +208,36 @@ export default async function GigsPage({
 
   const gigList = gigs ?? []
 
+  const gigIds = gigList.map((gig) => gig.id)
+  const gigsWithoutPersonnel = new Set<string>(gigIds)
+
+  if (gigIds.length > 0) {
+    const [{ data: internalPersonnel }, { data: externalPersonnel }] =
+      await Promise.all([
+        supabase
+          .from('gig_personnel')
+          .select('gig_id')
+          .in('gig_id', gigIds) as unknown as Promise<{
+          data: { gig_id: string }[] | null
+          error: unknown
+        }>,
+        supabase
+          .from('gig_external_personnel')
+          .select('gig_id')
+          .in('gig_id', gigIds) as unknown as Promise<{
+          data: { gig_id: string }[] | null
+          error: unknown
+        }>,
+      ])
+
+    for (const row of internalPersonnel ?? []) {
+      gigsWithoutPersonnel.delete(row.gig_id)
+    }
+    for (const row of externalPersonnel ?? []) {
+      gigsWithoutPersonnel.delete(row.gig_id)
+    }
+  }
+
   // Stats counts
   const allNonCancelled = statsData ?? []
   const totalCount = allNonCancelled.length
@@ -305,6 +335,9 @@ export default async function GigsPage({
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {showCompany && gigCompany && <CompanyBadge company={gigCompany} size="xs" />}
+              {gigsWithoutPersonnel.has(gig.id) && (
+                <Badge variant="destructive">Ingen personell</Badge>
+              )}
               {gig.icloud_uid && (
                 <Cloud className="h-3.5 w-3.5 text-muted-foreground/40" aria-label="Synkronisert frå iCloud" />
               )}
@@ -326,6 +359,9 @@ export default async function GigsPage({
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-1.5">
               <Badge variant={statusVariant}>{statusLabel}</Badge>
+              {gigsWithoutPersonnel.has(gig.id) && (
+                <Badge variant="destructive">Ingen personell</Badge>
+              )}
               {showCompany && gigCompany && <CompanyBadge company={gigCompany} size="xs" />}
             </div>
             {gig.icloud_uid && (
