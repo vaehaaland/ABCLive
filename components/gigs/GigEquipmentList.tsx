@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useOptimistic, useTransition } from 'react'
 import { toast } from 'sonner'
 import { Check, Package } from 'lucide-react'
 import { toggleEquipmentPacked } from '@/app/actions/equipment'
@@ -91,17 +91,19 @@ export default function GigEquipmentList({
   isAdmin,
   emptyLabel = 'Ingen utstyr lagt til.',
 }: GigEquipmentListProps) {
-  const [rows, setRows] = useState(initialRows)
-
-  useEffect(() => {
-    setRows(initialRows)
-  }, [initialRows])
+  const [rows, applyOptimisticUpdate] = useOptimistic(
+    initialRows,
+    (currentRows, update: { id: string; packed: boolean }) =>
+      currentRows.map((row) =>
+        row.id === update.id ? { ...row, packed: update.packed } : row
+      )
+  )
 
   const packedCount = rows.filter(r => r.packed).length
   const total = rows.length
 
   function optimisticUpdate(id: string, packed: boolean) {
-    setRows(prev => prev.map(r => r.id === id ? { ...r, packed } : r))
+    applyOptimisticUpdate({ id, packed })
   }
 
   if (rows.length === 0) {
