@@ -22,6 +22,8 @@ import type { ICloudEventWithStatus } from '@/app/api/icloud/events/route'
 
 type GigOption = { id: string; name: string; start_date: string }
 
+const ABC_STUDIO_ID = '00000000-0000-0000-0000-000000000001'
+
 function today() {
   return format(new Date(), 'yyyy-MM-dd')
 }
@@ -162,6 +164,7 @@ export default function ImportICloudPage() {
           gig_type: 'single',
           status: 'draft',
           created_by: user?.id,
+          company_id: ABC_STUDIO_ID,
         })
         .select('id, name')
         .single() as { data: { id: string; name: string } | null }
