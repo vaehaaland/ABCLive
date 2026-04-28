@@ -33,6 +33,12 @@ export default function ProfileAvatar({
     const file = e.target.files?.[0]
     if (!file) return
 
+    const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
+    if (!allowedTypes.has(file.type)) {
+      toast.error('Ugyldig filtype. Bruk JPEG, PNG eller WEBP.')
+      return
+    }
+
     if (file.size > 2 * 1024 * 1024) {
       toast.error('Bildet er for stort. Maks 2 MB.')
       return

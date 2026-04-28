@@ -26,6 +26,19 @@ function getInitials(name: string | null | undefined): string {
 
 export function Avatar({ src, name, size = "md", className, ...props }: AvatarProps) {
   const initials = getInitials(name)
+  const safeSrc = React.useMemo(() => {
+    if (!src) return null
+    try {
+      if (src.startsWith("/")) return src
+      const parsed = new URL(src, "http://localhost")
+      if (parsed.protocol === "blob:" || parsed.protocol === "https:" || parsed.protocol === "http:") {
+        return src
+      }
+      return null
+    } catch {
+      return null
+    }
+  }, [src])
 
   return (
     <div
@@ -38,10 +51,10 @@ export function Avatar({ src, name, size = "md", className, ...props }: AvatarPr
       )}
       {...props}
     >
-      {src ? (
+      {safeSrc ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={src}
+          src={safeSrc}
           alt={name ?? "Avatar"}
           className="size-full object-cover"
         />
