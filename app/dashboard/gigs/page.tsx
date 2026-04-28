@@ -161,7 +161,7 @@ export default async function GigsPage({
     error: unknown
   }>
 
-  let gigsQuery = supabase.from('gigs').select('*')
+  let gigsQuery = supabase.from('gigs').select('id, name, gig_type, venue, client, start_date, end_date, status, icloud_uid, company_id')
 
   if (!showPast) {
     gigsQuery = gigsQuery.gt(
