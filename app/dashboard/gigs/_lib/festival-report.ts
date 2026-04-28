@@ -18,8 +18,6 @@ type ReportGig = {
   end_date: string
   description: string | null
   status: GigStatus
-  price: number | null
-  price_notes: string | null
 }
 
 type ReportCrewRow = {
@@ -136,8 +134,6 @@ export type FestivalReportData = {
     endDate: string
     description: string | null
     status: GigStatus
-    price: number | null
-    priceNotes: string | null
     publicReportEnabled: boolean
     publicReportSlug: string | null
   }
@@ -258,8 +254,6 @@ export function buildFestivalReportData(
       endDate: gig.end_date,
       description: gig.description,
       status: gig.status,
-      price: gig.price,
-      priceNotes: gig.price_notes,
       publicReportEnabled: gig.public_report_enabled,
       publicReportSlug: gig.public_report_slug,
     },
@@ -277,7 +271,7 @@ async function fetchFestivalReportDataByGigId(
 
   const { data: gig } = await supabase
     .from('gigs')
-    .select('id, name, gig_type, public_report_enabled, public_report_slug, public_report_password_hash, venue, client, start_date, end_date, description, status, price, price_notes')
+    .select('id, name, gig_type, public_report_enabled, public_report_slug, public_report_password_hash, venue, client, start_date, end_date, description, status')
     .eq('id', gigId)
     .single() as { data: ReportGig | null, error: unknown }
 
