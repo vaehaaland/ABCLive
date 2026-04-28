@@ -29,15 +29,15 @@ function isoDate(time: ICALTime): string {
   return time.toJSDate().toISOString().slice(0, 10)
 }
 
-function parseVEvents(icsData: string): ICloudEvent[] {
-  let jcal: unknown
+export function parseVEvents(icsData: string): ICloudEvent[] {
+  let vevents: ICALComponent[]
   try {
-    jcal = ICAL.parse(icsData)
+    const jcal = ICAL.parse(icsData)
+    const comp = new ICAL.Component(jcal)
+    vevents = comp.getAllSubcomponents('vevent')
   } catch {
     return []
   }
-  const comp = new ICAL.Component(jcal)
-  const vevents = comp.getAllSubcomponents('vevent')
   const events: ICloudEvent[] = []
 
   for (const vevent of vevents) {

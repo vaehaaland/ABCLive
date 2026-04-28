@@ -11,6 +11,7 @@ export default defineConfig({
     environmentMatchGlobs: [
       ['**/__tests__/actions/**', 'node'],
       ['**/__tests__/festival-report/**', 'node'],
+      ['**/__tests__/icloud/**', 'node'],
     ],
     env: {
       NEXT_PUBLIC_SUPABASE_URL: 'http://localhost:54321',

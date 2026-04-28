@@ -58,7 +58,8 @@
       "PowerShell(Out-File *)",
       "Bash(cp /home/aleks/projects/abclive/gemIcon.png /home/aleks/projects/abclive/public/gemIcon.png)",
       "Bash(cp /home/aleks/projects/abclive/gemIcon.png /home/aleks/projects/abclive/app/icon.png)",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(node -e \"const ICAL = require\\('./node_modules/ical.js'\\); const parsed = ICAL.parse\\('BEGIN:VCALENDAR\\\\r\\\\nVERSION:2.0\\\\r\\\\nBEGIN:VEVENT\\\\r\\\\nUID:test@test\\\\r\\\\nDTSTART;VALUE=DATE:20240610\\\\r\\\\nDTEND;VALUE=DATE:20240612\\\\r\\\\nSUMMARY:Test\\\\r\\\\nEND:VEVENT\\\\r\\\\nEND:VCALENDAR\\\\r\\\\n'\\); const comp = new ICAL.Component\\(parsed\\); const vevent = comp.getAllSubcomponents\\('vevent'\\)[0]; const dtend = vevent.getFirstPropertyValue\\('dtend'\\); console.log\\('isDate:', dtend.isDate\\); console.log\\('toJSDate:', dtend.toJSDate\\(\\)\\); console.log\\('toISOString:', dtend.toJSDate\\(\\).toISOString\\(\\)\\);\")"
     ]
   }
 }

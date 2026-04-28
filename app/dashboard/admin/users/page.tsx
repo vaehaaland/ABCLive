@@ -16,6 +16,7 @@ import { CompanyBadge } from '@/components/CompanyBadge'
 import { format } from 'date-fns'
 import { nb } from 'date-fns/locale'
 import type { Profile } from '@/types/database'
+import { formatPhone } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -154,7 +155,8 @@ export default async function AdminUsersPage() {
                         primary_role: u.primary_role,
                         is_superadmin: u.is_superadmin,
                         avatar_url: u.avatar_url,
-                        phone: u.phone,
+                        // phone: u.phone, but formatted with formatPhone util to add spaces and country code if missing
+                        phone: u.phone ? formatPhone(u.phone) : null,
                         pending,
                         memberships: u.memberships,
                       }}
