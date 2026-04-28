@@ -57,7 +57,8 @@
       "Bash(npx supabase *)",
       "PowerShell(Out-File *)",
       "Bash(cp /home/aleks/projects/abclive/gemIcon.png /home/aleks/projects/abclive/public/gemIcon.png)",
-      "Bash(cp /home/aleks/projects/abclive/gemIcon.png /home/aleks/projects/abclive/app/icon.png)"
+      "Bash(cp /home/aleks/projects/abclive/gemIcon.png /home/aleks/projects/abclive/app/icon.png)",
+      "Bash(npx next *)"
     ]
   }
 }

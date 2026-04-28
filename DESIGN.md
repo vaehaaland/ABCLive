@@ -35,7 +35,10 @@ All surfaces carry a subtle purple hue (`oklch(… 0.016 282)`) instead of neutr
 **Primary — Stage Light Purple**
 `oklch(0.68 0.26 292)` — Richer, more saturated than v1. Used for primary CTAs, active nav, focus rings, and key focal points. Gradient CTAs go from `primary` → `stage-purple-dim` (`oklch(0.58 0.20 292)`).
 
-**Secondary — Spotlight Gold**
+**Secondary — Spotlight Cold**
+`oklch(0.85 0.15 220)` — Secondary colour, nice cold contrast to stage light purple.
+
+**Third — Spotlight Gold**
 `oklch(0.82 0.17 82)` — Reserved for premium status, VIP indicators, and the `tertiary` button variant. Never use for body text.
 
 **Live — On-Air Coral** *(new in v2)*

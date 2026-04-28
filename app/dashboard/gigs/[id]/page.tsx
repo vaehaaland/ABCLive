@@ -25,6 +25,7 @@ import GigCommentsSection from '@/components/gigs/GigCommentsSection'
 import GigChecklistSection from '@/components/gigs/GigChecklistSection'
 import GigActionsDropdown from '@/components/gigs/GigActionsDropdown'
 import GigEquipmentList from '@/components/gigs/GigEquipmentList'
+import GigAssignmentRespondDialog from '@/components/gigs/GigAssignmentRespondDialog'
 import type { GigFile, GigProgramItem, GigStatus, GigType, GigCommentWithAuthor, GigChecklistItem, GigExternalPersonnel } from '@/types/database'
 import { statusLabels } from '@/lib/gig-status'
 import { CheckCircle2, Clock3, Cloud, XCircle } from 'lucide-react'
@@ -178,6 +179,13 @@ export default async function GigDetailPage({
   const visiblePersonnelRows = (personnelRows ?? []).filter((row) => showDeclined || row.assignment_status !== 'declined')
   const declinedCount = (personnelRows ?? []).filter((row) => row.assignment_status === 'declined').length
 
+  const myAssignment = !isAdmin
+    ? (personnelRows ?? []).find((row) => {
+        const person = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles
+        return person?.id === user!.id
+      })
+    : undefined
+
   const { data: equipmentRows } = await supabase
     .from('gig_equipment')
     .select('id, quantity_needed, notes, packed, request_status, equipment(id, name, category, quantity)')
@@ -306,6 +314,10 @@ export default async function GigDetailPage({
         <p className="whitespace-pre-wrap text-sm text-muted-foreground">{gig.description}</p>
       )}
 
+      {myAssignment?.assignment_status === 'pending' && (
+        <GigAssignmentRespondDialog assignmentId={myAssignment.id} />
+      )}
+
       {isAdmin && gig.price != null && (
         <div className="flex items-baseline gap-2">
           <span className="text-lg font-semibold">
@@ -374,37 +386,35 @@ export default async function GigDetailPage({
                 {visiblePersonnelRows.map((row) => {
                   const person = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles
                   const statusBadge = row.assignment_status === 'accepted'
-                    ? <Badge variant="success"><CheckCircle2 className="h-3 w-3" /> Akseptert</Badge>
+                    ? <Badge variant="success"><CheckCircle2 className="h-3 w-3" /></Badge>
                     : row.assignment_status === 'declined'
-                      ? <Badge variant="destructive"><XCircle className="h-3 w-3" /> Avslått</Badge>
-                      : <Badge variant="gold"><Clock3 className="h-3 w-3" /> Avventar</Badge>
-                  const declinedTooltip = row.assignment_status === 'declined'
-                    ? [
-                        row.response_note ? `Notat: ${row.response_note}` : null,
-                        row.responded_at ? `Svara: ${format(new Date(row.responded_at), 'd. MMM yyyy HH:mm', { locale: nb })}` : null,
-                      ].filter(Boolean).join(' · ')
-                    : ''
-
+                      ? <Badge variant="destructive"><XCircle className="h-3 w-3" /></Badge>
+                      : <Badge variant="gold"><Clock3 className="h-3 w-3" /></Badge>
                   return (
                     <li key={row.id} className="flex items-center justify-between py-1.5">
-                      <div className="flex items-center gap-2.5">
-                        {person?.id ? (
-                          <PersonHoverCard profileId={person.id} name={person.full_name}>
-                            <div className="flex items-center gap-2.5">
-                              <Avatar src={person.avatar_url} name={person.full_name} size="sm" />
-                              <p className="text-sm font-medium">{getDisplayName(person, 'Ukjend')}</p>
-                            </div>
-                          </PersonHoverCard>
-                        ) : (
-                          <p className="text-sm font-medium">Ukjend</p>
-                        )}
-                        {isAdmin
-                          ? <EditPersonnelRoleInline assignmentId={row.id} currentRole={row.role_on_gig ?? null} />
-                          : row.role_on_gig && <Badge variant="gold">{row.role_on_gig}</Badge>
-                        }
-                        <span title={declinedTooltip || undefined}>
+                      <div className="flex min-w-0 flex-col gap-0.5">
+                        <div className="flex flex-wrap items-center gap-2.5">
+                          {person?.id ? (
+                            <PersonHoverCard profileId={person.id} name={person.full_name}>
+                              <div className="flex items-center gap-2.5">
+                                <Avatar src={person.avatar_url} name={person.full_name} size="sm" />
+                                <p className="text-sm font-medium">{getDisplayName(person, 'Ukjend')}</p>
+                              </div>
+                            </PersonHoverCard>
+                          ) : (
+                            <p className="text-sm font-medium">Ukjend</p>
+                          )}
+                          {isAdmin
+                            ? <EditPersonnelRoleInline assignmentId={row.id} currentRole={row.role_on_gig ?? null} />
+                            : row.role_on_gig && <Badge variant="cold">{row.role_on_gig}</Badge>
+                          }
                           {statusBadge}
-                        </span>
+                        </div>
+                        {row.assignment_status === 'declined' && row.response_note && (
+                          <p className="pl-0.5 text-xs text-muted-foreground italic">
+                            &ldquo;{row.response_note}&rdquo;
+                          </p>
+                        )}
                       </div>
                       {isAdmin && <RemovePersonnelButton assignmentId={row.id} />}
                     </li>
@@ -420,7 +430,7 @@ export default async function GigDetailPage({
                     <li key={row.id} className="flex items-center justify-between py-1.5">
                       <div className="flex items-center gap-2.5">
                         <p className="text-sm font-medium">{row.name}</p>
-                        {row.role_on_gig && <Badge variant="gold">{row.role_on_gig}</Badge>}
+                        {row.role_on_gig && <Badge variant="cold">{row.role_on_gig}</Badge>}
                         <Badge variant="outline" className="text-xs">Ekstern</Badge>
                         {row.company && (
                           <span className="text-xs text-muted-foreground">{row.company}</span>
@@ -548,7 +558,7 @@ export default async function GigDetailPage({
                                       ) : (
                                         <p className="text-sm font-medium">Ukjend</p>
                                       )}
-                                      {row.role_on_item && <Badge variant="gold">{row.role_on_item}</Badge>}
+                                      {row.role_on_item && <Badge variant="cold">{row.role_on_item}</Badge>}
                                     </div>
                                     {isAdmin && <RemoveProgramItemPersonnelButton assignmentId={row.id} />}
                                   </li>

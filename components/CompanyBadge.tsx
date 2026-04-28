@@ -14,7 +14,7 @@ export function CompanyBadge({ company, size = 'sm', className }: CompanyBadgePr
 
   return (
     <Badge
-      variant={isAlvsvag ? 'gold' : 'default'}
+      variant={isAlvsvag ? 'cold' : 'default'}
       className={cn(size === 'xs' && 'text-[0.6rem] px-1.5', className)}
     >
       {company.name}

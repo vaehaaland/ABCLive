@@ -265,7 +265,7 @@ export default function ImportICloudPage() {
                       >
                         {/* Checkbox / status icon */}
                         <div
-                          className="mt-0.5 flex-shrink-0 cursor-pointer"
+                          className="mt-0.5 shrink-0 cursor-pointer"
                           onClick={() => !alreadyLinked && toggleSelect(event.uid)}
                         >
                           {alreadyLinked ? (
@@ -324,7 +324,7 @@ export default function ImportICloudPage() {
                         {!alreadyLinked && (
                           <button
                             onClick={(e) => { e.stopPropagation(); openLinkPicker(event.uid) }}
-                            className={`flex-shrink-0 flex items-center gap-1.5 text-xs px-2 py-1 rounded transition-colors ${
+                            className={`shrink-0 flex items-center gap-1.5 text-xs px-2 py-1 rounded transition-colors ${
                               isLinking
                                 ? 'text-primary bg-primary/10'
                                 : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
@@ -363,8 +363,8 @@ export default function ImportICloudPage() {
                                   className="flex items-center justify-between text-left px-2 py-1.5 rounded text-sm hover:bg-surface-high transition-colors disabled:opacity-50"
                                 >
                                   <span className="truncate">{gig.name}</span>
-                                  <span className="text-xs text-muted-foreground ml-3 flex-shrink-0">{gig.start_date}</span>
-                                  {linking === event.uid && <Loader2Icon className="size-3 animate-spin ml-2 flex-shrink-0" />}
+                                  <span className="text-xs text-muted-foreground ml-3 shrink-0">{gig.start_date}</span>
+                                  {linking === event.uid && <Loader2Icon className="size-3 animate-spin ml-2 shrink-0" />}
                                 </button>
                               ))}
                             </div>

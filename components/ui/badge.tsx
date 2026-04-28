@@ -15,6 +15,7 @@ const badgeVariants = cva(
         "status-alert":"bg-destructive/15 text-destructive",
         success:       "bg-success/15 text-success",
         gold:          "bg-spotlight-gold/15 text-spotlight-gold",
+        cold:          "bg-spotlight-cold/15 text-spotlight-cold",
         // Live variant — on-air coral with animated pulse dot
         // Usage: <Badge variant="live"><span className="badge-live-dot" />Live</Badge>
         live:          "bg-live-subtle text-live border-live/20",
