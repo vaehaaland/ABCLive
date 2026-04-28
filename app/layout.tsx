@@ -21,6 +21,9 @@ export const metadata: Metadata = {
   appleWebApp: {
     title: "ABC Live",
   },
+  other: {
+    "color-scheme": "dark",
+  },
 };
 
 export default function RootLayout({
