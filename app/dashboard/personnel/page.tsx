@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { formatPhone } from '@/lib/utils'
@@ -6,6 +7,10 @@ import { Button } from '@/components/ui/button'
 import { UserPlusIcon } from 'lucide-react'
 import { PersonnelGrid, type PersonWithSlots, type SlotStatus } from '@/components/personnel/PersonnelGrid'
 import type { Profile } from '@/types/database'
+
+export const metadata: Metadata = {
+  title: 'Personell',
+}
 
 const DAY = 86_400_000
 const ALL_DAYS_SHORT = ['Ma', 'Ti', 'On', 'To', 'Fr', 'Lø', 'Sø']

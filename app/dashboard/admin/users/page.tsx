@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireSuperadmin } from '@/lib/auth/requireSuperadmin'
 import { Avatar } from '@/components/ui/avatar'
@@ -19,6 +20,9 @@ import type { Profile } from '@/types/database'
 import { formatPhone } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
+export const metadata: Metadata = {
+  title: 'Brukarar',
+}
 
 function formatLastSeen(value: string | null) {
   if (!value) {
@@ -136,7 +140,7 @@ export default async function AdminUsersPage() {
             {users.map((u) => {
               const isSelf = u.id === caller.id
               const pending = !u.confirmed_at && !u.last_sign_in_at
-              const lastSeen = formatLastSeen(u.last_sign_in_at)
+              const lastSeen = formatLastSeen(u.last_sign_in_at ?? null)
               return (
                 <TableRow key={u.id}>
                   <TableCell>

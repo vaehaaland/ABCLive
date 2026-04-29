@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { requireSuperadmin } from '@/lib/auth/requireSuperadmin'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -5,6 +6,9 @@ import type { ChecklistTemplateItem } from '@/types/database'
 import ChecklistTemplateManager from './ChecklistTemplateManager'
 
 export const dynamic = 'force-dynamic'
+export const metadata: Metadata = {
+  title: 'Sjekklistemal',
+}
 
 export default async function AdminChecklistPage() {
   await requireSuperadmin()

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -13,6 +14,26 @@ import type { Ticket } from '@/types/database'
 import { getDisplayName } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  await requireSuperadmin()
+
+  const admin = createAdminClient()
+  const { data: ticket } = await admin
+    .from('tickets')
+    .select('title')
+    .eq('id', id)
+    .maybeSingle() as { data: { title: string } | null }
+
+  return {
+    title: ticket?.title ?? 'Ticket',
+  }
+}
 
 export default async function TicketDetailPage({
   params,

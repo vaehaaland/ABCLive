@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { formatPhone, getDisplayName } from '@/lib/utils'
@@ -16,6 +17,10 @@ import {
 import type { AvailabilityBlock } from '@/types/database'
 import AvailabilityBlocksManager from '@/components/profile/AvailabilityBlocksManager'
 import UserActionsMenu from '@/components/profile/UserActionsMenu'
+
+export const metadata: Metadata = {
+  title: 'Profil',
+}
 
 const DAY = 86_400_000
 const DAY_LETTERS = ['Ma', 'Ti', 'On', 'To', 'Fr', 'Lø', 'Sø']
@@ -164,7 +169,7 @@ export default async function ProfilePage() {
           data: { id: string; name: string; venue: string | null; start_date: string; end_date: string; status: string }[] | null
           error: unknown
         }
-    : { data: [] as { id: string; name: string; venue: string | null; start_date: string; end_date: string; status: string }[], error: null }
+    : { data: [] as { id: string; name: string; venue: string | null; start_date: string; end_date: string; status: string }[] }
 
   const itemParentGigMap = new Map((itemParentGigs ?? []).map((gig) => [gig.id, gig]))
 

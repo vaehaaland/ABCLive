@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
@@ -14,6 +15,30 @@ import {
 } from 'lucide-react'
 import type { AvailabilityBlock } from '@/types/database'
 import { BanIcon } from 'lucide-react'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name, email')
+    .eq('id', id)
+    .maybeSingle() as {
+      data: {
+        full_name: string | null
+        email: string | null
+      } | null
+      error: unknown
+    }
+
+  return {
+    title: profile?.full_name ?? profile?.email ?? 'Personell',
+  }
+}
 
 const DAY = 86_400_000
 const DAY_LETTERS = ['Ma', 'Ti', 'On', 'To', 'Fr', 'Lø', 'Sø']
@@ -189,7 +214,7 @@ export default async function PersonnelProfilePage({
           data: { id: string; name: string; venue: string | null; start_date: string; end_date: string; status: string }[] | null
           error: unknown
         }
-    : { data: [] as { id: string; name: string; venue: string | null; start_date: string; end_date: string; status: string }[], error: null }
+    : { data: [] as { id: string; name: string; venue: string | null; start_date: string; end_date: string; status: string }[] }
 
   const itemParentGigMap = new Map((itemParentGigs ?? []).map((gig) => [gig.id, gig]))
 

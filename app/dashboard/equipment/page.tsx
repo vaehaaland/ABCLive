@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -8,6 +9,10 @@ import { PlusIcon } from 'lucide-react'
 import type { Equipment } from '@/types/database'
 import type { EnrichedEquipment, ActiveBooking } from '@/components/equipment/EquipmentTable'
 import { getPendingRequestsForCompany } from '@/app/actions/equipment-requests'
+
+export const metadata: Metadata = {
+  title: 'Utstyr',
+}
 
 export default async function EquipmentPage({
   searchParams,

@@ -16,7 +16,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ABC Live",
+  title: {
+    default: "ABC Live",
+    template: "%s | ABC Live",
+  },
   description: "Oppdragsplanlegging for ABC Studio og Alvsvåg AS",
   manifest: "/manifest.json",
   appleWebApp: {

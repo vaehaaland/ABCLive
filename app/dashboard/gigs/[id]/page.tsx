@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -35,6 +36,24 @@ type GigChecklistItemWithChecker = GigChecklistItem & {
   checker: { id: string; full_name: string | null; nickname: string | null } | null
 }
 import { getDisplayName } from '@/lib/utils'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: gig } = await supabase
+    .from('gigs')
+    .select('name')
+    .eq('id', id)
+    .maybeSingle() as { data: { name: string } | null, error: unknown }
+
+  return {
+    title: gig?.name ?? 'Oppdrag',
+  }
+}
 
 function formatProgramItemRange(startAt: string, endAt: string) {
   const start = new Date(startAt)

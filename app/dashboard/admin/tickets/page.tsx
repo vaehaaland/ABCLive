@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireSuperadmin } from '@/lib/auth/requireSuperadmin'
 import {
@@ -15,6 +16,9 @@ import Link from 'next/link'
 import type { Ticket, TicketStatus } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
+export const metadata: Metadata = {
+  title: 'Tickets',
+}
 
 export default async function AdminTicketsPage({
   searchParams,
@@ -39,11 +43,11 @@ export default async function AdminTicketsPage({
     query = query.eq('status', statusFilter)
   }
 
-  const { data: tickets } = await query as unknown as Promise<{
+  const { data: tickets } = await (query as unknown as Promise<{
     data: (Ticket & {
       created_by_profile: { id: string; full_name: string | null; nickname: string | null; email: string | null }
     })[] | null
-  }>
+  }>)
 
   const statusOptions: { value: TicketStatus; label: string }[] = [
     { value: 'reported', label: 'Rapportert' },

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 import PublicFestivalReportUnlockForm from '@/components/gigs/PublicFestivalReportUnlockForm'
@@ -8,6 +9,19 @@ import {
 } from '@/app/dashboard/gigs/_lib/festival-report'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const meta = await getPublicFestivalReportMeta(slug)
+
+  return {
+    title: meta?.name ?? 'Festivalsrapport',
+  }
+}
 
 export default async function PublicFestivalReportPage({
   params,

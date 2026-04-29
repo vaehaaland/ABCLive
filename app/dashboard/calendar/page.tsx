@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { format, addMonths, subMonths, parseISO } from 'date-fns'
 import Link from 'next/link'
@@ -7,6 +8,10 @@ import { CalendarSearch } from '@/components/calendar/CalendarSearch'
 import { CalendarGrid, type CalendarGig } from '@/components/calendar/CalendarGrid'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+
+export const metadata: Metadata = {
+  title: 'Kalender',
+}
 
 const MONTHS_NO = [
   'Januar', 'Februar', 'Mars', 'April', 'Mai', 'Juni',

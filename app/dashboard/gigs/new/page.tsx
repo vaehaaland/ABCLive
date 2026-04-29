@@ -1,6 +1,11 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import GigForm from '@/components/gigs/GigForm'
+
+export const metadata: Metadata = {
+  title: 'Nytt arrangement',
+}
 
 export default async function NewGigPage() {
   const supabase = await createClient()

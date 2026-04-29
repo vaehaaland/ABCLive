@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import {
@@ -30,6 +31,10 @@ import { cn } from '@/lib/utils'
 import { CompanyBadge } from '@/components/CompanyBadge'
 import type { Gig, GigStatus } from '@/types/database'
 import { statusLabels, statusAccentClass } from '@/lib/gig-status'
+
+export const metadata: Metadata = {
+  title: 'Oppdrag',
+}
 
 const statusVariants: Record<GigStatus, 'default' | 'secondary' | 'success' | 'destructive'> = {
   draft: 'secondary',
