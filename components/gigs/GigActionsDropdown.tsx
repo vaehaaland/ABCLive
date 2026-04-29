@@ -1,10 +1,10 @@
 'use client'
 
 import { useRef, useState, useTransition, useEffect } from 'react'
-import { ChevronDownIcon, CheckCircleIcon, BanIcon, ArchiveRestoreIcon, CalendarRangeIcon, LoaderCircleIcon } from 'lucide-react'
+import { ChevronDownIcon, CheckCircleIcon, BanIcon, ArchiveRestoreIcon, CalendarRangeIcon, LoaderCircleIcon, Trash2Icon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { updateGigStatus, convertToFestival } from '@/app/dashboard/gigs/actions'
+import { updateGigStatus, convertToFestival, deleteGig } from '@/app/dashboard/gigs/actions'
 import type { GigStatus, GigType } from '@/types/database'
 
 type Props = {
@@ -23,6 +23,7 @@ type MenuItem = {
 export default function GigActionsDropdown({ gigId, status, gigType }: Props) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export default function GigActionsDropdown({ gigId, status, gigType }: Props) {
     function handleClickOutside(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false)
+        setConfirmingDelete(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -79,11 +81,9 @@ export default function GigActionsDropdown({ gigId, status, gigType }: Props) {
     })
   }
 
-  const allItems = [...statusItems, ...typeItems]
-  if (allItems.length === 0) return null
-
   function runAction(action: () => Promise<void>) {
     setOpen(false)
+    setConfirmingDelete(false)
     startTransition(async () => {
       await action()
     })
@@ -140,6 +140,38 @@ export default function GigActionsDropdown({ gigId, status, gigType }: Props) {
                 {item.label}
               </button>
             ))}
+
+            {(statusItems.length > 0 || typeItems.length > 0) && (
+              <div className="my-1 h-px bg-border" />
+            )}
+
+            {!confirmingDelete ? (
+              <button
+                onClick={() => setConfirmingDelete(true)}
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+              >
+                <Trash2Icon className="size-4" />
+                Slett gig
+              </button>
+            ) : (
+              <div className="px-2.5 py-2 flex flex-col gap-2">
+                <p className="text-xs text-destructive font-medium">Sikker? Oppdraget kan gjenopprettast seinare.</p>
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => runAction(() => deleteGig(gigId))}
+                    className="flex-1 text-xs rounded-md px-2 py-1 bg-destructive text-destructive-foreground hover:bg-destructive/80 transition-colors"
+                  >
+                    Slett
+                  </button>
+                  <button
+                    onClick={() => setConfirmingDelete(false)}
+                    className="flex-1 text-xs rounded-md px-2 py-1 bg-surface-high hover:bg-surface-highest transition-colors"
+                  >
+                    Avbryt
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

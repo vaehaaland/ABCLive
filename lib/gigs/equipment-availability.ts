@@ -2,8 +2,8 @@ type AllocationInput = {
   equipment_id: string
   quantity_needed: number
   gigs:
-    | { start_date: string; end_date: string }
-    | { start_date: string; end_date: string }[]
+    | { start_date: string; end_date: string; deleted_at?: string | null }
+    | { start_date: string; end_date: string; deleted_at?: string | null }[]
 }
 
 export function buildAllocatedMap(
@@ -15,6 +15,7 @@ export function buildAllocatedMap(
   allocations.forEach((a) => {
     const gigs = Array.isArray(a.gigs) ? a.gigs : [a.gigs]
     gigs.forEach((g) => {
+      if (g.deleted_at) return
       if (g.start_date <= gigEndDate && g.end_date >= gigStartDate) {
         allocatedMap.set(a.equipment_id, (allocatedMap.get(a.equipment_id) ?? 0) + a.quantity_needed)
       }

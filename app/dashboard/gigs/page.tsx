@@ -14,6 +14,7 @@ import { nb } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PastGigsToggle } from '@/components/gigs/PastGigsToggle'
+import { ShowDeletedToggle } from '@/components/gigs/ShowDeletedToggle'
 import { GigSearchInput } from '@/components/gigs/GigSearchInput'
 import { GigStatusFilter } from '@/components/gigs/GigStatusFilter'
 import { GigSortDropdown } from '@/components/gigs/GigSortDropdown'
@@ -31,6 +32,7 @@ import { cn } from '@/lib/utils'
 import { CompanyBadge } from '@/components/CompanyBadge'
 import type { Gig, GigStatus } from '@/types/database'
 import { statusLabels, statusAccentClass } from '@/lib/gig-status'
+import RestoreGigButton from '@/components/gigs/RestoreGigButton'
 
 export const metadata: Metadata = {
   title: 'Oppdrag',
@@ -71,6 +73,7 @@ export default async function GigsPage({
   searchParams: Promise<{
     sort?: string
     showPast?: string
+    showDeleted?: string
     view?: string
     search?: string
     layout?: string
@@ -81,6 +84,8 @@ export default async function GigsPage({
   const sp = await searchParams
   const sort: GigSort = sp.sort === 'name' ? 'name' : 'date'
   const showPast = sp.showPast === '1'
+  // showDeleted is resolved after isAdmin is known; placeholder here, applied below
+  const showDeletedParam = sp.showDeleted === '1'
   const search = sp.search?.trim() ?? ''
   const layout: GigLayout = sp.layout === 'list' ? 'list' : 'grid'
   const companyFilter = sp.company ?? null
@@ -98,6 +103,7 @@ export default async function GigsPage({
   if (layout === 'list') baseParams.set('layout', 'list')
   if (statusFilter.length > 0) baseParams.set('status', statusFilter.join(','))
   if (companyFilter) baseParams.set('company', companyFilter)
+  if (showDeletedParam) baseParams.set('showDeleted', '1')
 
   const buildHref = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(baseParams)
@@ -152,21 +158,26 @@ export default async function GigsPage({
   const isAdmin = profile?.role === 'admin'
   const isSuperadmin = profile?.is_superadmin === true
   const viewMine = isAdmin && sp.view === 'mine'
+  const showDeleted = isAdmin && showDeletedParam
 
   const myRoleMap = new Map(
     (myAssignments ?? []).map((a) => [a.gig_id, a.role_on_gig])
   )
   const myGigIds = [...myRoleMap.keys()]
 
-  // Stats query — all non-cancelled gigs, no date filter
-  let statsQuery = supabase.from('gigs').select('status').neq('status', 'cancelled')
+  // Stats query — all non-cancelled, non-deleted gigs, no date filter
+  let statsQuery = supabase.from('gigs').select('status').neq('status', 'cancelled').is('deleted_at', null)
   if (companyFilter) statsQuery = statsQuery.eq('company_id', companyFilter)
   const statsQueryPromise = statsQuery as unknown as Promise<{
     data: { status: string }[] | null
     error: unknown
   }>
 
-  let gigsQuery = supabase.from('gigs').select('id, name, gig_type, venue, client, start_date, end_date, status, icloud_uid, company_id')
+  let gigsQuery = supabase.from('gigs').select('id, name, gig_type, venue, client, start_date, end_date, status, icloud_uid, company_id, deleted_at')
+
+  if (!showDeleted) {
+    gigsQuery = gigsQuery.is('deleted_at', null)
+  }
 
   if (!showPast) {
     gigsQuery = gigsQuery.gt(
@@ -296,6 +307,7 @@ export default async function GigsPage({
   }
 
   const renderGigCard = (gig: Gig, showCompany: boolean) => {
+    const isDeleted = !!gig.deleted_at
     const statusLabel = statusLabels[gig.status as GigStatus]
     const statusVariant = statusVariants[gig.status as GigStatus]
     const accent = statusAccentClass[gig.status as GigStatus]
@@ -347,6 +359,8 @@ export default async function GigsPage({
                 <Cloud className="h-3.5 w-3.5 text-muted-foreground/40" aria-label="Synkronisert frå iCloud" />
               )}
               <Badge variant={statusVariant}>{statusLabel}</Badge>
+              {isDeleted && <Badge variant="destructive">Sletta</Badge>}
+              {isDeleted && <RestoreGigButton gigId={gig.id} />}
             </div>
           </div>
         </Link>
@@ -394,6 +408,12 @@ export default async function GigsPage({
               </span>
             )}
           </div>
+          {isDeleted && (
+            <div className="mt-1 flex items-center gap-2">
+              <Badge variant="destructive">Sletta</Badge>
+              <RestoreGigButton gigId={gig.id} />
+            </div>
+          )}
         </div>
       </Link>
     )
@@ -527,6 +547,9 @@ export default async function GigsPage({
 
         {/* Past gigs toggle */}
         <PastGigsToggle defaultChecked={showPast} />
+        {/* Show deleted toggle */}
+        {isAdmin && <ShowDeletedToggle defaultChecked={showDeleted} />}
+
 
         {/* Grid/list toggle */}
         <div className="flex bg-surface-high rounded-lg p-[3px] gap-0.5">

@@ -29,3 +29,21 @@ export async function convertToFestival(gigId: string) {
   if (error) throw error
   revalidatePath(`/dashboard/gigs/${gigId}`)
 }
+
+export async function deleteGig(gigId: string) {
+  const supabase = await requireAdmin()
+  const { error } = await supabase
+    .from('gigs').update({ deleted_at: new Date().toISOString() }).eq('id', gigId)
+  if (error) throw error
+  revalidatePath('/dashboard/gigs')
+  revalidatePath(`/dashboard/gigs/${gigId}`)
+}
+
+export async function restoreGig(gigId: string) {
+  const supabase = await requireAdmin()
+  const { error } = await supabase
+    .from('gigs').update({ deleted_at: null }).eq('id', gigId)
+  if (error) throw error
+  revalidatePath('/dashboard/gigs')
+  revalidatePath(`/dashboard/gigs/${gigId}`)
+}
