@@ -48,7 +48,7 @@ export function GigSearchInput({ defaultValue }: { defaultValue: string }) {
   return (
     <div
       className={cn(
-        'relative flex items-center w-full rounded-xl border border-white/10 bg-surface-high transition-opacity',
+        'relative flex w-full items-center rounded-xl border border-input bg-surface-high transition-opacity',
         isPending && 'opacity-70'
       )}
     >

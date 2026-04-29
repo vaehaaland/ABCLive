@@ -10,17 +10,18 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:       "bg-primary/15 text-primary",
-        secondary:     "bg-surface-highest text-muted-foreground",
+        secondary:     "bg-surface-highest text-foreground",
         destructive:   "bg-destructive/15 text-destructive",
         "status-alert":"bg-destructive/15 text-destructive",
         success:       "bg-success/15 text-success",
         gold:          "bg-spotlight-gold/15 text-spotlight-gold",
         cold:          "bg-spotlight-cold/15 text-spotlight-cold",
+        role:          "bg-role-accent/15 text-role-accent",
         // Live variant — on-air coral with animated pulse dot
         // Usage: <Badge variant="live"><span className="badge-live-dot" />Live</Badge>
         live:          "bg-live-subtle text-live border-live/20",
-        outline:       "border-white/15 text-foreground",
-        ghost:         "hover:bg-surface-high hover:text-muted-foreground",
+        outline:       "border-input bg-surface-container/70 text-foreground",
+        ghost:         "text-muted-foreground hover:bg-surface-high hover:text-foreground",
         link:          "text-primary underline-offset-4 hover:underline",
       },
     },

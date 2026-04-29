@@ -406,7 +406,7 @@ export default async function GigDetailPage({
                           )}
                           {isAdmin
                             ? <EditPersonnelRoleInline assignmentId={row.id} currentRole={row.role_on_gig ?? null} />
-                            : row.role_on_gig && <Badge variant="cold">{row.role_on_gig}</Badge>
+                            : row.role_on_gig && <Badge variant="role">{row.role_on_gig}</Badge>
                           }
                           {statusBadge}
                         </div>
@@ -430,7 +430,7 @@ export default async function GigDetailPage({
                     <li key={row.id} className="flex items-center justify-between py-1.5">
                       <div className="flex items-center gap-2.5">
                         <p className="text-sm font-medium">{row.name}</p>
-                        {row.role_on_gig && <Badge variant="cold">{row.role_on_gig}</Badge>}
+                        {row.role_on_gig && <Badge variant="role">{row.role_on_gig}</Badge>}
                         <Badge variant="outline" className="text-xs">Ekstern</Badge>
                         {row.company && (
                           <span className="text-xs text-muted-foreground">{row.company}</span>
@@ -558,7 +558,7 @@ export default async function GigDetailPage({
                                       ) : (
                                         <p className="text-sm font-medium">Ukjend</p>
                                       )}
-                                      {row.role_on_item && <Badge variant="cold">{row.role_on_item}</Badge>}
+                                      {row.role_on_item && <Badge variant="role">{row.role_on_item}</Badge>}
                                     </div>
                                     {isAdmin && <RemoveProgramItemPersonnelButton assignmentId={row.id} />}
                                   </li>

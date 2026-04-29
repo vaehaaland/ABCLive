@@ -41,7 +41,7 @@ export function PastGigsToggle({
   return (
     <label
       className={cn(
-        'inline-flex items-center gap-2 rounded-xl border border-white/10 bg-surface-high px-3 py-1.5 text-sm transition-opacity',
+        'inline-flex items-center gap-2 rounded-xl border border-input bg-surface-high px-3 py-1.5 text-sm transition-opacity',
         isPending && 'opacity-70'
       )}
     >
@@ -62,12 +62,12 @@ export function PastGigsToggle({
           aria-hidden="true"
           className={cn(
             'relative h-5 w-9 rounded-full transition-colors',
-            checked ? 'bg-primary' : 'bg-white/15'
+            checked ? 'bg-primary' : 'bg-surface-highest'
           )}
         >
           <span
             className={cn(
-              'absolute top-0.5 size-4 rounded-full bg-white transition-transform',
+              'absolute top-0.5 size-4 rounded-full bg-surface-container shadow-sm transition-transform',
               checked ? 'translate-x-[18px]' : 'translate-x-0.5'
             )}
           />

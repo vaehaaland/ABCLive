@@ -14,10 +14,10 @@ const buttonVariants = cva(
           "bg-gradient-to-r from-primary to-stage-purple-dim text-primary-foreground font-semibold hover:opacity-90 hover:shadow-[0_4px_20px_oklch(0.68_0.26_292_/_0.25)]",
         // Ghost with generous rounding — secondary actions
         secondary:
-          "rounded-2xl border border-white/15 bg-transparent text-foreground font-medium hover:bg-surface-highest hover:border-white/25",
+          "rounded-2xl border border-input bg-surface-container/70 text-foreground font-medium hover:bg-surface-highest hover:border-ring/25",
         // Subtle surface fill — tertiary inline actions
         outline:
-          "border-white/10 bg-surface-high text-foreground hover:bg-surface-highest hover:text-foreground",
+          "border-input bg-surface-high text-foreground hover:bg-surface-highest hover:text-foreground",
         // Nav items — no bg, primary on hover
         ghost:
           "hover:bg-surface-high hover:text-primary aria-expanded:bg-surface-high",

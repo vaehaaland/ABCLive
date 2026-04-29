@@ -61,7 +61,7 @@ export function GigSortDropdown({ defaultValue }: { defaultValue: GigSort }) {
         aria-expanded={open}
         className={cn(
           'inline-flex items-center gap-1.5 rounded-xl border bg-surface-high px-3 py-1.5 text-xs font-medium transition-all',
-          open ? 'border-primary/40 text-foreground' : 'border-white/10 text-muted-foreground hover:text-foreground',
+          open ? 'border-primary/40 text-foreground' : 'border-input text-muted-foreground hover:text-foreground',
           isPending && 'opacity-70'
         )}
       >
@@ -71,7 +71,7 @@ export function GigSortDropdown({ defaultValue }: { defaultValue: GigSort }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1.5 z-50 min-w-[140px] rounded-xl border border-white/10 bg-surface-container shadow-xl overflow-hidden">
+        <div className="absolute right-0 top-full mt-1.5 z-50 min-w-[140px] overflow-hidden rounded-xl border border-input bg-surface-container shadow-xl">
           {OPTIONS.map(({ value: optVal, label }) => {
             const active = value === optVal
             return (
