@@ -76,7 +76,7 @@ function CommentRow({
 
   return (
     <div className="flex gap-2.5">
-      <Avatar src={author.avatar_url} name={author.full_name} size="sm" />
+      <Avatar src={author.avatar_url} name={author.full_name} size="sm" id={author.id} />
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-1.5 flex-wrap">
           <span className="text-sm font-medium">{getDisplayName(author, 'Ukjend')}</span>
@@ -426,7 +426,7 @@ export default function GigCommentsSection({
           })}
 
           <div className="flex gap-2.5 pt-4 mt-2">
-            <Avatar src={currentUserAvatarUrl} name={currentUserName} size="sm" className="mt-1 shrink-0" />
+            <Avatar src={currentUserAvatarUrl} name={currentUserName} size="sm" id={currentUserId} className="mt-1 shrink-0" />
             <div className="flex-1 flex gap-2">
               <Textarea
                 ref={mainTextareaRef}

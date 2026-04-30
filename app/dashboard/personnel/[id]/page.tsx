@@ -310,7 +310,7 @@ export default async function PersonnelProfilePage({
 
         {/* Avatar */}
         <div className="mx-auto">
-          <Avatar src={profile.avatar_url} name={profile.full_name} size="xl" />
+          <Avatar src={profile.avatar_url} name={profile.full_name} size="xl" id={profile.id} />
         </div>
 
         {/* Name + role */}

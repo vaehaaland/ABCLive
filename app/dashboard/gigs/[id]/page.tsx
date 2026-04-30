@@ -429,7 +429,7 @@ export default async function GigDetailPage({
                           {person?.id ? (
                             <PersonHoverCard profileId={person.id} name={person.full_name}>
                               <div className="flex items-center gap-2.5">
-                                <Avatar src={person.avatar_url} name={person.full_name} size="sm" />
+                                <Avatar src={person.avatar_url} name={person.full_name} size="sm" id={person.id} />
                                 <p className="text-sm font-medium">{getDisplayName(person, 'Ukjend')}</p>
                               </div>
                             </PersonHoverCard>
@@ -583,7 +583,7 @@ export default async function GigDetailPage({
                                       {person?.id ? (
                                         <PersonHoverCard profileId={person.id} name={person.full_name}>
                                           <div className="flex items-center gap-2.5">
-                                            <Avatar src={person.avatar_url} name={person.full_name} size="sm" />
+                                            <Avatar src={person.avatar_url} name={person.full_name} size="sm" id={person.id} />
                                             <p className="text-sm font-medium">{getDisplayName(person, 'Ukjend')}</p>
                                           </div>
                                         </PersonHoverCard>

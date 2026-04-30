@@ -5,6 +5,16 @@ interface AvatarProps extends React.ComponentProps<"div"> {
   src?: string | null
   name?: string | null
   size?: "sm" | "md" | "lg" | "xl"
+  id?: string | null
+}
+
+function getAvatarGradient(id: string): string {
+  let hash = 0
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) & 0xffffffff
+  }
+  const hue = Math.abs(hash) % 360
+  return `linear-gradient(135deg, oklch(0.68 0.22 ${hue}), oklch(0.55 0.18 ${hue + 20}))`
 }
 
 const sizeClasses: Record<NonNullable<AvatarProps["size"]>, string> = {
@@ -24,7 +34,7 @@ function getInitials(name: string | null | undefined): string {
     .join("")
 }
 
-export function Avatar({ src, name, size = "md", className, ...props }: AvatarProps) {
+export function Avatar({ src, name, size = "md", id, className, style, ...props }: AvatarProps) {
   const initials = getInitials(name)
   const safeSrc = React.useMemo(() => {
     if (!src) return null
@@ -40,15 +50,22 @@ export function Avatar({ src, name, size = "md", className, ...props }: AvatarPr
     }
   }, [src])
 
+  const useGradient = !safeSrc && !!id
+  const mergedStyle = useGradient
+    ? { background: getAvatarGradient(id!), color: "oklch(0.08 0 0)", ...style }
+    : style
+
   return (
     <div
       data-slot="avatar"
       className={cn(
         "relative inline-flex shrink-0 items-center justify-center rounded-full overflow-hidden",
-        "bg-surface-highest text-primary type-title",
+        "font-semibold font-heading",
+        useGradient ? "" : "bg-surface-highest text-primary",
         sizeClasses[size],
         className
       )}
+      style={mergedStyle}
       {...props}
     >
       {safeSrc ? (

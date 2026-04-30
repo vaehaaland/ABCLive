@@ -85,7 +85,7 @@ export default function ProfileAvatar({
 
   return (
     <div className={cn("relative inline-block", className)}>
-      <Avatar src={avatarUrl} name={name} size={size} />
+      <Avatar src={avatarUrl} name={name} size={size} id={userId} />
       {editable && (
         <>
           <button

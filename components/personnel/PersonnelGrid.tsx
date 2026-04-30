@@ -21,8 +21,6 @@ export type PersonWithSlots = {
   busyToday: SlotStatus
   slots: SlotStatus[]
   avatar_url: string | null
-  avatarGradient: string
-  initials: string
   primaryCompany?: { id: string; name: string; slug: string } | null
 }
 
@@ -82,7 +80,7 @@ function PersonCard({ person, dayLabels }: { person: PersonWithSlots; dayLabels:
             src={person.avatar_url}
             name={person.full_name}
             size="md"
-            style={!person.avatar_url ? { background: person.avatarGradient, color: 'oklch(0.08 0 0)' } : undefined}
+            id={person.id}
           />
           <div className="min-w-0">
             <p className="type-title text-[0.9375rem] leading-tight truncate">
@@ -170,7 +168,7 @@ function PersonRow({ person, dayLabels }: { person: PersonWithSlots; dayLabels: 
           src={person.avatar_url}
           name={person.full_name}
           size="sm"
-          style={!person.avatar_url ? { background: person.avatarGradient, color: 'oklch(0.08 0 0)' } : undefined}
+          id={person.id}
         />
         <div className="min-w-0">
           <p className="type-title text-sm leading-tight truncate">

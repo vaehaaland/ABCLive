@@ -145,7 +145,7 @@ export default async function AdminUsersPage() {
                 <TableRow key={u.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <Avatar src={u.avatar_url} name={u.full_name} size="sm" />
+                      <Avatar src={u.avatar_url} name={u.full_name} size="sm" id={u.id} />
                       <div className="flex flex-col gap-0.5">
                         <span className="font-medium">{u.full_name ?? '—'}</span>
                         {u.primary_role && (
