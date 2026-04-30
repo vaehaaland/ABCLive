@@ -89,11 +89,11 @@ export function EquipmentCard({ item }: { item: EnrichedEquipment }) {
       {/* Card body */}
       <div className="flex flex-col gap-2 px-3 py-3">
         <div>
-          <div className="font-heading font-semibold text-sm leading-snug">{item.name}</div>
-          <div className="text-xs text-muted-foreground font-mono mt-0.5">{assetNumber}</div>
+          <div className="type-title text-sm leading-snug">{item.name}</div>
+          <div className="type-label text-muted-foreground font-mono mt-0.5">{assetNumber}</div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 type-label text-muted-foreground">
           <span>{item.quantity} {item.quantity === 1 ? 'unit' : 'units'}</span>
           {item.description && (
             <>
@@ -106,7 +106,7 @@ export function EquipmentCard({ item }: { item: EnrichedEquipment }) {
         {/* Timeline */}
         {item.activeBooking && timeline && (
           <div className="mt-1">
-            <div className="flex justify-between text-[0.65rem] text-muted-foreground mb-1">
+            <div className="flex justify-between type-micro normal-case tracking-normal text-muted-foreground mb-1">
               <span>{formatDate(item.activeBooking.start_date)}</span>
               <span>{formatDate(item.activeBooking.end_date)}</span>
             </div>
@@ -122,3 +122,4 @@ export function EquipmentCard({ item }: { item: EnrichedEquipment }) {
     </div>
   )
 }
+

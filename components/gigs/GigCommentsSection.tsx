@@ -80,12 +80,12 @@ function CommentRow({
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-1.5 flex-wrap">
           <span className="text-sm font-medium">{getDisplayName(author, 'Ukjend')}</span>
-          <span className="text-xs text-muted-foreground">
+          <span className="type-label text-muted-foreground">
             {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: nb })}
           </span>
         </div>
         {replyTargetName && (
-          <p className="text-xs text-muted-foreground mb-0.5">Svarte til {replyTargetName}</p>
+          <p className="type-label text-muted-foreground mb-0.5">Svarte til {replyTargetName}</p>
         )}
         <p className="text-sm mt-0.5 whitespace-pre-wrap break-words">
           {renderCommentBody(comment.body)}
@@ -94,7 +94,7 @@ function CommentRow({
           {!confirmingDelete && (
             <button
               onClick={onReply}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="type-label text-muted-foreground hover:text-foreground transition-colors"
             >
               Svar
             </button>
@@ -102,17 +102,17 @@ function CommentRow({
           {canDelete && (
             confirmingDelete ? (
               <span className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Slette kommentaren?</span>
+                <span className="type-label text-muted-foreground">Slette kommentaren?</span>
                 <button
                   onClick={() => { setConfirmingDelete(false); onDelete() }}
                   disabled={deletingId === comment.id}
-                  className="text-xs text-destructive hover:text-destructive/80 font-medium transition-colors disabled:opacity-50"
+                  className="type-label text-destructive hover:text-destructive/80 font-medium transition-colors disabled:opacity-50"
                 >
                   Ja
                 </button>
                 <button
                   onClick={() => setConfirmingDelete(false)}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  className="type-label text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Nei
                 </button>
@@ -120,7 +120,7 @@ function CommentRow({
             ) : (
               <button
                 onClick={() => setConfirmingDelete(true)}
-                className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+                className="type-label text-muted-foreground hover:text-destructive transition-colors"
               >
                 Slett
               </button>
@@ -481,3 +481,4 @@ export default function GigCommentsSection({
     </>
   )
 }
+

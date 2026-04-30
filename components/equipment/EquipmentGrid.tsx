@@ -55,8 +55,8 @@ export function EquipmentGrid({ equipment, categories }: Props) {
         groupKeys.map((cat) => (
           <section key={cat}>
             <div className="flex items-baseline justify-between mb-4">
-              <h2 className="font-heading font-semibold text-base">{cat}</h2>
-              <span className="text-xs text-muted-foreground">{grouped[cat].length} items</span>
+              <h2 className="type-title">{cat}</h2>
+              <span className="type-label text-muted-foreground">{grouped[cat].length} items</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {grouped[cat].map((item) => (
@@ -69,3 +69,4 @@ export function EquipmentGrid({ equipment, categories }: Props) {
     </div>
   )
 }
+

@@ -107,7 +107,7 @@ export default function NotificationBell() {
       {open && (
         <div className="absolute right-0 top-full mt-2 z-50 w-80 rounded-xl bg-popover ring-1 ring-foreground/10 shadow-[0_40px_60px_oklch(0_0_0_/_0.06)] overflow-hidden">
           <div className="px-4 py-3 bg-surface-high rounded-t-xl">
-            <span className="text-sm font-medium font-heading">Varslingar</span>
+            <span className="type-title text-sm">Varslingar</span>
           </div>
 
           <div className="max-h-96 overflow-y-auto">
@@ -129,7 +129,7 @@ export default function NotificationBell() {
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm leading-snug">{notificationText(n)}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="type-label text-muted-foreground mt-0.5">
                     {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: nb })}
                   </p>
                 </div>
@@ -144,3 +144,4 @@ export default function NotificationBell() {
     </div>
   )
 }
+

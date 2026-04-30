@@ -60,13 +60,13 @@ export default function ICloudSettingsPageClient() {
     <div className="flex max-w-lg flex-col gap-8">
       <div className="flex items-center gap-3">
         <CloudIcon className="size-7 text-muted-foreground" />
-        <h1 className="font-heading text-3xl font-bold tracking-tight">iCloud Kalender</h1>
+        <h1 className="type-h1 text-3xl tracking-tight">iCloud Kalender</h1>
       </div>
 
       <p className="text-sm leading-relaxed text-muted-foreground">
         Kople ABCLive til ein felles iCloud-konto for å importere events som gigs.
         Du treng eit <strong>app-spesifikt passord</strong> frå{' '}
-        <span className="rounded bg-surface-high px-1 py-0.5 font-mono text-xs">appleid.apple.com</span>
+        <span className="rounded bg-surface-high px-1 py-0.5 font-mono type-label">appleid.apple.com</span>
         {' '}bruk ikkje det vanlege Apple-passordet ditt.
       </p>
 
@@ -75,7 +75,7 @@ export default function ICloudSettingsPageClient() {
       ) : (
         <form onSubmit={handleSave} className="flex flex-col gap-5">
           {updatedAt && (
-            <p className="text-xs text-muted-foreground">
+            <p className="type-label text-muted-foreground">
               Sist lagra: {new Date(updatedAt).toLocaleString('nb-NO')}
             </p>
           )}
@@ -128,3 +128,4 @@ export default function ICloudSettingsPageClient() {
     </div>
   )
 }
+

@@ -20,7 +20,7 @@ export default function PublicFestivalReportUnlockForm({ slug }: PublicFestivalR
   return (
     <form action={formAction} className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-surface-container p-6">
       <div className="space-y-1">
-        <h2 className="font-heading text-lg font-semibold">Lås opp festivalsrapport</h2>
+        <h2 className="type-h3 text-lg">Lås opp festivalsrapport</h2>
         <p className="text-sm text-muted-foreground">
           Skriv inn passordet for å opne denne delte rapporten.
         </p>

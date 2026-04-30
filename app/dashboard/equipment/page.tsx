@@ -121,8 +121,8 @@ export default async function EquipmentPage({
       <div className="max-w-[1200px] mx-auto px-6 py-8 w-full">
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="font-heading font-extrabold text-[1.75rem] leading-none tracking-[-0.035em]">Utstyr</h1>
-            <p className="text-sm text-muted-foreground mt-1">Oversikt over produksjonsutstyr og tilgjengelegheit</p>
+            <h1 className="type-h2">Utstyr</h1>
+            <p className="type-body-sm text-muted-foreground mt-1">Oversikt over produksjonsutstyr og tilgjengelegheit</p>
           </div>
           <Button asChild>
             <Link href="/dashboard/equipment/new"><PlusIcon className="size-4" />Legg til utstyr</Link>
@@ -161,7 +161,7 @@ export default async function EquipmentPage({
 
         {allEquipment.length === 0 ? (
           <div className="rounded-xl bg-surface-container p-12 flex flex-col items-center gap-3 text-center">
-            <p className="font-heading text-lg font-semibold text-foreground">Ingen utstyr registrert</p>
+            <p className="type-h3 text-lg text-foreground">Ingen utstyr registrert</p>
             <p className="text-sm text-muted-foreground max-w-xs">Legg til det første utstyret i inventaret for å kome i gang med sporing.</p>
           </div>
         ) : (

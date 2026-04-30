@@ -49,7 +49,7 @@ export default function EditPersonnelRoleInline({ assignmentId, currentRole }: P
         onBlur={save}
         onKeyDown={onKeyDown}
         placeholder="Rolle…"
-        className="h-5 w-32 rounded border border-input bg-surface-high px-1.5 text-xs text-foreground outline-none focus:border-primary"
+        className="h-5 w-32 rounded border border-input bg-surface-high px-1.5 type-label text-foreground outline-none focus:border-primary"
       />
     )
   }
@@ -68,9 +68,10 @@ export default function EditPersonnelRoleInline({ assignmentId, currentRole }: P
     <button
       type="button"
       onClick={startEdit}
-      className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+      className="type-label text-muted-foreground/50 hover:text-muted-foreground transition-colors"
     >
       + rolle
     </button>
   )
 }
+

@@ -89,13 +89,13 @@ export default async function CalendarPage({
       {/* Sticky page header */}
       <div className="sticky top-14 z-30 bg-surface/85 backdrop-blur-xl border-b border-border">
         <div className="max-w-[1200px] mx-auto px-6 py-3 flex items-center gap-3 flex-wrap">
-          <h1 className="font-heading font-extrabold text-xl leading-none tracking-[-0.035em]">
+          <h1 className="type-h2 text-xl leading-none">
             {MONTHS_NO[month - 1]} {year}
           </h1>
 
           <Link
             href={prevHref}
-            className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-high transition-colors"
+            className="flex items-center gap-1 type-label px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-high transition-colors"
           >
             <ChevronLeftIcon className="size-3.5" />
             Førre
@@ -103,14 +103,14 @@ export default async function CalendarPage({
 
           <Link
             href={todayHref}
-            className="text-xs font-medium px-2.5 py-1.5 rounded-lg border border-white/10 text-muted-foreground hover:text-foreground hover:bg-surface-high transition-colors"
+            className="type-label px-2.5 py-1.5 rounded-lg border border-white/10 text-muted-foreground hover:text-foreground hover:bg-surface-high transition-colors"
           >
             I dag
           </Link>
 
           <Link
             href={nextHref}
-            className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-high transition-colors"
+            className="flex items-center gap-1 type-label px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-high transition-colors"
           >
             Neste
             <ChevronRightIcon className="size-3.5" />
@@ -126,7 +126,7 @@ export default async function CalendarPage({
             ].map((l) => (
               <div key={l.label} className="flex items-center gap-1.5">
                 <div className={cn('size-2 rounded-full', l.color)} />
-                <span className="text-[0.6875rem] text-muted-foreground">
+                <span className="type-micro normal-case tracking-normal text-muted-foreground">
                   {l.label}
                 </span>
               </div>
@@ -134,7 +134,7 @@ export default async function CalendarPage({
           </div>
 
           <div className="ml-auto flex items-center gap-2">
-            <span className="text-[0.6875rem] font-mono text-muted-foreground/60">
+            <span className="type-micro normal-case tracking-normal font-mono text-muted-foreground/60">
               {safeGigs.length} oppdrag
             </span>
             <CalendarSearch />
@@ -158,3 +158,4 @@ export default async function CalendarPage({
     </div>
   )
 }
+

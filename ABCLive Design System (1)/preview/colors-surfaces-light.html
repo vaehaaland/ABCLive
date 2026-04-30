@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Manrope:wght@700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: oklch(0.92 0.02 282); font-family: 'Inter', sans-serif; padding: 20px; }
+  .row { display: flex; gap: 6px; }
+  .swatch { flex: 1; border-radius: 10px; padding: 14px 12px; border: 1px solid oklch(0 0 0 / 6%); }
+  .label { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 10px; color: oklch(0.25 0.02 282); margin-bottom: 3px; }
+  .val { font-size: 9px; color: oklch(0.55 0.01 282); }
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="swatch" style="background:oklch(0.98 0.008 282)"><div class="label">Surface</div><div class="val">0.98 0.008 282</div></div>
+  <div class="swatch" style="background:oklch(0.96 0.012 282)"><div class="label">Surface Low</div><div class="val">0.96 0.012 282</div></div>
+  <div class="swatch" style="background:oklch(1.00 0 0)"><div class="label">Container</div><div class="val">Pure white</div></div>
+  <div class="swatch" style="background:oklch(0.94 0.016 282)"><div class="label">High</div><div class="val">0.94 0.016 282</div></div>
+  <div class="swatch" style="background:oklch(0.90 0.020 282)"><div class="label">Highest</div><div class="val">0.90 0.020 282</div></div>
+</div>
+</body>
+</html>

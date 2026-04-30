@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ABCLive — UI Kit</title>
+<link rel="stylesheet" href="tokens.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script> integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="components.jsx"></script>
+<style>
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: oklch(0.27 0.016 282); border-radius: 3px; }
+  /* Select reset */
+  select { appearance: none; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ─── Mock Data ────────────────────────────────────────────────────────────────
+
+const GIGS = [
+  { id: '1', name: 'Bergenfest — Hovudscene', gig_type: 'festival', venue: 'Bergenhus Festning', client: 'Bergenfest AS', start_date: '2025-06-14', end_date: '2025-06-16', status: 'confirmed', company: 'ABC Studio', personnel: ['Arne Vehaaland', 'Kari Nilsen', 'Per Hansen'] },
+  { id: '2', name: 'NRK Direktesending Studio B', gig_type: 'single', venue: 'NRK Oslo', client: 'NRK', start_date: '2025-05-02', end_date: '2025-05-02', status: 'confirmed', company: 'ABC Studio', personnel: ['Arne Vehaaland'] },
+  { id: '3', name: 'Sommerkonsert — Utandørs', gig_type: 'single', venue: 'Rådhusplassen', client: 'Oslo Kommune', start_date: '2025-07-22', end_date: '2025-07-22', status: 'draft', company: 'ABC Studio', personnel: [] },
+  { id: '4', name: 'Trondheim Spektrum — Rock Night', gig_type: 'single', venue: 'Trondheim Spektrum', client: null, start_date: '2025-05-10', end_date: '2025-05-10', status: 'confirmed', company: 'Alvsvåg AS', personnel: ['Kari Nilsen'] },
+  { id: '5', name: 'Malakoff Rockfestival', gig_type: 'festival', venue: 'Nordfjordeid', client: 'Malakoff AS', start_date: '2025-07-03', end_date: '2025-07-06', status: 'draft', company: 'ABC Studio', personnel: ['Per Hansen', 'Lars Svendsen'] },
+  { id: '6', name: 'Spellemannprisen Gala', gig_type: 'single', venue: 'Grieg Hall, Bergen', client: 'IFPI Norge', start_date: '2025-04-28', end_date: '2025-04-28', status: 'completed', company: 'ABC Studio', personnel: ['Arne Vehaaland', 'Kari Nilsen'] },
+  { id: '7', name: 'Øyafestivalen — Amfiscene', gig_type: 'festival', venue: 'Tøyenparken', client: 'Øya AS', start_date: '2025-08-06', end_date: '2025-08-09', status: 'draft', company: 'ABC Studio', personnel: [] },
+  { id: '8', name: 'Konsert — Stavanger Konserthus', gig_type: 'single', venue: 'Stavanger Konserthus', client: 'Stavanger Symfoniorkester', start_date: '2025-05-15', end_date: '2025-05-15', status: 'confirmed', company: 'Alvsvåg AS', personnel: ['Lars Svendsen'] },
+];
+
+const STATUS_LABELS = { draft:'Utkast', confirmed:'Bekrefta', completed:'Fullført', cancelled:'Avlyst' };
+const STATUS_VARIANTS = { draft:'secondary', confirmed:'default', completed:'success', cancelled:'destructive' };
+const STATUS_ACCENT = {
+  draft:     'oklch(0.55 0.010 282)',
+  confirmed: 'oklch(0.63 0.27 305)',
+  completed: 'oklch(0.75 0.18 158)',
+  cancelled: 'oklch(0.65 0.22 20)',
+};
+
+function formatDate(d1, d2) {
+  const fmt = (d) => {
+    const dt = new Date(d + 'T00:00:00');
+    return dt.toLocaleDateString('nb-NO', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+  return d1 === d2 ? fmt(d1) : `${fmt(d1).replace(/\d{4}/, '').trim()} – ${fmt(d2)}`;
+}
+
+// ─── Nav Header ───────────────────────────────────────────────────────────────
+
+function NavHeader({ page, setPage, darkMode, setDarkMode }) {
+  const navItems = [
+    { id: 'gigs', label: 'Oppdrag' },
+    { id: 'calendar', label: 'Kalender' },
+    { id: 'equipment', label: 'Ressursar' },
+    { id: 'admin', label: 'Admin ▾' },
+  ];
+
+  return (
+    <header style={{
+      position: 'sticky', top: 0, zIndex: 50,
+      background: 'oklch(0.11 0.016 282 / 85%)',
+      backdropFilter: 'blur(20px)',
+      borderBottom: '1px solid oklch(1 0 0 / 9%)',
+      height: 52, display: 'flex', alignItems: 'center',
+      justifyContent: 'space-between', padding: '0 24px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+        <button onClick={() => setPage('gigs')} style={{
+          display: 'flex', alignItems: 'center', gap: 8, background: 'none',
+          border: 'none', cursor: 'pointer', flexShrink: 0
+        }}>
+          <img src="../../assets/gemIcon.png" alt="ABC Live"
+            style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
+          <span style={{
+            fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1rem',
+            letterSpacing: '-0.02em',
+            background: 'linear-gradient(135deg, oklch(0.63 0.27 305), oklch(0.78 0.18 72))',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+          }}>ABC Live</span>
+        </button>
+
+        <nav style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {navItems.map(item => (
+            <button key={item.id} onClick={() => setPage(item.id)} style={{
+              position: 'relative', padding: '6px 12px', borderRadius: '1rem',
+              fontSize: '0.875rem', fontWeight: 500, background: 'none', border: 'none',
+              cursor: 'pointer', transition: 'all 0.15s',
+              color: page === item.id ? 'oklch(0.63 0.27 305)' : 'oklch(0.55 0.010 282)',
+            }}>
+              {item.label}
+              {page === item.id && (
+                <span style={{
+                  position: 'absolute', bottom: -1, left: 8, right: 8, height: 2,
+                  borderRadius: 9999, background: 'oklch(0.63 0.27 305)',
+                  boxShadow: '0 0 8px 2px oklch(0.68 0.26 292 / 0.45)',
+                }} />
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <button onClick={() => setPage('notifications')} style={{
+          width: 32, height: 32, borderRadius: '0.625rem', background: 'none',
+          border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', color: 'oklch(0.55 0.010 282)',
+        }}>
+          <Icon name="bell" size={16} />
+        </button>
+        <button onClick={() => setDarkMode(d => !d)} style={{
+          width: 32, height: 32, borderRadius: '0.625rem', background: 'none',
+          border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', color: 'oklch(0.55 0.010 282)',
+        }}>
+          <Icon name={darkMode ? 'sun' : 'moon'} size={16} />
+        </button>
+        <button onClick={() => setPage('profile')} style={{
+          display: 'flex', alignItems: 'center', gap: 8, background: 'none',
+          border: 'none', cursor: 'pointer', padding: '4px 10px', borderRadius: '0.75rem',
+        }}>
+          <Avatar name="Arne Vehaaland" size={28} />
+          <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'oklch(0.55 0.010 282)' }}>
+            Arne V.
+          </span>
+        </button>
+      </div>
+    </header>
+  );
+}
+
+// ─── Stats Bar ────────────────────────────────────────────────────────────────
+
+function StatsBar({ gigs }) {
+  const total = gigs.length;
+  const confirmed = gigs.filter(g => g.status === 'confirmed').length;
+  const draft = gigs.filter(g => g.status === 'draft').length;
+  const completed = gigs.filter(g => g.status === 'completed').length;
+
+  const stats = [
+    { label: 'Totalt', value: total, color: 'oklch(0.97 0.005 282)' },
+    { label: 'Bekrefta', value: confirmed, color: 'oklch(0.63 0.27 305)' },
+    { label: 'Utkast', value: draft, color: 'oklch(0.55 0.010 282)' },
+    { label: 'Fullførte', value: completed, color: 'oklch(0.75 0.18 158)' },
+  ];
+
+  return (
+    <div style={{
+      display: 'flex', gap: 1, borderRadius: '0.875rem', overflow: 'hidden',
+      background: 'oklch(1 0 0 / 9%)', marginBottom: 24,
+    }}>
+      {stats.map(({ label, value, color }) => (
+        <div key={label} style={{
+          flex: 1, background: 'oklch(0.16 0.016 282)', padding: '10px 18px',
+          display: 'flex', flexDirection: 'column', gap: 2, cursor: 'default',
+          transition: 'background 0.15s',
+        }}>
+          <span style={{
+            fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.5rem',
+            letterSpacing: '-0.04em', lineHeight: 1, color,
+          }}>{value}</span>
+          <span style={{
+            fontSize: '0.6875rem', fontWeight: 600, letterSpacing: '0.08em',
+            textTransform: 'uppercase', color: 'oklch(0.55 0.010 282)',
+          }}>{label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Gig Card ─────────────────────────────────────────────────────────────────
+
+function GigCard({ gig, onClick }) {
+  const [hovered, setHovered] = useState(false);
+  const accentColor = STATUS_ACCENT[gig.status];
+  const variant = STATUS_VARIANTS[gig.status];
+  const label = STATUS_LABELS[gig.status];
+
+  return (
+    <div onClick={() => onClick(gig)}
+      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex', borderRadius: '1.5rem', overflow: 'hidden',
+        background: hovered ? 'oklch(0.21 0.016 282)' : 'oklch(0.16 0.016 282)',
+        cursor: 'pointer', transition: 'all 0.15s',
+        transform: hovered ? 'translateY(-1px)' : 'none',
+        boxShadow: hovered ? '0 8px 24px oklch(0 0 0 / 0.3)' : 'none',
+        animation: 'fadeIn 0.2s ease forwards',
+      }}>
+      <div style={{ width: 3, flexShrink: 0, alignSelf: 'stretch', background: accentColor }} />
+      <div style={{ flex: 1, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Badge variant={variant}>{label}</Badge>
+            {gig.personnel.length === 0 && <Badge variant="destructive">Ingen personell</Badge>}
+            {gig.gig_type === 'festival' && <Badge variant="gold">Festival</Badge>}
+          </div>
+          {gig.status === 'confirmed' && (
+            <Icon name="cloudCheck" size={13} color="oklch(0.55 0.010 282 / 40%)" />
+          )}
+        </div>
+        <p style={{
+          fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.9375rem',
+          letterSpacing: '-0.02em', color: 'oklch(0.97 0.005 282)', lineHeight: 1.2,
+        }}>{gig.name}</p>
+        {gig.client && (
+          <p style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem',
+            color: 'oklch(0.63 0.27 305)', fontWeight: 500 }}>
+            <Icon name="building" size={11} color="oklch(0.63 0.27 305)" />
+            {gig.client}
+          </p>
+        )}
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 3,
+            fontSize: '0.6875rem', color: 'oklch(0.55 0.010 282)' }}>
+            <Icon name="calendar" size={11} color="oklch(0.55 0.010 282)" />
+            {formatDate(gig.start_date, gig.end_date)}
+          </span>
+          {gig.venue && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3,
+              fontSize: '0.6875rem', color: 'oklch(0.55 0.010 282)' }}>
+              <Icon name="mapPin" size={11} color="oklch(0.55 0.010 282)" />
+              {gig.venue}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Toolbar ──────────────────────────────────────────────────────────────────
+
+function Toolbar({ search, setSearch, layout, setLayout, viewMine, setViewMine }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 24 }}>
+      {/* View tabs */}
+      <div style={{
+        display: 'flex', background: 'oklch(0.21 0.016 282)',
+        borderRadius: '0.75rem', padding: 3, gap: 2,
+      }}>
+        {[['Alle', false], ['Mine', true]].map(([label, val]) => (
+          <button key={label} onClick={() => setViewMine(val)} style={{
+            padding: '4px 14px', borderRadius: '0.5625rem', fontSize: '0.75rem', fontWeight: 500,
+            border: 'none', cursor: 'pointer', transition: 'all 0.15s',
+            background: viewMine === val ? 'oklch(0.27 0.016 282)' : 'transparent',
+            color: viewMine === val ? 'oklch(0.97 0.005 282)' : 'oklch(0.55 0.010 282)',
+          }}>{label}</button>
+        ))}
+      </div>
+
+      {/* Search */}
+      <div style={{ flex: 1, minWidth: 180, maxWidth: 280, position: 'relative' }}>
+        <div style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)' }}>
+          <Icon name="search" size={14} color="oklch(0.55 0.010 282)" />
+        </div>
+        <input
+          type="text" value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Søk oppdrag…"
+          style={{
+            height: 34, width: '100%', borderRadius: '1rem',
+            border: '1px solid oklch(1 0 0 / 12%)',
+            background: 'oklch(0.21 0.016 282)', color: 'oklch(0.97 0.005 282)',
+            paddingLeft: 30, paddingRight: 12, fontSize: '0.8125rem',
+            fontFamily: 'var(--font-sans)', outline: 'none',
+          }}
+        />
+      </div>
+
+      {/* Layout toggle */}
+      <div style={{ display: 'flex', background: 'oklch(0.21 0.016 282)', borderRadius: '0.625rem', padding: 3, gap: 2 }}>
+        {[['grid', 'grid'], ['list', 'list']].map(([l, icon]) => (
+          <button key={l} onClick={() => setLayout(l)} style={{
+            width: 28, height: 28, borderRadius: '0.4375rem', border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s',
+            background: layout === l ? 'oklch(0.27 0.016 282)' : 'transparent',
+            color: layout === l ? 'oklch(0.97 0.005 282)' : 'oklch(0.55 0.010 282)',
+          }}>
+            <Icon name={icon} size={13} />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Gigs Page ────────────────────────────────────────────────────────────────
+
+function GigsPage({ onSelectGig }) {
+  const [search, setSearch] = useState('');
+  const [layout, setLayout] = useState('grid');
+  const [viewMine, setViewMine] = useState(false);
+
+  const myId = 'Arne Vehaaland';
+  const filtered = GIGS.filter(g => {
+    const q = search.toLowerCase();
+    const matchSearch = !q || g.name.toLowerCase().includes(q)
+      || (g.venue || '').toLowerCase().includes(q)
+      || (g.client || '').toLowerCase().includes(q);
+    const matchMine = !viewMine || g.personnel.includes(myId);
+    return matchSearch && matchMine;
+  });
+
+  const groups = [
+    { label: 'Denne veka', gigs: filtered.filter(g => ['2025-05-02','2025-05-10'].includes(g.start_date)) },
+    { label: 'Neste veke', gigs: filtered.filter(g => ['2025-05-15'].includes(g.start_date)) },
+    { label: 'Seinare', gigs: filtered.filter(g => !['2025-05-02','2025-05-10','2025-05-15'].includes(g.start_date)) },
+  ].filter(g => g.gigs.length > 0);
+
+  return (
+    <div style={{ animation: 'fadeIn 0.2s ease' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+        <h1 style={{
+          fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.75rem',
+          letterSpacing: '-0.035em', lineHeight: 1,
+        }}>Oppdrag</h1>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button variant="secondary" size="lg">
+            <Icon name="upload" size={14} />
+            Importer frå iCloud
+          </Button>
+          <Button size="lg">
+            <Icon name="plus" size={14} color="oklch(0.08 0 0)" />
+            Nytt arrangement
+          </Button>
+        </div>
+      </div>
+
+      <StatsBar gigs={GIGS} />
+      <Toolbar search={search} setSearch={setSearch} layout={layout} setLayout={setLayout}
+        viewMine={viewMine} setViewMine={setViewMine} />
+
+      {layout === 'grid' ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+          {groups.map(({ label, gigs }) => (
+            <div key={label}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                <span style={{
+                  fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '0.875rem',
+                  color: 'oklch(0.55 0.010 282)', letterSpacing: '-0.01em',
+                }}>{label}</span>
+                <span style={{
+                  fontSize: '0.6875rem', fontWeight: 600, color: 'oklch(0.55 0.010 282 / 60%)',
+                  background: 'oklch(0.21 0.016 282)', padding: '2px 8px', borderRadius: 9999,
+                  fontVariantNumeric: 'tabular-nums',
+                }}>{gigs.length}</span>
+                <div style={{ flex: 1, height: 1, background: 'oklch(1 0 0 / 9%)' }} />
+              </div>
+              <div style={{
+                display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10,
+              }}>
+                {gigs.map(gig => <GigCard key={gig.id} gig={gig} onClick={onSelectGig} />)}
+              </div>
+            </div>
+          ))}
+          {filtered.length === 0 && (
+            <p style={{ color: 'oklch(0.55 0.010 282)', fontSize: '0.875rem' }}>Ingen oppdrag å vise.</p>
+          )}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {filtered.map(gig => (
+            <div key={gig.id} onClick={() => onSelectGig(gig)}
+              style={{
+                display: 'flex', borderRadius: '0.75rem', overflow: 'hidden',
+                background: 'oklch(0.16 0.016 282)', cursor: 'pointer', transition: 'background 0.15s',
+              }}>
+              <div style={{ width: 3, flexShrink: 0, background: STATUS_ACCENT[gig.status] }} />
+              <div style={{ flex: 1, padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontFamily:'var(--font-heading)', fontWeight:700, fontSize:'0.875rem', letterSpacing:'-0.02em' }}>{gig.name}</p>
+                  {gig.client && <p style={{ fontSize:'0.75rem', color:'oklch(0.63 0.27 305)', fontWeight:500, marginTop:2 }}>{gig.client}</p>}
+                </div>
+                <div style={{ display:'flex', alignItems:'center', gap:12, flexShrink:0 }}>
+                  <span style={{ fontSize:'0.75rem', color:'oklch(0.55 0.010 282)', display:'flex', alignItems:'center', gap:3 }}>
+                    <Icon name="calendar" size={11} color="oklch(0.55 0.010 282)" />
+                    {formatDate(gig.start_date, gig.end_date)}
+                  </span>
+                  {gig.venue && <span style={{ fontSize:'0.75rem', color:'oklch(0.55 0.010 282)', display:'flex', alignItems:'center', gap:3 }}>
+                    <Icon name="mapPin" size={11} color="oklch(0.55 0.010 282)" />
+                    {gig.venue}
+                  </span>}
+                  <Badge variant={STATUS_VARIANTS[gig.status]}>{STATUS_LABELS[gig.status]}</Badge>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Gig Detail Page ──────────────────────────────────────────────────────────
+
+function GigDetailPage({ gig, onBack }) {
+  const [activeTab, setActiveTab] = useState('overview');
+  const tabs = ['Oversikt', 'Personell', 'Utstyr', 'Filer', 'Kommentarar'];
+  const tabKeys = ['overview', 'personnel', 'equipment', 'files', 'comments'];
+
+  const accentColor = STATUS_ACCENT[gig.status];
+
+  return (
+    <div style={{ animation: 'fadeIn 0.2s ease' }}>
+      {/* Back button */}
+      <button onClick={onBack} style={{
+        display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none',
+        cursor: 'pointer', color: 'oklch(0.55 0.010 282)', fontSize: '0.875rem', fontWeight: 500,
+        marginBottom: 20, padding: '4px 0',
+      }}>
+        <Icon name="arrowLeft" size={14} color="oklch(0.55 0.010 282)" />
+        Tilbake til oppdrag
+      </button>
+
+      {/* Header card */}
+      <div style={{
+        background: 'oklch(0.16 0.016 282)', borderRadius: '1.5rem', overflow: 'hidden',
+        marginBottom: 20,
+      }}>
+        <div style={{ height: 4, background: `linear-gradient(90deg, ${accentColor}, ${accentColor}80)` }} />
+        <div style={{ padding: '24px 28px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+                <Badge variant={STATUS_VARIANTS[gig.status]}>{STATUS_LABELS[gig.status]}</Badge>
+                {gig.gig_type === 'festival' && <Badge variant="gold">Festival</Badge>}
+                {gig.company === 'Alvsvåg AS' && <Badge variant="cold">Alvsvåg AS</Badge>}
+              </div>
+              <h1 style={{
+                fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.75rem',
+                letterSpacing: '-0.035em', lineHeight: 1.1, marginBottom: 12,
+              }}>{gig.name}</h1>
+              <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+                <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.875rem', color:'oklch(0.75 0.005 282)' }}>
+                  <Icon name="calendar" size={14} color="oklch(0.55 0.010 282)" />
+                  {formatDate(gig.start_date, gig.end_date)}
+                </span>
+                {gig.venue && <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.875rem', color:'oklch(0.75 0.005 282)' }}>
+                  <Icon name="mapPin" size={14} color="oklch(0.55 0.010 282)" />
+                  {gig.venue}
+                </span>}
+                {gig.client && <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:'0.875rem', color:'oklch(0.63 0.27 305)' }}>
+                  <Icon name="building" size={14} color="oklch(0.63 0.27 305)" />
+                  {gig.client}
+                </span>}
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <Button variant="secondary">Rediger</Button>
+              <Button variant="destructive">Slett</Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: 0, padding: '0 28px', borderTop: '1px solid oklch(1 0 0 / 9%)' }}>
+          {tabs.map((tab, i) => (
+            <button key={tab} onClick={() => setActiveTab(tabKeys[i])} style={{
+              padding: '12px 16px', fontSize: '0.875rem', fontWeight: 500,
+              background: 'none', border: 'none', cursor: 'pointer', transition: 'all 0.15s',
+              position: 'relative',
+              color: activeTab === tabKeys[i] ? 'oklch(0.63 0.27 305)' : 'oklch(0.55 0.010 282)',
+            }}>
+              {tab}
+              {activeTab === tabKeys[i] && (
+                <span style={{
+                  position: 'absolute', bottom: 0, left: 8, right: 8, height: 2,
+                  borderRadius: 9999, background: 'oklch(0.63 0.27 305)',
+                  boxShadow: '0 0 8px 2px oklch(0.68 0.26 292 / 0.45)',
+                }} />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab content */}
+      <div style={{ animation: 'fadeIn 0.15s ease' }}>
+        {activeTab === 'overview' && <GigOverview gig={gig} />}
+        {activeTab === 'personnel' && <GigPersonnel gig={gig} />}
+        {activeTab === 'equipment' && <GigEquipment />}
+        {activeTab === 'files' && <GigFiles />}
+        {activeTab === 'comments' && <GigComments />}
+      </div>
+    </div>
+  );
+}
+
+function SectionCard({ title, children, action }) {
+  return (
+    <div style={{ background: 'oklch(0.16 0.016 282)', borderRadius: '1.5rem', overflow: 'hidden', marginBottom: 16 }}>
+      <div style={{
+        padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        borderBottom: '1px solid oklch(1 0 0 / 7%)',
+      }}>
+        <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '0.9375rem', letterSpacing: '-0.015em' }}>{title}</span>
+        {action}
+      </div>
+      <div style={{ padding: '16px 20px' }}>{children}</div>
+    </div>
+  );
+}
+
+function GigOverview({ gig }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <SectionCard title="Detaljar" action={<Button variant="ghost" size="sm">Rediger</Button>}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {[
+            ['Arrangementstitel', gig.name],
+            ['Type', gig.gig_type === 'festival' ? 'Festival' : 'Enkeltoppdrag'],
+            ['Lokale', gig.venue || '—'],
+            ['Oppdragsgjevar', gig.client || '—'],
+            ['Selskap', gig.company],
+          ].map(([key, val]) => (
+            <div key={key} style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+              <span style={{ fontSize: '0.8125rem', color: 'oklch(0.55 0.010 282)', fontWeight: 500 }}>{key}</span>
+              <span style={{ fontSize: '0.8125rem', color: 'oklch(0.97 0.005 282)', textAlign: 'right' }}>{val}</span>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
+      <SectionCard title="Personell" action={<Button variant="default" size="sm"><Icon name="plus" size={12} color="oklch(0.08 0 0)" /> Legg til</Button>}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {gig.personnel.length === 0 ? (
+            <p style={{ fontSize: '0.875rem', color: 'oklch(0.55 0.010 282)' }}>Ingen personell tildelt endå.</p>
+          ) : gig.personnel.map(name => (
+            <div key={name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Avatar name={name} size={28} />
+                <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{name}</span>
+              </div>
+              <Badge variant="role">Lydteknikar</Badge>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
+    </div>
+  );
+}
+
+function GigPersonnel({ gig }) {
+  return (
+    <SectionCard title="Personell" action={
+      <div style={{ display:'flex', gap:6 }}>
+        <Button variant="secondary" size="sm">Ekstern</Button>
+        <Button size="sm"><Icon name="plus" size={12} color="oklch(0.08 0 0)" /> Legg til</Button>
+      </div>
+    }>
+      {gig.personnel.length === 0 ? (
+        <div style={{ padding: '24px 0', textAlign: 'center' }}>
+          <Badge variant="destructive" style={{ marginBottom: 8 }}>Ingen personell</Badge>
+          <p style={{ fontSize: '0.875rem', color: 'oklch(0.55 0.010 282)', marginTop: 8 }}>
+            Dette oppdraget har ikkje personell tildelt endå.
+          </p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {gig.personnel.map(name => (
+            <div key={name} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '10px 14px', borderRadius: '0.875rem',
+              background: 'oklch(0.21 0.016 282)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Avatar name={name} size={32} />
+                <div>
+                  <p style={{ fontSize: '0.875rem', fontWeight: 600 }}>{name}</p>
+                  <p style={{ fontSize: '0.75rem', color: 'oklch(0.55 0.010 282)' }}>ABC Studio</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Badge variant="role">Lydteknikar</Badge>
+                <Button variant="ghost" size="icon"><Icon name="x" size={13} /></Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </SectionCard>
+  );
+}
+
+function GigEquipment() {
+  const items = ['Yamaha CL5 konsollmiksar', 'DiGiCo SD9 monitorskjerm', 'L-Acoustics K2 line array (×12)', 'Lake LM44 prosessor'];
+  return (
+    <SectionCard title="Utstyr" action={<Button size="sm"><Icon name="plus" size={12} color="oklch(0.08 0 0)" /> Legg til utstyr</Button>}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {items.map(item => (
+          <div key={item} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 14px', borderRadius:'0.875rem', background:'oklch(0.21 0.016 282)' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+              <div style={{ width:8, height:8, borderRadius:'50%', background:'oklch(0.63 0.27 305)', flexShrink:0 }} />
+              <span style={{ fontSize:'0.875rem' }}>{item}</span>
+            </div>
+            <Button variant="ghost" size="icon"><Icon name="x" size={13} /></Button>
+          </div>
+        ))}
+      </div>
+    </SectionCard>
+  );
+}
+
+function GigFiles() {
+  const files = ['Teknisk rigg-diagram.pdf', 'Kontrakt signert.pdf', 'Stageplot.png'];
+  return (
+    <SectionCard title="Vedlegg" action={<Button size="sm"><Icon name="upload" size={12} color="oklch(0.08 0 0)" /> Last opp</Button>}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {files.map(file => (
+          <div key={file} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 14px', borderRadius:'0.875rem', background:'oklch(0.21 0.016 282)', cursor:'pointer' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+              <Icon name="paperclip" size={14} color="oklch(0.55 0.010 282)" />
+              <span style={{ fontSize:'0.875rem' }}>{file}</span>
+            </div>
+            <span style={{ fontSize:'0.75rem', color:'oklch(0.55 0.010 282)' }}>2.3 MB</span>
+          </div>
+        ))}
+      </div>
+    </SectionCard>
+  );
+}
+
+function GigComments() {
+  const [comment, setComment] = useState('');
+  const comments = [
+    { author: 'Kari Nilsen', time: '2 t. sidan', text: 'Monitormiksaren er bestilt og klar til henting fredag.' },
+    { author: 'Per Hansen', time: 'I går', text: 'Har bekrefta med lydfirmaet. Alt er klart.' },
+  ];
+  return (
+    <SectionCard title="Kommentarar">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {comments.map((c, i) => (
+          <div key={i} style={{ display:'flex', gap:10 }}>
+            <Avatar name={c.author} size={28} />
+            <div style={{ flex:1, background:'oklch(0.21 0.016 282)', borderRadius:'0.875rem', padding:'10px 14px' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
+                <span style={{ fontSize:'0.8125rem', fontWeight:600 }}>{c.author}</span>
+                <span style={{ fontSize:'0.75rem', color:'oklch(0.55 0.010 282)' }}>{c.time}</span>
+              </div>
+              <p style={{ fontSize:'0.875rem', color:'oklch(0.85 0.005 282)', lineHeight:1.5 }}>{c.text}</p>
+            </div>
+          </div>
+        ))}
+        <div style={{ display:'flex', gap:10 }}>
+          <Avatar name="Arne Vehaaland" size={28} />
+          <div style={{ flex:1, display:'flex', gap:8 }}>
+            <input value={comment} onChange={e => setComment(e.target.value)}
+              placeholder="Skriv ein kommentar…"
+              style={{ flex:1, height:36, borderRadius:'1rem', border:'1px solid oklch(1 0 0 / 12%)', background:'oklch(0.21 0.016 282)', color:'oklch(0.97 0.005 282)', padding:'0 12px', fontSize:'0.875rem', fontFamily:'var(--font-sans)', outline:'none' }} />
+            <Button size="sm" disabled={!comment.trim()}>Send</Button>
+          </div>
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
+// ─── Calendar Page (stub) ─────────────────────────────────────────────────────
+
+function CalendarPage() {
+  const days = ['Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør', 'Søn'];
+  const weeks = [[28,29,30,1,2,3,4],[5,6,7,8,9,10,11],[12,13,14,15,16,17,18],[19,20,21,22,23,24,25],[26,27,28,29,30,31,1]];
+  const events = { 2: 'NRK Direktesending', 10: 'Trondheim Spektrum', 15: 'Stavanger Konserthus' };
+
+  return (
+    <div style={{ animation: 'fadeIn 0.2s ease' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+        <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.75rem', letterSpacing: '-0.035em' }}>Kalender</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.02em' }}>Mai 2025</span>
+          <Button variant="outline" size="icon"><Icon name="chevronDown" size={14} /></Button>
+        </div>
+      </div>
+      <div style={{ background: 'oklch(0.16 0.016 282)', borderRadius: '1.5rem', overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid oklch(1 0 0 / 9%)' }}>
+          {days.map(d => (
+            <div key={d} style={{ padding: '10px 0', textAlign: 'center', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'oklch(0.55 0.010 282)' }}>{d}</div>
+          ))}
+        </div>
+        {weeks.map((week, wi) => (
+          <div key={wi} style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: wi < 4 ? '1px solid oklch(1 0 0 / 9%)' : 'none' }}>
+            {week.map((day, di) => {
+              const event = events[day];
+              const isToday = day === 2;
+              return (
+                <div key={di} style={{
+                  padding: '8px', minHeight: 72, borderRight: di < 6 ? '1px solid oklch(1 0 0 / 9%)' : 'none',
+                  background: isToday ? 'oklch(0.68 0.26 292 / 8%)' : 'transparent',
+                }}>
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: 24, height: 24, borderRadius: '50%', fontSize: '0.8125rem', fontWeight: isToday ? 700 : 400,
+                    background: isToday ? 'oklch(0.63 0.27 305)' : 'transparent',
+                    color: isToday ? 'oklch(0.08 0 0)' : (wi === 0 && day > 20 || wi === 4 && day < 10 ? 'oklch(0.35 0.010 282)' : 'oklch(0.97 0.005 282)'),
+                  }}>{day}</span>
+                  {event && (
+                    <div style={{
+                      marginTop: 4, padding: '2px 6px', borderRadius: '0.25rem',
+                      background: 'oklch(0.68 0.26 292 / 20%)', fontSize: '0.6875rem',
+                      color: 'oklch(0.63 0.27 305)', fontWeight: 500, lineHeight: 1.3,
+                    }}>{event}</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Login Page ───────────────────────────────────────────────────────────────
+
+function LoginPage({ onLogin }) {
+  const [email, setEmail] = useState('arne@abcstudio.no');
+  const [password, setPassword] = useState('••••••••');
+
+  return (
+    <div style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'oklch(0.08 0.016 282)', padding: 24,
+    }}>
+      <div style={{
+        width: '100%', maxWidth: 380,
+        background: 'oklch(0.16 0.016 282)', borderRadius: '2rem',
+        padding: '36px 32px', animation: 'fadeIn 0.3s ease',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32, justifyContent: 'center' }}>
+          <img src="../../assets/gemIcon.png" alt="ABC Live"
+            style={{ width: 40, height: 40, borderRadius: '50%' }} />
+          <span style={{
+            fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.25rem', letterSpacing: '-0.025em',
+            background: 'linear-gradient(135deg, oklch(0.63 0.27 305), oklch(0.78 0.18 72))',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+          }}>ABC Live</span>
+        </div>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.5rem', letterSpacing: '-0.025em', marginBottom: 6, textAlign: 'center' }}>
+          Velkomen tilbake
+        </h2>
+        <p style={{ fontSize: '0.875rem', color: 'oklch(0.55 0.010 282)', textAlign: 'center', marginBottom: 28 }}>
+          Logg inn på ABC Live
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 500, color: 'oklch(0.75 0.005 282)', marginBottom: 5 }}>E-post</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+              style={{ height: 40, width: '100%', borderRadius: '1rem', border: '1px solid oklch(1 0 0 / 12%)', background: 'oklch(0.21 0.016 282)', color: 'oklch(0.97 0.005 282)', padding: '0 14px', fontSize: '0.875rem', fontFamily: 'var(--font-sans)', outline: 'none' }} />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 500, color: 'oklch(0.75 0.005 282)', marginBottom: 5 }}>Passord</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+              style={{ height: 40, width: '100%', borderRadius: '1rem', border: '1px solid oklch(1 0 0 / 12%)', background: 'oklch(0.21 0.016 282)', color: 'oklch(0.97 0.005 282)', padding: '0 14px', fontSize: '0.875rem', fontFamily: 'var(--font-sans)', outline: 'none' }} />
+          </div>
+          <button onClick={onLogin} style={{
+            height: 44, borderRadius: '0.875rem', border: 'none', cursor: 'pointer',
+            background: 'linear-gradient(135deg, oklch(0.63 0.27 305), oklch(0.53 0.21 305))',
+            color: 'oklch(0.08 0 0)', fontFamily: 'var(--font-heading)', fontWeight: 700,
+            fontSize: '0.9375rem', marginTop: 4,
+            boxShadow: '0 4px 20px oklch(0.68 0.26 292 / 0.3)',
+          }}>
+            Logg inn
+          </button>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8125rem', color: 'oklch(0.55 0.010 282)', textAlign: 'center', marginTop: 4 }}>
+            Gløymt passord?
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Placeholder pages ────────────────────────────────────────────────────────
+
+function PlaceholderPage({ title, icon }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px', textAlign: 'center', animation: 'fadeIn 0.2s ease' }}>
+      <div style={{ width: 56, height: 56, borderRadius: '1rem', background: 'oklch(0.68 0.26 292 / 15%)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+        <Icon name={icon} size={24} color="oklch(0.63 0.27 305)" />
+      </div>
+      <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.025em', marginBottom: 8 }}>{title}</h2>
+      <p style={{ fontSize: '0.875rem', color: 'oklch(0.55 0.010 282)' }}>Denne sida er under utvikling i UI-kitet.</p>
+    </div>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+
+function App() {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [page, setPage] = useState('gigs');
+  const [selectedGig, setSelectedGig] = useState(null);
+  const [darkMode, setDarkMode] = useState(true);
+
+  if (!loggedIn) return <LoginPage onLogin={() => setLoggedIn(true)} />;
+
+  const handleSelectGig = (gig) => {
+    setSelectedGig(gig);
+    setPage('gig-detail');
+  };
+
+  const handleBack = () => {
+    setSelectedGig(null);
+    setPage('gigs');
+  };
+
+  let content;
+  if (page === 'gig-detail' && selectedGig) {
+    content = <GigDetailPage gig={selectedGig} onBack={handleBack} />;
+  } else if (page === 'calendar') {
+    content = <CalendarPage />;
+  } else if (page === 'equipment') {
+    content = <PlaceholderPage title="Ressursar" icon="wrench" />;
+  } else if (page === 'admin') {
+    content = <PlaceholderPage title="Admin" icon="users" />;
+  } else if (page === 'profile') {
+    content = <PlaceholderPage title="Profil" icon="user" />;
+  } else if (page === 'notifications') {
+    content = <PlaceholderPage title="Varslingar" icon="bell" />;
+  } else {
+    content = <GigsPage onSelectGig={handleSelectGig} />;
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <NavHeader page={page} setPage={setPage} darkMode={darkMode} setDarkMode={setDarkMode} />
+      <main style={{ flex: 1, padding: '32px 24px', maxWidth: 1200, margin: '0 auto', width: '100%' }}>
+        {content}
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

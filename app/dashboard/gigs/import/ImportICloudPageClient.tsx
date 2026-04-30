@@ -190,7 +190,7 @@ export default function ImportICloudPageClient() {
             <ArrowLeftIcon className="size-4" />
           </Link>
         </Button>
-        <h1 className="font-heading text-3xl font-bold tracking-tight">Importer frå iCloud</h1>
+        <h1 className="type-h1 text-3xl tracking-tight">Importer frå iCloud</h1>
       </div>
 
       <form onSubmit={handleFetch} className="flex flex-wrap items-end gap-4">
@@ -298,7 +298,7 @@ export default function ImportICloudPageClient() {
                               </Badge>
                             )}
                           </div>
-                          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                          <div className="flex flex-wrap gap-3 type-label text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <CalendarIcon className="size-3" />
                               {event.startDate === event.endDate
@@ -320,7 +320,7 @@ export default function ImportICloudPageClient() {
                               e.stopPropagation()
                               openLinkPicker(event.uid)
                             }}
-                            className={`flex shrink-0 items-center gap-1.5 rounded px-2 py-1 text-xs transition-colors ${
+                            className={`flex shrink-0 items-center gap-1.5 rounded px-2 py-1 type-label transition-colors ${
                               isLinking
                                 ? 'bg-primary/10 text-primary'
                                 : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
@@ -343,11 +343,11 @@ export default function ImportICloudPageClient() {
                             className="h-8 text-sm"
                           />
                           {!gigsLoaded ? (
-                            <div className="flex items-center gap-2 py-2 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-2 py-2 type-label text-muted-foreground">
                               <Loader2Icon className="size-3 animate-spin" /> Lastar gigs…
                             </div>
                           ) : filteredGigs.length === 0 ? (
-                            <p className="py-1 text-xs text-muted-foreground">Ingen gigs funne.</p>
+                            <p className="py-1 type-label text-muted-foreground">Ingen gigs funne.</p>
                           ) : (
                             <div className="flex max-h-48 flex-col overflow-y-auto">
                               {filteredGigs.map((gig) => (
@@ -358,7 +358,7 @@ export default function ImportICloudPageClient() {
                                   className="flex items-center justify-between rounded px-2 py-1.5 text-left text-sm transition-colors hover:bg-surface-high disabled:opacity-50"
                                 >
                                   <span className="truncate">{gig.name}</span>
-                                  <span className="ml-3 shrink-0 text-xs text-muted-foreground">{gig.start_date}</span>
+                                  <span className="ml-3 shrink-0 type-label text-muted-foreground">{gig.start_date}</span>
                                   {linking === event.uid && <Loader2Icon className="ml-2 size-3 shrink-0 animate-spin" />}
                                 </button>
                               ))}
@@ -402,3 +402,4 @@ export default function ImportICloudPageClient() {
     </div>
   )
 }
+

@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { nb } from 'date-fns/locale'
-import { CalendarIcon, MapPinIcon } from 'lucide-react'
+import { CalendarIcon, LayoutGridIcon, MapPinIcon } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
-import { statusAccentClass, statusLabels } from '@/lib/gig-status'
+import { statusLabels } from '@/lib/gig-status'
 import { cn } from '@/lib/utils'
 import type { GigStatus } from '@/types/database'
 
@@ -13,6 +13,18 @@ const statusVariants: Record<GigStatus, 'default' | 'secondary' | 'success' | 'd
   confirmed: 'default',
   completed: 'success',
   cancelled: 'destructive',
+}
+const dateBlockBgClass: Record<GigStatus, string> = {
+  draft: 'bg-surface-high',
+  confirmed: 'bg-primary/10',
+  completed: 'bg-emerald-500/10',
+  cancelled: 'bg-destructive/10',
+}
+const dateTextClass: Record<GigStatus, string> = {
+  draft: 'text-muted-foreground',
+  confirmed: 'text-primary',
+  completed: 'text-emerald-500',
+  cancelled: 'text-destructive',
 }
 
 type GigAssignmentCardProps = {
@@ -36,42 +48,60 @@ export function GigAssignmentCard({
 }: GigAssignmentCardProps) {
   const statusLabel = statusLabels[status as GigStatus]
   const statusVariant = statusVariants[status as GigStatus]
-  const accent = statusAccentClass[status as GigStatus]
+  const statusKey = status as GigStatus
+  const isMuted = status === 'cancelled' || status === 'draft'
 
   return (
     <Link
       href={`/dashboard/gigs/${id}`}
-      className="group flex h-full rounded-2xl overflow-hidden bg-surface-container hover:bg-surface-high transition-all hover:-translate-y-px hover:shadow-[0_8px_24px_oklch(0_0_0/0.25)] cursor-pointer"
+      className={cn(
+        'group flex h-full rounded-2xl overflow-hidden bg-surface-container border border-border hover:bg-surface-high transition-all hover:-translate-y-px hover:shadow-[0_8px_24px_oklch(0_0_0/0.25)] cursor-pointer',
+        isMuted && 'opacity-70'
+      )}
     >
-      <div className={cn('w-[3px] shrink-0 self-stretch', accent)} />
-      <div className="flex-1 min-w-0 p-4 flex flex-col gap-1.5">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-1.5">
+      <div className={cn('w-[58px] shrink-0 border-r border-border flex flex-col items-center justify-center gap-0.5 py-3.5', dateBlockBgClass[statusKey])}>
+        <span className={cn('type-h2 leading-none', dateTextClass[statusKey])}>
+          {format(new Date(start_date), 'd', { locale: nb })}
+        </span>
+        <span className="type-micro tracking-[0.1em] text-muted-foreground">
+          {format(new Date(start_date), 'MMM', { locale: nb })}
+        </span>
+      </div>
+      <div className="flex-1 min-w-0 px-3.5 py-3 flex flex-col gap-1.5">
+        <div className="flex items-start justify-between gap-2 min-w-0">
+          <p className="type-title text-[0.9375rem] leading-snug tracking-[-0.02em] text-foreground line-clamp-2 min-w-0">
+            {name}
+          </p>
+          <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0">
             <Badge variant={statusVariant}>{statusLabel}</Badge>
-            {role_label && <Badge variant="role">{role_label}</Badge>}
           </div>
         </div>
-        <p className="font-heading font-bold text-[0.9375rem] leading-snug tracking-[-0.02em] text-foreground line-clamp-2">
-          {name}
-        </p>
         {item_name && (
-          <p className="flex items-center gap-1 text-xs text-primary font-medium">
+          <p className="flex items-center gap-1 type-label text-primary">
+            <LayoutGridIcon className="size-3 shrink-0" />
             {item_name}
           </p>
         )}
         <div className="flex flex-wrap gap-3 mt-0.5">
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1 type-label text-muted-foreground">
             <CalendarIcon className="size-3 shrink-0" />
             {format(new Date(start_date), 'd. MMM yyyy', { locale: nb })}
           </span>
           {venue && (
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1 type-label text-muted-foreground">
               <MapPinIcon className="size-3 shrink-0" />
               {venue}
             </span>
           )}
         </div>
+        {(role_label || item_name) && <div className="h-px bg-border -mx-3.5 mt-0.5" />}
+        {role_label && (
+          <div className="pt-0.5">
+            <Badge variant="role">{role_label}</Badge>
+          </div>
+        )}
       </div>
     </Link>
   )
 }
+

@@ -113,7 +113,7 @@ export default async function AdminUsersPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="font-heading text-2xl font-bold">Brukarar</h1>
+          <h1 className="type-h2">Brukarar</h1>
           <p className="text-sm text-muted-foreground">
             Administrer innloggingar til ABCLive. Berre synleg for superadmin.
           </p>
@@ -149,7 +149,7 @@ export default async function AdminUsersPage() {
                       <div className="flex flex-col gap-0.5">
                         <span className="font-medium">{u.full_name ?? '—'}</span>
                         {u.primary_role && (
-                          <span className="text-xs text-muted-foreground">{u.primary_role}</span>
+                          <span className="type-label text-muted-foreground">{u.primary_role}</span>
                         )}
                       </div>
                     </div>
@@ -160,7 +160,7 @@ export default async function AdminUsersPage() {
                       {u.memberships.map((m) => (
                         <div key={m.id} className="flex items-center gap-1">
                           <CompanyBadge company={m.companies} size="xs" />
-                          <span className="text-xs text-muted-foreground">
+                          <span className="type-label text-muted-foreground">
                             {m.role === 'admin' ? 'Admin' : 'Teknikar'}
                           </span>
                         </div>
@@ -175,10 +175,10 @@ export default async function AdminUsersPage() {
                       <Badge variant="success">Aktiv</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-xs">
+                  <TableCell className="type-label text-muted-foreground">
                     {format(new Date(u.created_at), 'd. MMM yyyy', { locale: nb })}
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-xs">
+                  <TableCell className="type-label text-muted-foreground">
                     <span title={lastSeen.title}>{lastSeen.label}</span>
                   </TableCell>
                   <TableCell className="text-right">
@@ -210,3 +210,4 @@ export default async function AdminUsersPage() {
     </div>
   )
 }
+

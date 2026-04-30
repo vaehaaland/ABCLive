@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="nn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@font-face {
+  font-family: 'Google Sans Flex';
+  src: url('../fonts/GoogleSansFlex-VariableFont_GRAD_ROND_opsz_slnt_wdth_wght.ttf') format('truetype');
+  font-weight: 100 900;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --surface:                oklch(0.08 0.016 282);
+  --surface-container:      oklch(0.16 0.016 282);
+  --surface-container-high: oklch(0.21 0.016 282);
+  --surface-highest:        oklch(0.27 0.016 282);
+  --foreground:             oklch(0.97 0.005 282);
+  --muted-fg:               oklch(0.55 0.010 282);
+  --dim-fg:                 oklch(0.42 0.010 282);
+  --border:                 oklch(1 0 0 / 12%);
+  --border-subtle:          oklch(1 0 0 / 7%);
+  --primary:                oklch(0.63 0.27 305);
+  --primary-ring:           oklch(0.63 0.27 305 / 22%);
+  --destructive:            oklch(0.65 0.22 20);
+  --destructive-ring:       oklch(0.65 0.22 20 / 22%);
+  --success:                oklch(0.75 0.18 158);
+  --font-heading:           'Google Sans Flex', sans-serif;
+  --font-sans:              'Inter', sans-serif;
+  --radius-input:           1rem;    /* rounded-lg */
+  --radius-full:            9999px;
+}
+
+body {
+  background: var(--surface);
+  font-family: var(--font-sans);
+  padding: 24px 20px 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ── Section grouping ──────────────────────────────────────── */
+.section { display: flex; flex-direction: column; gap: 10px; }
+.section-label {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 700, "opsz" 11, "ROND" 0;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim-fg);
+}
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.col { display: flex; flex-direction: column; gap: 8px; }
+
+/* ── Field wrapper ─────────────────────────────────────────── */
+.field { display: flex; flex-direction: column; gap: 5px; }
+
+/* ── Label ─────────────────────────────────────────────────── */
+.label {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 600, "opsz" 12, "ROND" 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
+  color: oklch(0.78 0.006 282);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.label-required {
+  color: var(--primary);
+  font-size: 0.75rem;
+  line-height: 1;
+}
+.label-optional {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  color: var(--dim-fg);
+  margin-left: 2px;
+}
+
+/* ── Base input / select / textarea ────────────────────────── */
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-wrap svg.prefix {
+  position: absolute;
+  left: 12px;
+  pointer-events: none;
+  color: var(--muted-fg);
+  flex-shrink: 0;
+}
+.input-wrap svg.suffix {
+  position: absolute;
+  right: 12px;
+  pointer-events: none;
+  color: var(--muted-fg);
+  flex-shrink: 0;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+select,
+textarea {
+  width: 100%;
+  background: var(--surface-container-high);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 400;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+select {
+  height: 40px;
+  padding: 0 14px;
+}
+
+textarea {
+  padding: 11px 14px;
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}
+
+input::placeholder, textarea::placeholder { color: oklch(0.55 0.010 282 / 55%); }
+
+input:hover:not(:disabled):not(.is-error),
+select:hover:not(:disabled),
+textarea:hover:not(:disabled):not(.is-error) {
+  background: var(--surface-highest);
+  border-color: oklch(1 0 0 / 16%);
+}
+
+input:focus:not(.is-error),
+select:focus,
+textarea:focus:not(.is-error) {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-ring);
+  background: var(--surface-highest);
+}
+
+/* prefix / suffix padding adjustments */
+.has-prefix input,
+.has-prefix select { padding-left: 36px; }
+.has-suffix input  { padding-right: 36px; }
+
+/* ── States ────────────────────────────────────────────────── */
+input.is-error, textarea.is-error {
+  border-color: var(--destructive);
+  box-shadow: 0 0 0 3px var(--destructive-ring);
+}
+input.is-error:focus, textarea.is-error:focus {
+  border-color: var(--destructive);
+  box-shadow: 0 0 0 3px var(--destructive-ring);
+}
+
+input.is-success {
+  border-color: var(--success);
+  box-shadow: 0 0 0 3px oklch(0.75 0.18 158 / 20%);
+}
+
+input:disabled, select:disabled, textarea:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Select arrow ──────────────────────────────────────────── */
+.select-wrap {
+  position: relative;
+}
+.select-wrap select { padding-right: 36px; cursor: pointer; }
+.select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  translate: 0 -50%;
+  width: 10px;
+  height: 10px;
+  background-color: var(--muted-fg);
+  pointer-events: none;
+  clip-path: polygon(0 30%, 50% 80%, 100% 30%, 90% 20%, 50% 65%, 10% 20%);
+}
+select option { background: oklch(0.21 0.016 282); color: var(--foreground); }
+
+/* ── Helper / error text ───────────────────────────────────── */
+.helper {
+  font-size: 0.6875rem;
+  color: var(--muted-fg);
+  font-family: var(--font-sans);
+  padding-left: 2px;
+  line-height: 1.4;
+}
+.helper.is-error { color: var(--destructive); }
+.helper.is-success { color: var(--success); }
+
+/* ── Search pill ───────────────────────────────────────────── */
+input[type="search"].pill {
+  border-radius: var(--radius-full);
+  padding-left: 38px;
+  background: var(--surface-container);
+  border-color: var(--border-subtle);
+}
+input[type="search"].pill:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-ring);
+  background: var(--surface-container-high);
+}
+
+/* ── Inline date-range ─────────────────────────────────────── */
+.date-range {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+.date-range .separator {
+  font-size: 0.75rem;
+  color: var(--muted-fg);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ── Character count ───────────────────────────────────────── */
+.field-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.char-count {
+  font-size: 0.6875rem;
+  color: var(--dim-fg);
+  font-family: var(--font-sans);
+}
+</style>
+</head>
+<body>
+
+<!-- ── Grunnleggjande felt ────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Grunnleggjande felt</div>
+  <div class="row">
+    <div class="field">
+      <div class="label">Arrangementstitel <span class="label-required">*</span></div>
+      <div class="input-wrap has-prefix">
+        <svg class="prefix" width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input type="text" placeholder="t.d. Bergenfest 2025">
+      </div>
+    </div>
+    <div class="field">
+      <div class="label">Lokale / Venue</div>
+      <div class="input-wrap has-prefix">
+        <svg class="prefix" width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5s4.5-4.75 4.5-8.5c0-2.485-2.015-4.5-4.5-4.5Z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="6" r="1.5" fill="currentColor"/></svg>
+        <input type="text" value="Trondheim Spektrum">
+      </div>
+    </div>
+    <div class="field">
+      <div class="label">Status <span class="label-required">*</span></div>
+      <div class="select-wrap">
+        <select>
+          <option>Bekrefta</option>
+          <option>Utkast</option>
+          <option>Fullført</option>
+          <option>Avlyst</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <div class="label">Oppdragstype</div>
+      <div class="select-wrap">
+        <select>
+          <option>Enkeltdag</option>
+          <option>Festival</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Dato og tid ────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Dato og tid</div>
+  <div class="col">
+    <div class="field">
+      <div class="label">Periode</div>
+      <div class="date-range">
+        <div class="input-wrap has-prefix">
+          <svg class="prefix" width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 2v2M11 2v2M2 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <input type="date" value="2025-06-14">
+        </div>
+        <div class="separator">–</div>
+        <div class="input-wrap has-prefix">
+          <svg class="prefix" width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 2v2M11 2v2M2 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <input type="date" value="2025-06-16">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <div class="label">Starttid</div>
+        <div class="input-wrap has-prefix">
+          <svg class="prefix" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <input type="time" value="18:00">
+        </div>
+      </div>
+      <div class="field">
+        <div class="label">Sluttid <span class="label-optional">(valfri)</span></div>
+        <div class="input-wrap has-prefix">
+          <svg class="prefix" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <input type="time" value="02:00">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Søk ────────────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Søk</div>
+  <div class="input-wrap">
+    <svg class="prefix" width="14" height="14" viewBox="0 0 16 16" fill="none" style="position:absolute;left:13px;color:var(--muted-fg);pointer-events:none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <input type="search" class="pill" placeholder="Søk etter oppdrag, personell…" style="width:100%;padding-left:38px">
+  </div>
+</div>
+
+<!-- ── Tilstandar ─────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Tilstandar</div>
+  <div class="row">
+    <div class="field">
+      <div class="label">Standard</div>
+      <input type="text" placeholder="Tomt felt">
+    </div>
+    <div class="field">
+      <div class="label">Med verdi</div>
+      <input type="text" value="Bergenfest Hovudscene">
+    </div>
+    <div class="field">
+      <div class="label">Feil <span class="label-required">*</span></div>
+      <input type="text" value="@" class="is-error">
+      <div class="helper is-error">Ugyldig teikn i tittelfeltet</div>
+    </div>
+    <div class="field">
+      <div class="label">Deaktivert</div>
+      <input type="text" value="Låst av administrator" disabled>
+    </div>
+  </div>
+</div>
+
+<!-- ── Fritekst ───────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Fritekst</div>
+  <div class="field">
+    <div class="label">Interne notat <span class="label-optional">(valfri)</span></div>
+    <textarea placeholder="Legg til notat for dette oppdraget…" maxlength="500" rows="3" oninput="document.getElementById('charcount').textContent=this.value.length+'/500'"></textarea>
+    <div class="field-footer">
+      <div class="helper">Synleg berre for admin og teknikarar på oppdraget</div>
+      <div class="char-count" id="charcount">0/500</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

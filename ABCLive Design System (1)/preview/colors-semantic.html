@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Manrope:wght@700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: oklch(0.08 0.016 282); font-family: 'Inter', sans-serif; padding: 20px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { display: flex; align-items: center; gap: 8px; background: oklch(0.16 0.016 282); border-radius: 8px; padding: 8px 12px; }
+  .dot { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; }
+  .info { display: flex; flex-direction: column; gap: 1px; }
+  .name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 11px; color: oklch(0.97 0.005 282); }
+  .val { font-size: 9px; color: oklch(0.55 0.01 282); }
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="chip"><div class="dot" style="background:oklch(0.75 0.18 158)"></div><div class="info"><span class="name">Success</span><span class="val">oklch(0.75 0.18 158)</span></div></div>
+  <div class="chip"><div class="dot" style="background:oklch(0.65 0.22 20)"></div><div class="info"><span class="name">Destructive</span><span class="val">oklch(0.65 0.22 20)</span></div></div>
+  <div class="chip"><div class="dot" style="background:oklch(0.78 0.14 250)"></div><div class="info"><span class="name">Role Accent</span><span class="val">oklch(0.78 0.14 250)</span></div></div>
+  <div class="chip"><div class="dot" style="background:oklch(0.55 0.010 282)"></div><div class="info"><span class="name">Muted FG</span><span class="val">oklch(0.55 0.010 282)</span></div></div>
+  <div class="chip"><div class="dot" style="background:oklch(0.97 0.005 282)"></div><div class="info"><span class="name">Foreground</span><span class="val">oklch(0.97 0.005 282)</span></div></div>
+</div>
+</body>
+</html>

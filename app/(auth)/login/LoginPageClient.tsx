@@ -48,7 +48,7 @@ export default function LoginPageClient() {
           <div className="mb-2 flex justify-center">
             <Image src="/gemIcon.png" alt="ABC Live" width={56} height={56} className="rounded-full" />
           </div>
-          <CardTitle className="font-heading text-2xl font-bold tracking-tight">ABC Live</CardTitle>
+          <CardTitle className="type-h2 text-2xl tracking-tight">ABC Live</CardTitle>
           <CardDescription>Logg inn for å planlegge oppdrag</CardDescription>
         </CardHeader>
         <CardContent>
@@ -69,7 +69,7 @@ export default function LoginPageClient() {
                 <Label htmlFor="password">Passord</Label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs text-muted-foreground underline-offset-4 hover:underline"
+                  className="type-label text-muted-foreground underline-offset-4 hover:underline"
                 >
                   Glemt passord?
                 </Link>
@@ -93,3 +93,4 @@ export default function LoginPageClient() {
     </div>
   )
 }
+

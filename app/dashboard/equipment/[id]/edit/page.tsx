@@ -38,7 +38,7 @@ export default async function EditEquipmentPage({
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
-      <h1 className="text-2xl font-bold">Endre utstyr</h1>
+      <h1 className="type-h2">Endre utstyr</h1>
       <EquipmentForm equipment={equipment} />
     </div>
   )

@@ -61,7 +61,7 @@ export default function ResetPasswordPageClient() {
       />
       <Card className="relative z-10 w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="font-heading text-2xl font-bold tracking-tight">
+          <CardTitle className="type-h2 text-2xl tracking-tight">
             Nytt passord
           </CardTitle>
           <CardDescription>

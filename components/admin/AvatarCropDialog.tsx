@@ -85,7 +85,7 @@ export default function AvatarCropDialog({ open, onOpenChange, file, onCropped }
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="crop-zoom" className="text-xs text-muted-foreground">
+          <label htmlFor="crop-zoom" className="type-label text-muted-foreground">
             Zoom
           </label>
           <input
@@ -145,3 +145,4 @@ async function renderCroppedBlob(imageSrc: string, area: Area): Promise<Blob> {
     )
   })
 }
+

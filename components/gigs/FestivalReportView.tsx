@@ -39,7 +39,7 @@ export default function FestivalReportView({ report }: { report: FestivalReportD
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-heading text-3xl font-bold">{report.festival.name}</h1>
+                <h1 className="type-h1 text-3xl">{report.festival.name}</h1>
                 <Badge variant="gold">Festivalrapport</Badge>
                 <Badge variant="outline">{statusLabel(report.festival.status)}</Badge>
               </div>
@@ -52,7 +52,7 @@ export default function FestivalReportView({ report }: { report: FestivalReportD
             </div>
 
             <div className="min-w-[220px] rounded-2xl border border-black/10 bg-black/[0.03] p-4 text-sm">
-              <p className="text-xs uppercase tracking-[0.18em] text-black/55">Samandrag</p>
+              <p className="type-micro tracking-[0.18em] text-black/55">Samandrag</p>
               <div className="mt-3 grid gap-2">
                 <p>{report.days.length} festivaldagar</p>
                 <p>{report.days.reduce((sum, day) => sum + day.items.length, 0)} programpostar</p>
@@ -71,7 +71,7 @@ export default function FestivalReportView({ report }: { report: FestivalReportD
 
         <section className="grid gap-4 md:grid-cols-2 print:grid-cols-2">
           <article className="break-inside-avoid rounded-2xl border border-black/10 p-4">
-            <h2 className="mb-3 font-heading text-lg font-semibold">Festivalcrew</h2>
+            <h2 className="type-h3 mb-3 text-lg">Festivalcrew</h2>
             {report.festivalCrew.length === 0 ? (
               <p className="text-sm text-black/60">Ikkje sett</p>
             ) : (
@@ -87,7 +87,7 @@ export default function FestivalReportView({ report }: { report: FestivalReportD
           </article>
 
           <article className="break-inside-avoid rounded-2xl border border-black/10 p-4">
-            <h2 className="mb-3 font-heading text-lg font-semibold">Festivalutstyr</h2>
+            <h2 className="type-h3 mb-3 text-lg">Festivalutstyr</h2>
             {report.festivalEquipment.length === 0 ? (
               <p className="text-sm text-black/60">Ikkje sett</p>
             ) : (
@@ -97,7 +97,7 @@ export default function FestivalReportView({ report }: { report: FestivalReportD
                     <div className="min-w-0">
                       <p>{equipment.name}</p>
                       {equipment.category && (
-                        <p className="text-xs text-black/55">{equipment.category}</p>
+                        <p className="type-label text-black/55">{equipment.category}</p>
                       )}
                     </div>
                     <span className="shrink-0 text-black/60">{equipment.quantity} stk</span>
@@ -112,7 +112,7 @@ export default function FestivalReportView({ report }: { report: FestivalReportD
           {report.days.map((day) => (
             <article key={day.date} className="break-inside-avoid rounded-2xl border border-black/10 overflow-hidden">
               <header className="border-b border-black/10 bg-black/[0.03] px-5 py-4">
-                <h2 className="font-heading text-xl font-semibold capitalize">{day.label}</h2>
+                <h2 className="type-h2 text-xl capitalize">{day.label}</h2>
               </header>
 
               {day.items.length === 0 ? (
@@ -126,7 +126,7 @@ export default function FestivalReportView({ report }: { report: FestivalReportD
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="font-heading text-lg font-semibold">{item.name}</h3>
+                            <h3 className="type-h3 text-lg">{item.name}</h3>
                             <Badge variant="outline">{formatTimeRange(item.startAt, item.endAt)}</Badge>
                             {item.venue && <Badge variant="ghost">{item.venue}</Badge>}
                           </div>
@@ -138,7 +138,7 @@ export default function FestivalReportView({ report }: { report: FestivalReportD
 
                       <div className="mt-4 grid gap-4 md:grid-cols-[1fr_1fr]">
                         <div className="rounded-xl border border-black/8 p-3">
-                          <p className="mb-2 text-xs uppercase tracking-[0.18em] text-black/55">Crew</p>
+                          <p className="type-micro tracking-[0.18em] mb-2 text-black/55">Crew</p>
                           {item.crew.length === 0 ? (
                             <p className="text-sm text-black/60">Ikkje sett</p>
                           ) : (
@@ -154,7 +154,7 @@ export default function FestivalReportView({ report }: { report: FestivalReportD
                         </div>
 
                         <div className="rounded-xl border border-black/8 p-3">
-                          <p className="mb-2 text-xs uppercase tracking-[0.18em] text-black/55">Utstyr</p>
+                          <p className="type-micro tracking-[0.18em] mb-2 text-black/55">Utstyr</p>
                           {item.equipment.length === 0 ? (
                             <p className="text-sm text-black/60">Ikkje sett</p>
                           ) : (

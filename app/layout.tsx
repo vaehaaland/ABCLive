@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
@@ -7,6 +8,13 @@ const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
   display: "swap",
+});
+
+const googleSansFlex = localFont({
+  variable: "--font-google-sans-flex",
+  src: '../public/fonts/GoogleSansFlex-VariableFont_GRAD,ROND,opsz,slnt,wdth,wght.ttf',
+  display: "swap",
+  adjustFontFallback: false,
 });
 
 const inter = Inter({
@@ -35,7 +43,7 @@ export default function RootLayout({
   return (
     <html
       lang="no"
-      className={`${manrope.variable} ${inter.variable} h-full antialiased`}
+      className={`${googleSansFlex.variable} ${manrope.variable} ${inter.variable}  h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background">

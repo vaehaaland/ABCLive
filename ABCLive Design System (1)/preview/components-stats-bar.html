@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="nn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@font-face {
+  font-family: 'Google Sans Flex';
+  src: url('../fonts/GoogleSansFlex-VariableFont_GRAD_ROND_opsz_slnt_wdth_wght.ttf') format('truetype');
+  font-weight: 100 900;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --surface:            oklch(0.08 0.016 282);
+  --surface-container:  oklch(0.16 0.016 282);
+  --surface-high:       oklch(0.21 0.016 282);
+  --surface-highest:    oklch(0.27 0.016 282);
+  --foreground:         oklch(0.97 0.005 282);
+  --muted-fg:           oklch(0.55 0.010 282);
+  --dim-fg:             oklch(0.42 0.010 282);
+  --border:             oklch(1 0 0 / 9%);
+  --primary:            oklch(0.63 0.27 305);
+  --success:            oklch(0.75 0.18 158);
+  --live:               oklch(0.67 0.26 28);
+  --warning:            oklch(0.78 0.18 72);
+  --destructive:        oklch(0.65 0.22 20);
+  --cold:               oklch(0.76 0.18 198);
+  --font-heading:       'Google Sans Flex', sans-serif;
+  --font-sans:          'Inter', sans-serif;
+}
+
+body {
+  background: var(--surface);
+  font-family: var(--font-sans);
+  padding: 24px 20px 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.group-label {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 700, "opsz" 11, "ROND" 0;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim-fg);
+  margin-bottom: 10px;
+}
+
+/* ── Live pulse ─────────────────────────────────────────────── */
+@keyframes live-pulse {
+  0%,100% { box-shadow: 0 0 0 0 oklch(0.67 0.26 28 / 0.65); }
+  50%      { box-shadow: 0 0 0 4px oklch(0.67 0.26 28 / 0); }
+}
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--live);
+  animation: live-pulse 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   VARIANT A — Standard segmentert bar (oppgradert)
+   Klassisk gap-separator, GSF display-tal, micro labels
+   ═══════════════════════════════════════════════════════════ */
+.stats-a {
+  display: flex;
+  gap: 1px;
+  border-radius: 0.875rem;
+  overflow: hidden;
+  background: var(--border);
+}
+.stats-a .seg {
+  flex: 1;
+  background: var(--surface-container);
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: default;
+  transition: background 0.15s;
+}
+.stats-a .seg:hover { background: var(--surface-high); }
+.stats-a .num-row {
+  display: flex; align-items: baseline; gap: 5px;
+}
+.stats-a .num {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 800, "opsz" 36, "GRAD" 0;
+  font-size: 1.625rem;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+.stats-a .trend {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 650, "opsz" 11;
+  font-size: 0.6875rem;
+  display: flex; align-items: center; gap: 1px;
+  letter-spacing: -0.01em;
+  padding-bottom: 2px;
+}
+.stats-a .lbl {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 600, "opsz" 11, "ROND" 0;
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-fg);
+}
+/* live segment gets tinted bg */
+.stats-a .seg.is-live {
+  background: oklch(0.67 0.26 28 / 7%);
+}
+.stats-a .seg.is-live:hover { background: oklch(0.67 0.26 28 / 11%); }
+.stats-a .live-row {
+  display: flex; align-items: center; gap: 5px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   VARIANT B — Compact med trend-pilar
+   Tettare, sekundær trendinformasjon under kvart tal
+   ═══════════════════════════════════════════════════════════ */
+.stats-b {
+  display: flex;
+  gap: 1px;
+  border-radius: 0.875rem;
+  overflow: hidden;
+  background: var(--border);
+}
+.stats-b .seg {
+  flex: 1;
+  background: var(--surface-container);
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: default;
+  transition: background 0.15s;
+}
+.stats-b .seg:hover { background: var(--surface-high); }
+.stats-b .top {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.stats-b .num {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 800, "opsz" 28, "GRAD" 0;
+  font-size: 1.375rem;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.stats-b .trend {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 600, "opsz" 11;
+  font-size: 0.6875rem;
+  display: flex; align-items: center; gap: 2px;
+}
+.trend-up   { color: var(--success); }
+.trend-down { color: var(--destructive); }
+.trend-flat { color: var(--muted-fg); }
+.stats-b .lbl {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 600, "opsz" 11, "ROND" 0;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-fg);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   VARIANT C — Vertikal kort-grid
+   Kvar stat = eige kort, meir luft, ikon øvst
+   ═══════════════════════════════════════════════════════════ */
+.stats-c {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.stats-c .card {
+  background: var(--surface-container);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: default;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.stats-c .card:hover {
+  background: var(--surface-high);
+  box-shadow: 0 4px 16px oklch(0 0 0 / 0.25);
+}
+.stats-c .icon-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.stats-c .icon-wrap {
+  width: 28px; height: 28px; border-radius: 0.5rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.stats-c .num {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 800, "opsz" 36, "GRAD" 0;
+  font-size: 1.75rem;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+.stats-c .lbl {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 600, "opsz" 11, "ROND" 0;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-fg);
+}
+.stats-c .card.is-live {
+  background: oklch(0.67 0.26 28 / 7%);
+  border-color: oklch(0.67 0.26 28 / 20%);
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ VARIANT A — Segmentert + trend ══════════════════ -->
+<div>
+  <div class="group-label">A — Segmentert bar · display-tal · live-tint · trend</div>
+  <div class="stats-a">
+
+    <div class="seg">
+      <div class="num-row">
+        <div class="num" style="color:var(--foreground)">24</div>
+        <div class="trend trend-up"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>+3</div>
+      </div>
+      <div class="lbl">Totalt</div>
+    </div>
+
+    <div class="seg is-live">
+      <div class="live-row">
+        <span class="live-dot"></span>
+        <div class="num" style="color:var(--live)">2</div>
+      </div>
+      <div class="lbl">Live no</div>
+    </div>
+
+    <div class="seg">
+      <div class="num-row">
+        <div class="num" style="color:var(--primary)">18</div>
+        <div class="trend trend-up"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>+5</div>
+      </div>
+      <div class="lbl">Bekrefta</div>
+    </div>
+
+    <div class="seg">
+      <div class="num-row">
+        <div class="num" style="color:var(--muted-fg)">4</div>
+        <div class="trend trend-down"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 2L8 8M8 8H4M8 8V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>−2</div>
+      </div>
+      <div class="lbl">Utkast</div>
+    </div>
+
+    <div class="seg">
+      <div class="num-row">
+        <div class="num" style="color:var(--success)">2</div>
+      </div>
+      <div class="lbl">Fullførte</div>
+    </div>
+
+    <div class="seg">
+      <div class="num-row">
+        <div class="num" style="color:var(--warning)">1</div>
+        <div class="trend trend-up"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>+1</div>
+      </div>
+      <div class="lbl">Overlapp</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ VARIANT B — Kompakt med trend ═══════════════════ -->
+<div>
+  <div class="group-label">B — Kompakt · trend frå førre månad</div>
+  <div class="stats-b">
+
+    <div class="seg">
+      <div class="top">
+        <div class="num" style="color:var(--foreground)">24</div>
+        <div class="trend trend-up">
+          <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          +3
+        </div>
+      </div>
+      <div class="lbl">Totalt</div>
+    </div>
+
+    <div class="seg">
+      <div class="top">
+        <div class="num" style="color:var(--live)">2</div>
+        <div class="trend trend-flat">–</div>
+      </div>
+      <div class="lbl">Live no</div>
+    </div>
+
+    <div class="seg">
+      <div class="top">
+        <div class="num" style="color:var(--primary)">18</div>
+        <div class="trend trend-up">
+          <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          +5
+        </div>
+      </div>
+      <div class="lbl">Bekrefta</div>
+    </div>
+
+    <div class="seg">
+      <div class="top">
+        <div class="num" style="color:var(--muted-fg)">4</div>
+        <div class="trend trend-down">
+          <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 2L8 8M8 8H4M8 8V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          −2
+        </div>
+      </div>
+      <div class="lbl">Utkast</div>
+    </div>
+
+    <div class="seg">
+      <div class="top">
+        <div class="num" style="color:var(--success)">2</div>
+        <div class="trend trend-flat">–</div>
+      </div>
+      <div class="lbl">Fullførte</div>
+    </div>
+
+    <div class="seg">
+      <div class="top">
+        <div class="num" style="color:var(--warning)">1</div>
+        <div class="trend trend-up">
+          <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          +1
+        </div>
+      </div>
+      <div class="lbl">Overlapp</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ VARIANT C — Kortgrid ════════════════════════════ -->
+<div>
+  <div class="group-label">C — Kortgrid · ikon · meir luft</div>
+  <div class="stats-c">
+
+    <div class="stats-c card">
+      <div class="icon-row">
+        <div class="icon-wrap" style="background:oklch(0.97 0.005 282 / 8%)">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" stroke="oklch(0.97 0.005 282)" stroke-width="1.5"/><rect x="9" y="2" width="5" height="5" rx="1.2" stroke="oklch(0.97 0.005 282)" stroke-width="1.5"/><rect x="2" y="9" width="5" height="5" rx="1.2" stroke="oklch(0.97 0.005 282)" stroke-width="1.5"/><rect x="9" y="9" width="5" height="5" rx="1.2" stroke="oklch(0.97 0.005 282)" stroke-width="1.5"/></svg>
+        </div>
+      </div>
+      <div class="num" style="color:var(--foreground)">24</div>
+      <div class="lbl">Totalt</div>
+    </div>
+
+    <div class="stats-c card is-live">
+      <div class="icon-row">
+        <div class="icon-wrap" style="background:oklch(0.67 0.26 28 / 12%)">
+          <span class="live-dot"></span>
+        </div>
+      </div>
+      <div class="num" style="color:var(--live)">2</div>
+      <div class="lbl">Live no</div>
+    </div>
+
+    <div class="stats-c card">
+      <div class="icon-row">
+        <div class="icon-wrap" style="background:oklch(0.63 0.27 305 / 10%)">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13 5L6.5 11.5 3 8" stroke="oklch(0.63 0.27 305)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div class="num" style="color:var(--primary)">18</div>
+      <div class="lbl">Bekrefta</div>
+    </div>
+
+    <div class="stats-c card">
+      <div class="icon-row">
+        <div class="icon-wrap" style="background:oklch(0.55 0.010 282 / 12%)">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 4v4M8 10v2" stroke="oklch(0.72 0.005 282)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+      <div class="num" style="color:var(--muted-fg)">4</div>
+      <div class="lbl">Utkast</div>
+    </div>
+
+    <div class="stats-c card">
+      <div class="icon-row">
+        <div class="icon-wrap" style="background:oklch(0.75 0.18 158 / 10%)">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="oklch(0.75 0.18 158)" stroke-width="1.5"/><path d="M5.5 8l2 2 3-3" stroke="oklch(0.75 0.18 158)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div class="num" style="color:var(--success)">2</div>
+      <div class="lbl">Fullførte</div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

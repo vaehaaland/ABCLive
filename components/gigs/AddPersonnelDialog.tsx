@@ -199,7 +199,7 @@ export default function AddPersonnelDialog({
                     }`}
                   >
                     <span
-                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border text-xs ${
+                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border type-label ${
                         checked
                           ? 'border-primary bg-primary text-white'
                           : 'border-white/20'
@@ -210,17 +210,17 @@ export default function AddPersonnelDialog({
                     <span className="flex-1 truncate">{getDisplayName(p, p.id)}</span>
                     <CompanyBadge company={p.primaryCompany} size="xs" />
                     {p.hasConflict && (
-                      <span className="text-destructive text-xs shrink-0">⚠ konflikt</span>
+                      <span className="type-label text-destructive shrink-0">⚠ konflikt</span>
                     )}
                     {!p.hasConflict && p.hasBlock && (
-                      <span className="text-spotlight-gold text-xs shrink-0">⚠ utilgjengeleg</span>
+                      <span className="type-label text-spotlight-gold shrink-0">⚠ utilgjengeleg</span>
                     )}
                   </button>
                 )
               })}
             </div>
             {selectedIds.size > 0 && (
-              <p className="text-xs text-muted-foreground">{selectedIds.size} valt</p>
+              <p className="type-label text-muted-foreground">{selectedIds.size} valt</p>
             )}
           </div>
 
@@ -243,3 +243,4 @@ export default function AddPersonnelDialog({
     </Dialog>
   )
 }
+

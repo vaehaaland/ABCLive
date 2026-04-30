@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  @font-face {
+    font-family: 'Google Sans Flex';
+    src: url('../fonts/GoogleSansFlex-VariableFont_GRAD_ROND_opsz_slnt_wdth_wght.ttf') format('truetype');
+    font-weight: 100 900;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: oklch(0.08 0.016 282); font-family: 'Inter', sans-serif; padding: 24px 20px; }
+
+  .display {
+    font-family: 'Google Sans Flex', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 800;
+    font-variation-settings: "wght" 800, "wdth" 100, "opsz" 48, "GRAD" 0, "ROND" 0;
+    letter-spacing: -0.04em;
+    line-height: 1.0;
+    color: oklch(0.97 0.005 282);
+  }
+  .grad {
+    background: linear-gradient(135deg, oklch(0.68 0.26 292), oklch(0.82 0.17 82));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .h1 {
+    font-family: 'Google Sans Flex', sans-serif;
+    font-size: 2.25rem;
+    font-weight: 800;
+    font-variation-settings: "wght" 800, "wdth" 100, "opsz" 36, "GRAD" 0, "ROND" 0;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: oklch(0.97 0.005 282);
+    margin-top: 4px;
+  }
+  .tag {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: oklch(0.55 0.010 282); margin-top: 8px;
+  }
+  .axes {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;
+  }
+  .axis-chip {
+    display: flex; flex-direction: column; gap: 2px;
+    background: oklch(0.16 0.016 282); border-radius: 8px; padding: 6px 10px;
+  }
+  .axis-name { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: oklch(0.68 0.26 292); }
+  .axis-range { font-size: 9px; color: oklch(0.55 0.010 282); }
+</style>
+</head>
+<body>
+  <div class="display grad">ABC Live</div>
+  <div class="h1">Oppdrag 2025</div>
+  <div class="tag">Google Sans Flex — Display 3.5rem wght 800 / H1 2.25rem wght 800</div>
+  <div class="axes">
+    <div class="axis-chip"><span class="axis-name">wght</span><span class="axis-range">100–900</span></div>
+    <div class="axis-chip"><span class="axis-name">wdth</span><span class="axis-range">75–100%</span></div>
+    <div class="axis-chip"><span class="axis-name">opsz</span><span class="axis-range">8–144</span></div>
+    <div class="axis-chip"><span class="axis-name">GRAD</span><span class="axis-range">−200–150</span></div>
+    <div class="axis-chip"><span class="axis-name">ROND</span><span class="axis-range">0–100</span></div>
+    <div class="axis-chip"><span class="axis-name">slnt</span><span class="axis-range">−15–0°</span></div>
+  </div>
+</body>
+</html>
