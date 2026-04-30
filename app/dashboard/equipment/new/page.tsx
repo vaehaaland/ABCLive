@@ -1,6 +1,11 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import EquipmentForm from '@/components/EquipmentForm'
+
+export const metadata: Metadata = {
+  title: 'Nytt utstyr',
+}
 
 export default async function NewEquipmentPage() {
   const supabase = await createClient()

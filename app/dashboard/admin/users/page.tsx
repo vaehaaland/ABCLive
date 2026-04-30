@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireSuperadmin } from '@/lib/auth/requireSuperadmin'
 import { Avatar } from '@/components/ui/avatar'
@@ -13,12 +14,43 @@ import {
 import NewUserDialog from '@/components/admin/NewUserDialog'
 import UserRowActions from '@/components/admin/UserRowActions'
 import { CompanyBadge } from '@/components/CompanyBadge'
-import { format } from 'date-fns'
+import { endOfMonth, endOfWeek, format, isSameDay, startOfDay, startOfMonth, startOfWeek } from 'date-fns'
 import { nb } from 'date-fns/locale'
 import type { Profile } from '@/types/database'
 import { formatPhone } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
+export const metadata: Metadata = {
+  title: 'Brukarar',
+}
+
+function formatLastSeen(value: string | null) {
+  if (!value) {
+    return { label: 'Aldri', title: 'Aldri logga inn' }
+  }
+
+  const date = new Date(value)
+  const now = new Date()
+  const exact = format(date, 'd. MMM yyyy HH:mm', { locale: nb })
+
+  if (isSameDay(date, now)) {
+    return { label: 'I dag', title: exact }
+  }
+
+  const weekStart = startOfWeek(startOfDay(now), { weekStartsOn: 1 })
+  const weekEnd = endOfWeek(startOfDay(now), { weekStartsOn: 1 })
+  if (date >= weekStart && date <= weekEnd) {
+    return { label: 'Denne veka', title: exact }
+  }
+
+  const monthStart = startOfMonth(now)
+  const monthEnd = endOfMonth(now)
+  if (date >= monthStart && date <= monthEnd) {
+    return { label: 'Denne månaden', title: exact }
+  }
+
+  return { label: format(date, 'd. MMM yyyy', { locale: nb }), title: exact }
+}
 
 export default async function AdminUsersPage() {
   const caller = await requireSuperadmin()
@@ -100,6 +132,7 @@ export default async function AdminUsersPage() {
               <TableHead>Tilgang</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Oppretta</TableHead>
+              <TableHead>Sist innlogga</TableHead>
               <TableHead className="text-right">Handlingar</TableHead>
             </TableRow>
           </TableHeader>
@@ -107,6 +140,7 @@ export default async function AdminUsersPage() {
             {users.map((u) => {
               const isSelf = u.id === caller.id
               const pending = !u.confirmed_at && !u.last_sign_in_at
+              const lastSeen = formatLastSeen(u.last_sign_in_at ?? null)
               return (
                 <TableRow key={u.id}>
                   <TableCell>
@@ -143,6 +177,9 @@ export default async function AdminUsersPage() {
                   </TableCell>
                   <TableCell className="text-muted-foreground text-xs">
                     {format(new Date(u.created_at), 'd. MMM yyyy', { locale: nb })}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-xs">
+                    <span title={lastSeen.title}>{lastSeen.label}</span>
                   </TableCell>
                   <TableCell className="text-right">
                     <UserRowActions

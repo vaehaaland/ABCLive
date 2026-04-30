@@ -1,8 +1,9 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { formatPhone, getDisplayName } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { GigAssignmentCard } from '@/components/gigs/GigAssignmentCard'
 import ProfileAvatar from '@/components/ProfileAvatar'
 import PrimaryRoleEditor from '@/components/profile/PrimaryRoleEditor'
 import NicknameEditor from '@/components/profile/NicknameEditor'
@@ -11,20 +12,14 @@ import { nb } from 'date-fns/locale'
 import {
   MailIcon,
   PhoneIcon,
-  CalendarIcon,
-  MapPinIcon,
   BanIcon,
 } from 'lucide-react'
-import type { GigStatus, AvailabilityBlock } from '@/types/database'
+import type { AvailabilityBlock } from '@/types/database'
 import AvailabilityBlocksManager from '@/components/profile/AvailabilityBlocksManager'
 import UserActionsMenu from '@/components/profile/UserActionsMenu'
-import { statusLabels } from '@/lib/gig-status'
 
-const statusVariants: Record<GigStatus, 'default' | 'secondary' | 'outline' | 'status-alert'> = {
-  draft: 'outline',
-  confirmed: 'default',
-  completed: 'secondary',
-  cancelled: 'status-alert',
+export const metadata: Metadata = {
+  title: 'Profil',
 }
 
 const DAY = 86_400_000
@@ -87,15 +82,6 @@ function calcBusySlots(
 
   const todayStatus: SlotStatus = gigSet.has(0) ? 'gig' : blockSet.has(0) ? 'blocked' : 'free'
   return { busyToday: todayStatus, slots }
-}
-
-// Deterministic gradient hue from gig id
-function getCardHue(id: string) {
-  let hash = 0
-  for (let i = 0; i < id.length; i++) {
-    hash = (hash * 31 + id.charCodeAt(i)) & 0xffffffff
-  }
-  return Math.abs(hash) % 360
 }
 
 type AssignmentCard = {
@@ -183,7 +169,7 @@ export default async function ProfilePage() {
           data: { id: string; name: string; venue: string | null; start_date: string; end_date: string; status: string }[] | null
           error: unknown
         }
-    : { data: [] as { id: string; name: string; venue: string | null; start_date: string; end_date: string; status: string }[], error: null }
+    : { data: [] as { id: string; name: string; venue: string | null; start_date: string; end_date: string; status: string }[] }
 
   const itemParentGigMap = new Map((itemParentGigs ?? []).map((gig) => [gig.id, gig]))
 
@@ -431,47 +417,11 @@ export default async function ProfilePage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {upcomingAssignments.map((assignment) => {
-                const hue = getCardHue(assignment.id)
                 return (
-                  <Link
+                  <GigAssignmentCard
                     key={`${assignment.id}-${assignment.item_name ?? 'top'}`}
-                    href={`/dashboard/gigs/${assignment.id}`}
-                    className="group block rounded-xl overflow-hidden transition-transform hover:-translate-y-0.5"
-                  >
-                    <div
-                      className="h-28 flex items-end p-4"
-                      style={{
-                        background: `linear-gradient(135deg, oklch(0.28 0.12 ${hue}) 0%, oklch(0.13 0 0) 100%)`,
-                      }}
-                    >
-                      <Badge variant={statusVariants[assignment.status as GigStatus]}>
-                        {statusLabels[assignment.status as GigStatus]}
-                      </Badge>
-                    </div>
-                    <div className="bg-surface-container group-hover:bg-surface-high transition-colors p-4 flex flex-col gap-2">
-                      <p className="font-heading font-semibold text-sm leading-snug line-clamp-1">
-                        {assignment.name}
-                      </p>
-                      {assignment.item_name && (
-                        <p className="text-xs text-primary font-medium">{assignment.item_name}</p>
-                      )}
-                      {assignment.role_label && (
-                        <p className="text-xs text-primary font-medium">{assignment.role_label}</p>
-                      )}
-                      <div className="flex flex-col gap-1 mt-0.5">
-                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <CalendarIcon className="size-3 shrink-0" />
-                          {format(new Date(assignment.start_date), 'd. MMM yyyy', { locale: nb })}
-                        </span>
-                        {assignment.venue && (
-                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <MapPinIcon className="size-3 shrink-0" />
-                            {assignment.venue}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
+                    {...assignment}
+                  />
                 )
               })}
             </div>
@@ -489,47 +439,11 @@ export default async function ProfilePage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {pastAssignments.map((assignment) => {
-                const hue = getCardHue(assignment.id)
                 return (
-                  <Link
+                  <GigAssignmentCard
                     key={`${assignment.id}-${assignment.item_name ?? 'top'}`}
-                    href={`/dashboard/gigs/${assignment.id}`}
-                    className="group block rounded-xl overflow-hidden transition-transform hover:-translate-y-0.5"
-                  >
-                    <div
-                      className="h-28 flex items-end p-4"
-                      style={{
-                        background: `linear-gradient(135deg, oklch(0.28 0.12 ${hue}) 0%, oklch(0.13 0 0) 100%)`,
-                      }}
-                    >
-                      <Badge variant={statusVariants[assignment.status as GigStatus]}>
-                        {statusLabels[assignment.status as GigStatus]}
-                      </Badge>
-                    </div>
-                    <div className="bg-surface-container group-hover:bg-surface-high transition-colors p-4 flex flex-col gap-2">
-                      <p className="font-heading font-semibold text-sm leading-snug line-clamp-1">
-                        {assignment.name}
-                      </p>
-                      {assignment.item_name && (
-                        <p className="text-xs text-primary font-medium">{assignment.item_name}</p>
-                      )}
-                      {assignment.role_label && (
-                        <p className="text-xs text-primary font-medium">{assignment.role_label}</p>
-                      )}
-                      <div className="flex flex-col gap-1 mt-0.5">
-                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <CalendarIcon className="size-3 shrink-0" />
-                          {format(new Date(assignment.start_date), 'd. MMM yyyy', { locale: nb })}
-                        </span>
-                        {assignment.venue && (
-                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <MapPinIcon className="size-3 shrink-0" />
-                            {assignment.venue}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
+                    {...assignment}
+                  />
                 )
               })}
             </div>

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { format } from 'date-fns'
@@ -7,6 +8,24 @@ import { acceptGigAssignment, declineGigAssignment } from '@/app/actions/gig-per
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: gig } = await supabase
+    .from('gigs')
+    .select('name')
+    .eq('id', id)
+    .maybeSingle() as { data: { name: string } | null, error: unknown }
+
+  return {
+    title: gig?.name ? `Svar: ${gig.name}` : 'Oppdragsførespurnad',
+  }
+}
 
 type AssignmentRow = {
   id: string
@@ -50,20 +69,22 @@ export default async function GigAssignmentRespondPage({
     notFound()
   }
 
-  const gig = assignment.gigs
+  const resolvedAssignment = assignment
+  const gig = resolvedAssignment.gigs as NonNullable<AssignmentRow['gigs']>
+  const assignmentId = resolvedAssignment.id
   const dateText = gig.start_date === gig.end_date
     ? format(new Date(gig.start_date), 'd. MMMM yyyy', { locale: nb })
     : `${format(new Date(gig.start_date), 'd. MMMM yyyy', { locale: nb })} – ${format(new Date(gig.end_date), 'd. MMMM yyyy', { locale: nb })}`
 
   async function acceptAction() {
     'use server'
-    await acceptGigAssignment(assignment.id)
+    await acceptGigAssignment(assignmentId)
   }
 
   async function declineAction(formData: FormData) {
     'use server'
     const note = formData.get('note')
-    await declineGigAssignment(assignment.id, typeof note === 'string' ? note : undefined)
+    await declineGigAssignment(assignmentId, typeof note === 'string' ? note : undefined)
   }
 
   return (
@@ -79,12 +100,12 @@ export default async function GigAssignmentRespondPage({
           <div className="space-y-2 rounded-lg border border-border/70 bg-muted/30 p-4">
             <h2 className="font-heading text-xl font-semibold">{gig.name}</h2>
             <p className="text-sm text-muted-foreground">{dateText}{gig.venue ? ` · ${gig.venue}` : ''}</p>
-            {assignment.role_on_gig && (
-              <p className="text-sm text-muted-foreground">Rolle: {assignment.role_on_gig}</p>
+            {resolvedAssignment.role_on_gig && (
+              <p className="text-sm text-muted-foreground">Rolle: {resolvedAssignment.role_on_gig}</p>
             )}
           </div>
 
-          {assignment.assignment_status === 'pending' ? (
+          {resolvedAssignment.assignment_status === 'pending' ? (
             <div className="space-y-4">
               <div className="flex flex-wrap gap-3">
                 <form action={acceptAction}>
@@ -114,17 +135,17 @@ export default async function GigAssignmentRespondPage({
               <p className="text-sm text-muted-foreground">Du har allereie svart på førespurnaden.</p>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">Status:</span>
-                <Badge variant={assignment.assignment_status === 'accepted' ? 'success' : 'destructive'}>
-                  {assignment.assignment_status === 'accepted' ? 'Akseptert' : 'Avslått'}
+                <Badge variant={resolvedAssignment.assignment_status === 'accepted' ? 'success' : 'destructive'}>
+                  {resolvedAssignment.assignment_status === 'accepted' ? 'Akseptert' : 'Avslått'}
                 </Badge>
               </div>
-              {assignment.responded_at && (
+              {resolvedAssignment.responded_at && (
                 <p className="text-xs text-muted-foreground">
-                  Svara {format(new Date(assignment.responded_at), 'd. MMM yyyy HH:mm', { locale: nb })}
+                  Svara {format(new Date(resolvedAssignment.responded_at), 'd. MMM yyyy HH:mm', { locale: nb })}
                 </p>
               )}
-              {assignment.response_note && (
-                <p className="text-sm text-muted-foreground">Kommentar: {assignment.response_note}</p>
+              {resolvedAssignment.response_note && (
+                <p className="text-sm text-muted-foreground">Kommentar: {resolvedAssignment.response_note}</p>
               )}
               <Link href={`/dashboard/gigs/${gig.id}`}>
                 <Button variant="outline" type="button">Til oppdragsdetaljar</Button>

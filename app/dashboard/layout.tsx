@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/avatar'
 import LogoutButton from '@/components/LogoutButton'
 import NotificationBell from '@/components/NotificationBell'
 import ReportIssueDialog from '@/components/ReportIssueDialog'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import { getDisplayName } from '@/lib/utils'
 
 export default async function DashboardLayout({
@@ -67,6 +68,7 @@ export default async function DashboardLayout({
           </div>
           <div className="flex items-center gap-2">
             <ReportIssueDialog />
+            <ThemeToggle />
             <NotificationBell />
             {/* TODO: /dashboard/profile → /app/profile */}
             <Link

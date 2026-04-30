@@ -1,7 +1,26 @@
+import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import EquipmentForm from '@/components/EquipmentForm'
 import type { Equipment } from '@/types/database'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: equipment } = await supabase
+    .from('equipment')
+    .select('name')
+    .eq('id', id)
+    .maybeSingle() as { data: { name: string } | null, error: unknown }
+
+  return {
+    title: equipment?.name ? `Endre utstyr: ${equipment.name}` : 'Endre utstyr',
+  }
+}
 
 export default async function EditEquipmentPage({
   params,

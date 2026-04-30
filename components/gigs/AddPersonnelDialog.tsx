@@ -80,7 +80,7 @@ export default function AddPersonnelDialog({
 
       const { data: conflicts } = await supabase
         .from('gig_personnel')
-        .select('profile_id, gigs!inner(id, name, start_date, end_date)')
+        .select('profile_id, gigs!inner(id, name, start_date, end_date, deleted_at)')
         .neq('gig_id', gigId)
 
       const conflictMap = buildConflictMap(conflicts ?? [], gigStartDate, gigEndDate)

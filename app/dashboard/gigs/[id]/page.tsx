@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -24,6 +25,7 @@ import GigFilesSection from '@/components/gigs/GigFilesSection'
 import GigCommentsSection from '@/components/gigs/GigCommentsSection'
 import GigChecklistSection from '@/components/gigs/GigChecklistSection'
 import GigActionsDropdown from '@/components/gigs/GigActionsDropdown'
+import RestoreGigButton from '@/components/gigs/RestoreGigButton'
 import GigEquipmentList from '@/components/gigs/GigEquipmentList'
 import GigAssignmentRespondDialog from '@/components/gigs/GigAssignmentRespondDialog'
 import type { GigFile, GigProgramItem, GigStatus, GigType, GigCommentWithAuthor, GigChecklistItem, GigExternalPersonnel } from '@/types/database'
@@ -35,6 +37,24 @@ type GigChecklistItemWithChecker = GigChecklistItem & {
   checker: { id: string; full_name: string | null; nickname: string | null } | null
 }
 import { getDisplayName } from '@/lib/utils'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: gig } = await supabase
+    .from('gigs')
+    .select('name')
+    .eq('id', id)
+    .maybeSingle() as { data: { name: string } | null, error: unknown }
+
+  return {
+    title: gig?.name ?? 'Oppdrag',
+  }
+}
 
 function formatProgramItemRange(startAt: string, endAt: string) {
   const start = new Date(startAt)
@@ -92,6 +112,7 @@ type GigDetailRow = {
   created_at: string
   icloud_uid: string | null
   company_id: string
+  deleted_at: string | null
   company: { id: string; name: string; slug: string } | null
 }
 
@@ -160,8 +181,8 @@ export default async function GigDetailPage({
   const isAdmin = profile?.role === 'admin'
 
   const gigSelect = isAdmin
-    ? 'id, name, gig_type, public_report_enabled, public_report_slug, venue, client, start_date, end_date, description, status, price, price_notes, created_by, created_at, icloud_uid, company_id, company:company_id(id, name, slug)'
-    : 'id, name, gig_type, public_report_enabled, public_report_slug, venue, client, start_date, end_date, description, status, created_by, created_at, icloud_uid, company_id, company:company_id(id, name, slug)'
+    ? 'id, name, gig_type, public_report_enabled, public_report_slug, venue, client, start_date, end_date, description, status, price, price_notes, created_by, created_at, icloud_uid, company_id, deleted_at, company:company_id(id, name, slug)'
+    : 'id, name, gig_type, public_report_enabled, public_report_slug, venue, client, start_date, end_date, description, status, created_by, created_at, icloud_uid, company_id, deleted_at, company:company_id(id, name, slug)'
 
   const { data: gig } = await supabase
     .from('gigs')
@@ -170,6 +191,7 @@ export default async function GigDetailPage({
     .single() as { data: GigDetailRow | null, error: unknown }
 
   if (!gig) notFound()
+  if (!isAdmin && gig.deleted_at) notFound()
 
   const { data: personnelRows } = await supabase
     .from('gig_personnel')
@@ -271,6 +293,16 @@ export default async function GigDetailPage({
   return (
     <div className={`grid grid-cols-1 gap-6 ${isFestival ? 'max-w-7xl lg:grid-cols-2' : 'max-w-5xl lg:grid-cols-2'}`}>
       <div className="flex flex-col gap-6">
+
+      {isAdmin && gig.deleted_at && (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 flex items-center justify-between gap-4">
+          <p className="text-sm text-destructive font-medium">
+            Dette oppdraget er sletta ({format(new Date(gig.deleted_at), 'd. MMM yyyy', { locale: nb })})
+          </p>
+          <RestoreGigButton gigId={gig.id} />
+        </div>
+      )}
+
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -299,7 +331,7 @@ export default async function GigDetailPage({
           }>
             {statusLabels[gig.status as GigStatus]}
           </Badge>
-          {isAdmin && (
+          {isAdmin && !gig.deleted_at && (
             <>
               <GigActionsDropdown gigId={gig.id} status={gig.status} gigType={gig.gig_type} />
               <Button variant="outline" size="sm" asChild>
@@ -406,7 +438,7 @@ export default async function GigDetailPage({
                           )}
                           {isAdmin
                             ? <EditPersonnelRoleInline assignmentId={row.id} currentRole={row.role_on_gig ?? null} />
-                            : row.role_on_gig && <Badge variant="cold">{row.role_on_gig}</Badge>
+                            : row.role_on_gig && <Badge variant="role">{row.role_on_gig}</Badge>
                           }
                           {statusBadge}
                         </div>
@@ -430,7 +462,7 @@ export default async function GigDetailPage({
                     <li key={row.id} className="flex items-center justify-between py-1.5">
                       <div className="flex items-center gap-2.5">
                         <p className="text-sm font-medium">{row.name}</p>
-                        {row.role_on_gig && <Badge variant="cold">{row.role_on_gig}</Badge>}
+                        {row.role_on_gig && <Badge variant="role">{row.role_on_gig}</Badge>}
                         <Badge variant="outline" className="text-xs">Ekstern</Badge>
                         {row.company && (
                           <span className="text-xs text-muted-foreground">{row.company}</span>
@@ -558,7 +590,7 @@ export default async function GigDetailPage({
                                       ) : (
                                         <p className="text-sm font-medium">Ukjend</p>
                                       )}
-                                      {row.role_on_item && <Badge variant="cold">{row.role_on_item}</Badge>}
+                                      {row.role_on_item && <Badge variant="role">{row.role_on_item}</Badge>}
                                     </div>
                                     {isAdmin && <RemoveProgramItemPersonnelButton assignmentId={row.id} />}
                                   </li>

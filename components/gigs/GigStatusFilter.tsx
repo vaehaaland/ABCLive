@@ -8,7 +8,7 @@ import type { GigStatus } from '@/types/database'
 
 const STATUS_OPTIONS: { value: GigStatus; label: string; dotClass: string }[] = [
   { value: 'confirmed', label: 'Bekrefta', dotClass: 'bg-primary' },
-  { value: 'draft', label: 'Utkast', dotClass: 'bg-surface-highest border border-white/20' },
+  { value: 'draft', label: 'Utkast', dotClass: 'bg-surface-highest border border-input' },
   { value: 'completed', label: 'Fullført', dotClass: 'bg-emerald-500' },
   { value: 'cancelled', label: 'Avlyst', dotClass: 'bg-destructive' },
 ]
@@ -65,7 +65,7 @@ export function GigStatusFilter({ defaultValue }: { defaultValue: GigStatus[] })
         aria-expanded={open}
         className={cn(
           'inline-flex items-center gap-1.5 rounded-xl border bg-surface-high px-3 py-1.5 text-xs font-medium transition-all',
-          open ? 'border-primary/40 text-foreground' : 'border-white/10 text-muted-foreground hover:text-foreground',
+          open ? 'border-primary/40 text-foreground' : 'border-input text-muted-foreground hover:text-foreground',
           isPending && 'opacity-70'
         )}
       >
@@ -81,7 +81,7 @@ export function GigStatusFilter({ defaultValue }: { defaultValue: GigStatus[] })
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full mt-1.5 z-50 min-w-[160px] rounded-xl border border-white/10 bg-surface-container shadow-xl overflow-hidden">
+        <div className="absolute left-0 top-full mt-1.5 z-50 min-w-[160px] overflow-hidden rounded-xl border border-input bg-surface-container shadow-xl">
           {STATUS_OPTIONS.map(({ value, label, dotClass }) => {
             const checked = selected.includes(value)
             return (
@@ -101,7 +101,7 @@ export function GigStatusFilter({ defaultValue }: { defaultValue: GigStatus[] })
           })}
           {activeCount > 0 && (
             <>
-              <div className="h-px bg-white/10 mx-2" />
+              <div className="mx-2 h-px bg-border" />
               <button
                 onClick={() => {
                   setSelected([])

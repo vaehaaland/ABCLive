@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { cn } from '@/lib/utils'
 
-export function PastGigsToggle({
+export function ShowDeletedToggle({
   defaultChecked,
 }: {
   defaultChecked: boolean
@@ -27,9 +27,9 @@ export function PastGigsToggle({
 
     const params = new URLSearchParams(searchParams.toString())
     if (next) {
-      params.set('showPast', '1')
+      params.set('showDeleted', '1')
     } else {
-      params.delete('showPast')
+      params.delete('showDeleted')
     }
 
     const query = params.toString()
@@ -46,13 +46,13 @@ export function PastGigsToggle({
       )}
     >
       <span className={cn('transition-colors', checked ? 'text-foreground' : 'text-muted-foreground')}>
-        Vis tidlegare
+        Vis sletta
       </span>
       <span className="relative inline-flex items-center">
         <input
           type="checkbox"
           role="switch"
-          aria-label="Vis tidlegare oppdrag"
+          aria-label="Vis sletta oppdrag"
           checked={checked}
           onChange={handleChange}
           disabled={isPending}
@@ -62,7 +62,7 @@ export function PastGigsToggle({
           aria-hidden="true"
           className={cn(
             'relative h-5 w-9 rounded-full transition-colors',
-            checked ? 'bg-primary' : 'bg-surface-highest'
+            checked ? 'bg-destructive' : 'bg-surface-highest'
           )}
         >
           <span

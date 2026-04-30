@@ -697,6 +697,7 @@ export type Database = {
           company_id: string
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           description: string | null
           end_date: string
           gig_type: string
@@ -717,6 +718,7 @@ export type Database = {
           company_id: string
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           description?: string | null
           end_date: string
           gig_type?: string
@@ -737,6 +739,7 @@ export type Database = {
           company_id?: string
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           description?: string | null
           end_date?: string
           gig_type?: string

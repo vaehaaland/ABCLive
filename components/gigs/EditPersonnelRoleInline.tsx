@@ -49,7 +49,7 @@ export default function EditPersonnelRoleInline({ assignmentId, currentRole }: P
         onBlur={save}
         onKeyDown={onKeyDown}
         placeholder="Rolle…"
-        className="h-5 w-32 rounded border border-white/20 bg-surface-high px-1.5 text-xs text-foreground outline-none focus:border-primary"
+        className="h-5 w-32 rounded border border-input bg-surface-high px-1.5 text-xs text-foreground outline-none focus:border-primary"
       />
     )
   }
@@ -57,7 +57,7 @@ export default function EditPersonnelRoleInline({ assignmentId, currentRole }: P
   if (currentRole) {
     return (
       <button type="button" onClick={startEdit} className="group">
-        <Badge variant="gold" className="cursor-text group-hover:opacity-70 transition-opacity">
+        <Badge variant="role" className="cursor-text group-hover:opacity-70 transition-opacity">
           {currentRole}
         </Badge>
       </button>

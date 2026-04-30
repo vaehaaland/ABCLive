@@ -72,7 +72,7 @@ export default function AddEquipmentDialog({
 
       const { data: allocations } = await supabase
         .from('gig_equipment')
-        .select('equipment_id, quantity_needed, gigs!inner(start_date, end_date)')
+        .select('equipment_id, quantity_needed, gigs!inner(start_date, end_date, deleted_at)')
         .neq('gig_id', gigId)
 
       const allocatedMap = buildAllocatedMap(allocations ?? [], gigStartDate, gigEndDate)

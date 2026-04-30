@@ -1,6 +1,25 @@
+import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import GigForm from '@/components/gigs/GigForm'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: gig } = await supabase
+    .from('gigs')
+    .select('name')
+    .eq('id', id)
+    .maybeSingle() as { data: { name: string } | null, error: unknown }
+
+  return {
+    title: gig?.name ? `Endre: ${gig.name}` : 'Endre arrangement',
+  }
+}
 
 export default async function EditGigPage({
   params,
