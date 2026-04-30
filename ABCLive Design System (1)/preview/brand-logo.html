@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="nn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@font-face {
+  font-family: 'Google Sans Flex';
+  src: url('../fonts/GoogleSansFlex-VariableFont_GRAD_ROND_opsz_slnt_wdth_wght.ttf') format('truetype');
+  font-weight: 100 900;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --surface:           oklch(0.08 0.016 282);
+  --surface-container: oklch(0.16 0.016 282);
+  --surface-high:      oklch(0.21 0.016 282);
+  --foreground:        oklch(0.97 0.005 282);
+  --muted-fg:          oklch(0.55 0.010 282);
+  --dim-fg:            oklch(0.42 0.010 282);
+  --border:            oklch(1 0 0 / 9%);
+  --primary:           oklch(0.63 0.27 305);
+  --cold:              oklch(0.76 0.18 198);
+  --live:              oklch(0.67 0.26 28);
+  --font-heading:      'Google Sans Flex', sans-serif;
+  --font-sans:         'Inter', sans-serif;
+}
+
+body {
+  background: var(--surface);
+  font-family: var(--font-sans);
+  padding: 28px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.group-label {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 700, "opsz" 11, "ROND" 0;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim-fg);
+  margin-bottom: 14px;
+}
+
+/* ── Proposal grid ─────────────────────────────────────────── */
+.proposals {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.proposal {
+  background: var(--surface-container);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  padding: 28px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.prop-label {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 600, "opsz" 11, "ROND" 0;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim-fg);
+}
+.lockups {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.lockup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lockup.stacked {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.icon-lg { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.icon-sm { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.divider-h { height: 1px; background: var(--border); }
+.size-label {
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dim-fg);
+  margin-top: -4px;
+}
+
+/* ── Wordmark styles ────────────────────────────────────────── */
+
+/* 1 — Purple→Cyan gradient (replaces current purple→gold) */
+.wm-1 {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 800, "opsz" 20, "ROND" 0;
+  letter-spacing: -0.03em;
+  background: linear-gradient(120deg, oklch(0.72 0.24 305), oklch(0.80 0.18 198));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.wm-1.lg { font-size: 1.5rem; }
+.wm-1.sm { font-size: 1rem; }
+
+/* 2 — Pure white, no gradient. Tight GSF, condensed */
+.wm-2 {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 800, "wdth" 85, "opsz" 20, "ROND" 0;
+  letter-spacing: -0.03em;
+  color: var(--foreground);
+}
+.wm-2.lg { font-size: 1.5rem; }
+.wm-2.sm { font-size: 1rem; }
+
+/* 3 — Split: "ABC" primary, "Live" live-coral */
+.wm-3-abc {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 800, "opsz" 20, "ROND" 0;
+  letter-spacing: -0.03em;
+  color: oklch(0.78 0.22 305);
+}
+.wm-3-live {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 800, "opsz" 20, "ROND" 0;
+  letter-spacing: -0.03em;
+  color: oklch(0.72 0.24 28);
+}
+.wm-3-abc.lg, .wm-3-live.lg { font-size: 1.5rem; }
+.wm-3-abc.sm, .wm-3-live.sm { font-size: 1rem; }
+.split-word { display: flex; align-items: baseline; gap: 0; }
+
+/* 4 — Wordmark only (no icon), spaced caps "ABC LIVE" */
+.wm-4 {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 800, "opsz" 14, "ROND" 0;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--foreground);
+}
+.wm-4.lg { font-size: 1.125rem; }
+.wm-4.sm { font-size: 0.75rem; }
+
+/* 5 — Rounded GSF, warm white */
+.wm-5 {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 800, "opsz" 20, "ROND" 60;
+  letter-spacing: -0.025em;
+  color: oklch(0.96 0.008 82);
+}
+.wm-5.lg { font-size: 1.5rem; }
+.wm-5.sm { font-size: 1rem; }
+
+/* 6 — Stacked layout: icon top, wordmark below */
+.wm-6 {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 800, "opsz" 16, "ROND" 0;
+  letter-spacing: -0.025em;
+  background: linear-gradient(120deg, oklch(0.72 0.24 305), oklch(0.80 0.18 198));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.wm-6.lg { font-size: 1.25rem; }
+.wm-6.sm { font-size: 0.875rem; }
+</style>
+</head>
+<body>
+
+<div>
+  <div class="group-label">Wordmark-forslag</div>
+  <div class="proposals">
+
+    <!-- 1 — Purple → Cyan gradient -->
+    <div class="proposal">
+      <div class="lockups">
+        <div class="lockup">
+          <img class="icon-lg" src="../assets/gemIcon.png" alt="">
+          <span class="wm-1 lg">ABC Live</span>
+        </div>
+        <div class="divider-h"></div>
+        <div class="lockup">
+          <img class="icon-sm" src="../assets/gemIcon.png" alt="">
+          <span class="wm-1 sm">ABC Live</span>
+        </div>
+      </div>
+      <div class="prop-label">1 — Gradient Lilla → Cyan</div>
+    </div>
+
+    <!-- 2 — Condensed solid white -->
+    <div class="proposal">
+      <div class="lockups">
+        <div class="lockup">
+          <img class="icon-lg" src="../assets/gemIcon.png" alt="">
+          <span class="wm-2 lg">ABC Live</span>
+        </div>
+        <div class="divider-h"></div>
+        <div class="lockup">
+          <img class="icon-sm" src="../assets/gemIcon.png" alt="">
+          <span class="wm-2 sm">ABC Live</span>
+        </div>
+      </div>
+      <div class="prop-label">2 — Kvit, kondensert GSF</div>
+    </div>
+
+    <!-- 3 — Split ABC/Live -->
+    <div class="proposal">
+      <div class="lockups">
+        <div class="lockup">
+          <img class="icon-lg" src="../assets/gemIcon.png" alt="">
+          <div class="split-word">
+            <span class="wm-3-abc lg">ABC</span>
+            <span class="wm-3-live lg">&nbsp;Live</span>
+          </div>
+        </div>
+        <div class="divider-h"></div>
+        <div class="lockup">
+          <img class="icon-sm" src="../assets/gemIcon.png" alt="">
+          <div class="split-word">
+            <span class="wm-3-abc sm">ABC</span>
+            <span class="wm-3-live sm">&nbsp;Live</span>
+          </div>
+        </div>
+      </div>
+      <div class="prop-label">3 — Split: ABC lilla / Live coral</div>
+    </div>
+
+    <!-- 4 — Spaced caps wordmark only -->
+    <div class="proposal">
+      <div class="lockups">
+        <div class="lockup">
+          <img class="icon-lg" src="../assets/gemIcon.png" alt="">
+          <span class="wm-4 lg">ABC Live</span>
+        </div>
+        <div class="divider-h"></div>
+        <div class="lockup">
+          <img class="icon-sm" src="../assets/gemIcon.png" alt="">
+          <span class="wm-4 sm">ABC Live</span>
+        </div>
+      </div>
+      <div class="prop-label">4 — Spaced versalar, kvit</div>
+    </div>
+
+    <!-- 5 — Rounded GSF, warm white -->
+    <div class="proposal">
+      <div class="lockups">
+        <div class="lockup">
+          <img class="icon-lg" src="../assets/gemIcon.png" alt="">
+          <span class="wm-5 lg">ABC Live</span>
+        </div>
+        <div class="divider-h"></div>
+        <div class="lockup">
+          <img class="icon-sm" src="../assets/gemIcon.png" alt="">
+          <span class="wm-5 sm">ABC Live</span>
+        </div>
+      </div>
+      <div class="prop-label">5 — GSF ROND·60, varm kvit</div>
+    </div>
+
+    <!-- 6 — Stacked: icon over text -->
+    <div class="proposal">
+      <div class="lockups">
+        <div class="lockup stacked">
+          <img class="icon-lg" src="../assets/gemIcon.png" alt="">
+          <span class="wm-6 lg">ABC Live</span>
+        </div>
+        <div class="divider-h"></div>
+        <div class="lockup stacked">
+          <img class="icon-sm" src="../assets/gemIcon.png" alt="">
+          <span class="wm-6 sm">ABC Live</span>
+        </div>
+      </div>
+      <div class="prop-label">6 — Stabla: ikon over tekst</div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

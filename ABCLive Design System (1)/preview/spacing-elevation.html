@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  @font-face {
+    font-family: 'Google Sans Flex';
+    src: url('../fonts/GoogleSansFlex-VariableFont_GRAD_ROND_opsz_slnt_wdth_wght.ttf') format('truetype');
+    font-weight: 100 900;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: oklch(0.08 0.016 282); /* Layer 0 — Page */
+    font-family: 'Inter', sans-serif;
+    padding: 0; margin: 0;
+    min-height: 100vh;
+  }
+
+  /* ── Layer annotations ── */
+  .ann {
+    position: absolute; font-size: 8.5px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; white-space: nowrap;
+    color: oklch(0.63 0.27 305 / 80%);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .ann::before {
+    content: ''; display: inline-block; width: 16px; height: 1px;
+    background: oklch(0.63 0.27 305 / 40%);
+  }
+
+  /* ── Nav — Layer 1 ── */
+  nav {
+    position: relative;
+    background: oklch(0.11 0.016 282 / 88%);
+    backdrop-filter: blur(16px);
+    height: 44px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px;
+    border-bottom: 1px solid oklch(1 0 0 / 8%);
+  }
+  .nav-logo {
+    font-family: 'Google Sans Flex', sans-serif;
+    font-weight: 800; font-size: 0.9rem; letter-spacing: -0.02em;
+    font-variation-settings: 'wght' 800, 'opsz' 14;
+    background: linear-gradient(135deg, oklch(0.63 0.27 305), oklch(0.78 0.18 72));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .nav-links { display: flex; gap: 2px; }
+  .nav-link {
+    padding: 4px 10px; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 500;
+    color: oklch(0.55 0.010 282); position: relative; cursor: default;
+  }
+  .nav-link.active {
+    color: oklch(0.63 0.27 305);
+  }
+  .nav-link.active::after {
+    content: ''; position: absolute; bottom: -12px; left: 6px; right: 6px;
+    height: 2px; border-radius: 9999px; background: oklch(0.63 0.27 305);
+    box-shadow: 0 0 8px 2px oklch(0.63 0.27 305 / 0.45);
+  }
+  .nav-ann { position: absolute; left: 0; bottom: -18px; }
+
+  /* ── Main content area ── */
+  main { padding: 20px; position: relative; }
+
+  /* ── Card — Layer 2 ── */
+  .card {
+    background: oklch(0.16 0.016 282);
+    border-radius: 1.5rem; overflow: hidden;
+    margin-bottom: 12px; position: relative;
+  }
+  .card-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .card-title {
+    font-family: 'Google Sans Flex', sans-serif;
+    font-weight: 750; font-size: 0.875rem; letter-spacing: -0.02em;
+    font-variation-settings: 'wght' 750, 'opsz' 14;
+    color: oklch(0.97 0.005 282);
+  }
+  .card-meta { font-size: 0.75rem; color: oklch(0.55 0.010 282); }
+
+  /* ── Input — Layer 3 ── */
+  .input-row { display: flex; gap: 8px; }
+  .input {
+    flex: 1; height: 30px; border-radius: 0.75rem;
+    background: oklch(0.21 0.016 282);
+    border: 1px solid oklch(1 0 0 / 12%);
+    padding: 0 10px; font-size: 0.75rem;
+    color: oklch(0.55 0.010 282);
+    display: flex; align-items: center;
+  }
+  .input.focused {
+    border-color: oklch(0.63 0.27 305 / 60%);
+    box-shadow: 0 0 0 3px oklch(0.63 0.27 305 / 15%);
+    color: oklch(0.97 0.005 282);
+  }
+
+  /* ── Card hover state ── */
+  .card-hover {
+    background: oklch(0.21 0.016 282);
+    border-radius: 1.5rem; overflow: hidden;
+    margin-bottom: 12px; position: relative;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px oklch(0 0 0 / 0.35);
+  }
+  .card-hover .card-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+
+  /* ── Tooltip — Layer 4 ── */
+  .tooltip-wrap { position: relative; display: inline-block; }
+  .tooltip {
+    position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: oklch(0.27 0.016 282);
+    border: 1px solid oklch(1 0 0 / 10%);
+    border-radius: 0.5rem; padding: 5px 10px;
+    font-size: 0.6875rem; color: oklch(0.90 0.005 282); white-space: nowrap;
+    box-shadow: 0 4px 16px oklch(0 0 0 / 0.4);
+  }
+  .tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 4px solid transparent; border-top-color: oklch(0.27 0.016 282);
+  }
+
+  /* ── Status accent bar ── */
+  .accent-bar { width: 3px; background: oklch(0.63 0.27 305); align-self: stretch; flex-shrink: 0; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    padding: 10px 20px 12px;
+    border-top: 1px solid oklch(1 0 0 / 7%);
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .legend-label { font-size: 9px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: oklch(0.45 0.010 282); }
+
+  /* ── No-border rule callout ── */
+  .rule {
+    font-size: 9px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    color: oklch(0.63 0.27 305 / 60%);
+    padding: 6px 20px 0;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .rule::before {
+    content: ''; display: block; width: 8px; height: 8px; border-radius: 50%;
+    background: oklch(0.63 0.27 305 / 40%);
+  }
+</style>
+</head>
+<body>
+
+<!-- Layer 1: Nav -->
+<nav>
+  <div style="display:flex;align-items:center;gap:20px">
+    <span class="nav-logo">ABC Live</span>
+    <div class="nav-links">
+      <span class="nav-link active">Oppdrag</span>
+      <span class="nav-link">Kalender</span>
+      <span class="nav-link">Ressursar</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:6px">
+    <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,oklch(0.63 0.27 305),oklch(0.53 0.21 305));display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">AV</div>
+  </div>
+  <span class="ann nav-ann" style="left:20px">Layer 1 · Surface Low · Nav / backdrop-blur</span>
+</nav>
+
+<main>
+  <!-- Annotation row for page bg -->
+  <div style="position:relative;margin-bottom:14px">
+    <span class="ann" style="position:static">Layer 0 · Surface · Page background · oklch(0.08 0.016 282)</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+
+    <!-- Card at rest — Layer 2 -->
+    <div style="position:relative">
+      <div class="card">
+        <div style="display:flex">
+          <div class="accent-bar"></div>
+          <div class="card-body" style="flex:1">
+            <div style="display:flex;gap:4px;align-items:center">
+              <span style="display:inline-flex;align-items:center;height:18px;padding:0 8px;border-radius:9999px;font-size:9px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;background:oklch(0.63 0.27 305/12%);color:oklch(0.63 0.27 305);border:1px solid oklch(0.63 0.27 305/22%);box-shadow:inset 0 1px 0 oklch(1 0 0/15%),0 1px 6px oklch(0.63 0.27 305/20%);font-family:'Google Sans Flex',sans-serif">Bekrefta</span>
+            </div>
+            <div class="card-title">Bergenfest — Hovudscene</div>
+            <div class="card-meta">14. jun 2025 · Bergen</div>
+            <div class="input-row">
+              <div class="input">Søk personell…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <span class="ann" style="position:static;margin-top:4px">Layer 2 · Container · Cards</span>
+      <span class="ann" style="position:static;color:oklch(0.76 0.18 198/80%)">Layer 3 · High · Inputs inside cards</span>
+    </div>
+
+    <!-- Card hover — Layer 2 elevated -->
+    <div style="position:relative;padding-top:4px">
+      <div class="card-hover">
+        <div style="display:flex">
+          <div class="accent-bar" style="background:oklch(0.75 0.18 158)"></div>
+          <div class="card-body" style="flex:1">
+            <div style="display:flex;gap:4px;align-items:center">
+              <span style="display:inline-flex;align-items:center;height:18px;padding:0 8px;border-radius:9999px;font-size:9px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;background:oklch(0.75 0.18 158/12%);color:oklch(0.75 0.18 158);border:1px solid oklch(0.75 0.18 158/22%);box-shadow:inset 0 1px 0 oklch(1 0 0/15%),0 1px 6px oklch(0.75 0.18 158/20%);font-family:'Google Sans Flex',sans-serif">Fullført</span>
+            </div>
+            <div class="card-title">Spellemannprisen Gala</div>
+            <div class="card-meta">28. apr 2025 · Oslo</div>
+            <div class="input-row">
+              <div class="input focused">Grieg Hall, Bergen</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <span class="ann" style="position:static;margin-top:4px">Layer 2↑ · Container→High · Hover (translateY + shadow)</span>
+      <span class="ann" style="position:static;color:oklch(0.76 0.18 198/80%)">Layer 3 focused · ring + border-primary</span>
+    </div>
+  </div>
+
+  <!-- Tooltip demo -->
+  <div style="display:flex;align-items:flex-end;gap:12px;margin-bottom:8px;padding-left:4px">
+    <div class="tooltip-wrap">
+      <div class="tooltip">Vis utstyrsliste</div>
+      <span style="display:inline-flex;align-items:center;height:26px;padding:0 12px;border-radius:0.625rem;font-size:11px;font-weight:600;background:oklch(0.21 0.016 282);color:oklch(0.75 0.005 282);border:1px solid oklch(1 0 0/12%);box-shadow:inset 0 1px 0 oklch(1 0 0/8%);font-family:'Google Sans Flex',sans-serif">Ressursar</span>
+    </div>
+    <span class="ann" style="position:static">Layer 4 · Highest · Tooltips / dropdowns / popovers</span>
+  </div>
+
+  <div class="rule">Ingen 1px border mellom seksjonar — berre tonal skift mellom layer</div>
+</main>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:oklch(0.08 0.016 282);border:1px solid oklch(1 0 0/15%)"></div><span class="legend-label">L0 Surface · 0.08</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:oklch(0.11 0.016 282)"></div><span class="legend-label">L1 Low · 0.11</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:oklch(0.16 0.016 282)"></div><span class="legend-label">L2 Container · 0.16</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:oklch(0.21 0.016 282)"></div><span class="legend-label">L3 High · 0.21</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:oklch(0.27 0.016 282)"></div><span class="legend-label">L4 Highest · 0.27</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:oklch(0.63 0.27 305/40%);border:1px solid oklch(0.63 0.27 305/30%)"></div><span class="legend-label">Hue 282 · purple tint overalt</span></div>
+</div>
+
+</body>
+</html>

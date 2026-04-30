@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  @font-face {
+    font-family: 'Google Sans Flex';
+    src: url('../fonts/GoogleSansFlex-VariableFont_GRAD_ROND_opsz_slnt_wdth_wght.ttf') format('truetype');
+    font-weight: 100 900;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: oklch(0.07 0.014 282); font-family: 'Inter', sans-serif; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+
+  .group { display: flex; flex-direction: column; gap: 9px; }
+  .header { display: flex; align-items: center; gap: 8px; }
+  .group-label {
+    font-family: 'Google Sans Flex', sans-serif; font-weight: 700; font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase; color: oklch(0.42 0.010 282);
+  }
+  .tag-approved {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 9999px;
+    background: oklch(0.75 0.18 158 / 15%); color: oklch(0.75 0.18 158);
+  }
+  .note { font-size: 10px; color: oklch(0.45 0.010 282); line-height: 1.5; padding: 0 2px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  /* Shared button base */
+  button {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border: 1px solid transparent; cursor: pointer; white-space: nowrap;
+    font-family: 'Google Sans Flex', sans-serif;
+    font-variation-settings: 'wght' 650, 'opsz' 14, 'ROND' 10;
+    font-size: 0.875rem; letter-spacing: -0.01em;
+    transition: all 0.15s;
+  }
+  .size-default { height: 32px; padding: 0 14px; border-radius: 0.625rem; }
+  .size-lg      { height: 38px; padding: 0 18px; border-radius: 0.75rem; font-size: 0.9375rem; }
+  .size-sm      { height: 28px; padding: 0 10px; border-radius: 0.5rem; font-size: 0.8125rem; }
+  .size-icon    { height: 32px; width: 32px; padding: 0; border-radius: 0.625rem; }
+
+  .dot-live {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: oklch(0.67 0.26 28); display: inline-block; flex-shrink: 0;
+  }
+  .dot-live-solid {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #fff; display: inline-block; flex-shrink: 0;
+    animation: pulse-white 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-white {
+    0%,100% { box-shadow: 0 0 0 0 oklch(1 0 0 / 0.7); }
+    50%      { box-shadow: 0 0 0 4px oklch(1 0 0 / 0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- B1 — Flat gradient (current direction, updated colours) ─────────────── -->
+<div class="group">
+  <div class="header"><div class="group-label">B1 — Flat gradient · no shadow</div></div>
+  <div class="note">Gradient CTA utan glow. Rein og moderne.</div>
+  <div class="row" id="b1"></div>
+</div>
+
+<!-- B2 — Frosted + glow (badge A3-tankegang på knapper) ────────────────── -->
+<div class="group">
+  <div class="header">
+    <div class="group-label">B2 — Frosted + color glow</div>
+    <span class="tag-approved">Tilrådd</span>
+  </div>
+  <div class="note">Primær: gradient + inset highlight + farga glow. Sekundær/ghost: frosted glass.</div>
+  <div class="row" id="b2"></div>
+</div>
+
+<!-- B3 — High contrast + sharp shadow ──────────────────────────────────── -->
+<div class="group">
+  <div class="header"><div class="group-label">B3 — High contrast · drop shadow</div></div>
+  <div class="note">Mørkare og meir monokrom — sterkare kontrast mellom primary og surface.</div>
+  <div class="row" id="b3"></div>
+</div>
+
+<script>
+// SVG plus icon
+const plus = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`;
+const upload = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`;
+
+function mkBtn(html, css, extraClass = 'size-default') {
+  const b = document.createElement('button');
+  b.innerHTML = html;
+  b.className = extraClass;
+  Object.assign(b.style, css);
+  return b;
+}
+
+// ── B1: flat gradient ────────────────────────────────────────────────────────
+const b1 = document.getElementById('b1');
+// Primary XL
+b1.appendChild(mkBtn(plus + ' Nytt oppdrag', {
+  background: 'linear-gradient(135deg, oklch(0.63 0.27 305), oklch(0.53 0.21 305))',
+  color: '#fff', border: 'none',
+}, 'size-lg'));
+// Primary default
+b1.appendChild(mkBtn(plus + ' Legg til', {
+  background: 'linear-gradient(135deg, oklch(0.63 0.27 305), oklch(0.53 0.21 305))',
+  color: '#fff', border: 'none',
+}));
+// Secondary
+b1.appendChild(mkBtn(upload + ' Importer', {
+  background: 'oklch(0.16 0.016 282 / 70%)',
+  color: 'oklch(0.97 0.005 282)',
+  border: '1px solid oklch(1 0 0 / 12%)',
+  borderRadius: '1rem',
+}));
+// Outline
+b1.appendChild(mkBtn('Rediger', {
+  background: 'oklch(0.21 0.016 282)',
+  color: 'oklch(0.97 0.005 282)',
+  border: '1px solid oklch(1 0 0 / 12%)',
+}));
+// Ghost
+b1.appendChild(mkBtn('Avbryt', {
+  background: 'transparent', color: 'oklch(0.65 0.005 282)', border: 'none',
+}));
+// Live
+b1.appendChild(mkBtn('<span class="dot-live"></span> On-air', {
+  background: 'oklch(0.67 0.26 28 / 12%)',
+  color: 'oklch(0.67 0.26 28)',
+  border: '1px solid oklch(0.67 0.26 28 / 25%)',
+}));
+// Destructive
+b1.appendChild(mkBtn('Slett', {
+  background: 'oklch(0.65 0.22 20 / 10%)',
+  color: 'oklch(0.65 0.22 20)',
+  border: '1px solid oklch(0.65 0.22 20 / 20%)',
+}));
+// Tertiary / text
+b1.appendChild(mkBtn('Vis meir →', {
+  background: 'transparent', color: 'oklch(0.63 0.27 305)', border: 'none',
+  textDecoration: 'underline', textUnderlineOffset: '3px',
+}));
+
+// ── B2: frosted + glow ───────────────────────────────────────────────────────
+const b2 = document.getElementById('b2');
+// Primary XL — gradient + inset highlight + glow
+b2.appendChild(mkBtn(plus + ' Nytt oppdrag', {
+  background: 'linear-gradient(160deg, oklch(0.68 0.27 305), oklch(0.50 0.22 305))',
+  color: '#fff', border: '1px solid oklch(0.72 0.27 305 / 40%)',
+  boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 18%), 0 4px 20px oklch(0.63 0.27 305 / 30%)',
+}, 'size-lg'));
+// Primary default
+b2.appendChild(mkBtn(plus + ' Legg til', {
+  background: 'linear-gradient(160deg, oklch(0.67 0.27 305), oklch(0.52 0.22 305))',
+  color: '#fff', border: '1px solid oklch(0.70 0.27 305 / 35%)',
+  boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 15%), 0 2px 12px oklch(0.63 0.27 305 / 25%)',
+}));
+// Secondary — frosted
+b2.appendChild(mkBtn(upload + ' Importer', {
+  background: 'oklch(0.16 0.016 282 / 60%)',
+  color: 'oklch(0.90 0.005 282)',
+  border: '1px solid oklch(1 0 0 / 12%)',
+  boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 8%)',
+  borderRadius: '1rem',
+  backdropFilter: 'blur(8px)',
+}));
+// Outline — frosted
+b2.appendChild(mkBtn('Rediger', {
+  background: 'oklch(0.20 0.016 282 / 80%)',
+  color: 'oklch(0.90 0.005 282)',
+  border: '1px solid oklch(1 0 0 / 14%)',
+  boxShadow: 'inset 0 1px 0 oklch(1 0 0 / 8%)',
+}));
+// Ghost
+b2.appendChild(mkBtn('Avbryt', {
+  background: 'transparent', color: 'oklch(0.60 0.005 282)', border: 'none',
+}));
+// Live — solid B3 style, white pulsing dot
+b2.appendChild(mkBtn('<span class="dot-live-solid"></span> On-air', {
+  background: 'oklch(0.67 0.26 28)',
+  color: '#fff',
+  border: '1px solid oklch(0.55 0.24 28)',
+  boxShadow: '0 3px 0 oklch(0.42 0.20 28), 0 4px 12px oklch(0.67 0.26 28 / 25%)',
+}));
+// Destructive — solid B3 style
+b2.appendChild(mkBtn('Slett', {
+  background: 'oklch(0.65 0.22 20)',
+  color: '#fff',
+  border: '1px solid oklch(0.55 0.20 20)',
+  boxShadow: '0 3px 0 oklch(0.40 0.18 20)',
+}));
+// Text
+b2.appendChild(mkBtn('Vis meir →', {
+  background: 'transparent', color: 'oklch(0.63 0.27 305)', border: 'none',
+  textDecoration: 'underline', textUnderlineOffset: '3px',
+}));
+
+// ── B3: high contrast + drop shadow ─────────────────────────────────────────
+const b3 = document.getElementById('b3');
+// Primary XL — solid fill + deep shadow
+b3.appendChild(mkBtn(plus + ' Nytt oppdrag', {
+  background: 'oklch(0.63 0.27 305)',
+  color: '#fff', border: '1px solid oklch(0.55 0.25 305)',
+  boxShadow: '0 4px 0 oklch(0.35 0.20 305), 0 6px 16px oklch(0.63 0.27 305 / 25%)',
+}, 'size-lg'));
+// Primary default
+b3.appendChild(mkBtn(plus + ' Legg til', {
+  background: 'oklch(0.63 0.27 305)',
+  color: '#fff', border: '1px solid oklch(0.55 0.25 305)',
+  boxShadow: '0 3px 0 oklch(0.35 0.20 305), 0 4px 12px oklch(0.63 0.27 305 / 20%)',
+}));
+// Secondary — dark solid
+b3.appendChild(mkBtn(upload + ' Importer', {
+  background: 'oklch(0.18 0.016 282)',
+  color: 'oklch(0.85 0.005 282)',
+  border: '1px solid oklch(1 0 0 / 16%)',
+  boxShadow: '0 3px 0 oklch(0.10 0.010 282)',
+  borderRadius: '1rem',
+}));
+// Outline — dark surface
+b3.appendChild(mkBtn('Rediger', {
+  background: 'oklch(0.18 0.016 282)',
+  color: 'oklch(0.85 0.005 282)',
+  border: '1px solid oklch(1 0 0 / 16%)',
+  boxShadow: '0 3px 0 oklch(0.10 0.010 282)',
+}));
+// Ghost
+b3.appendChild(mkBtn('Avbryt', {
+  background: 'transparent', color: 'oklch(0.60 0.005 282)', border: 'none',
+}));
+// Live
+b3.appendChild(mkBtn('<span class="dot-live"></span> On-air', {
+  background: 'oklch(0.67 0.26 28)',
+  color: '#fff',
+  border: '1px solid oklch(0.55 0.24 28)',
+  boxShadow: '0 3px 0 oklch(0.42 0.20 28), 0 4px 12px oklch(0.67 0.26 28 / 25%)',
+}));
+// Destructive
+b3.appendChild(mkBtn('Slett', {
+  background: 'oklch(0.65 0.22 20)',
+  color: '#fff',
+  border: '1px solid oklch(0.55 0.20 20)',
+  boxShadow: '0 3px 0 oklch(0.40 0.18 20)',
+}));
+// Text
+b3.appendChild(mkBtn('Vis meir →', {
+  background: 'transparent', color: 'oklch(0.63 0.27 305)', border: 'none',
+  textDecoration: 'underline', textUnderlineOffset: '3px',
+}));
+</script>
+</body>
+</html>

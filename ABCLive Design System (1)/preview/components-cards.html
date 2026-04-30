@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="nn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@font-face {
+  font-family: 'Google Sans Flex';
+  src: url('../fonts/GoogleSansFlex-VariableFont_GRAD_ROND_opsz_slnt_wdth_wght.ttf') format('truetype');
+  font-weight: 100 900;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --surface:                   oklch(0.08 0.016 282);
+  --surface-container-low:     oklch(0.11 0.016 282);
+  --surface-container:         oklch(0.16 0.016 282);
+  --surface-container-high:    oklch(0.21 0.016 282);
+  --surface-container-highest: oklch(0.27 0.016 282);
+  --foreground:         oklch(0.97 0.005 282);
+  --muted-foreground:   oklch(0.55 0.010 282);
+  --dim-foreground:     oklch(0.42 0.010 282);
+  --border:             oklch(1 0 0 / 9%);
+  --primary:            oklch(0.63 0.27 305);
+  --success:            oklch(0.75 0.18 158);
+  --live:               oklch(0.67 0.26 28);
+  --warning:            oklch(0.78 0.18 72);
+  --spotlight-cold:     oklch(0.76 0.18 198);
+  --role-accent:        oklch(0.70 0.17 245);
+  --destructive:        oklch(0.65 0.22 20);
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+  --font-heading: 'Google Sans Flex', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+}
+
+body {
+  background: var(--surface);
+  font-family: var(--font-sans);
+  padding: 28px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ── Section labels ──────────────────────────────────────────── */
+.group-label {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 700, "opsz" 11, "ROND" 0;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim-foreground);
+  margin-bottom: 10px;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* ── A3 Frosted Pill Badges ──────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 650, "opsz" 11, "ROND" 20;
+  font-size: 0.6875rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.badge-confirmed { background: oklch(0.63 0.27 305 / 12%); color: oklch(0.63 0.27 305); border: 1px solid oklch(0.63 0.27 305 / 22%); box-shadow: inset 0 1px 0 oklch(1 0 0 / 15%), 0 1px 6px oklch(0.63 0.27 305 / 20%); }
+.badge-completed { background: oklch(0.75 0.18 158 / 12%); color: oklch(0.75 0.18 158); border: 1px solid oklch(0.75 0.18 158 / 22%); box-shadow: inset 0 1px 0 oklch(1 0 0 / 15%), 0 1px 6px oklch(0.75 0.18 158 / 20%); }
+.badge-draft     { background: oklch(0.20 0.016 282 / 80%); color: oklch(0.72 0.005 282); border: 1px solid oklch(1 0 0 / 10%); box-shadow: inset 0 1px 0 oklch(1 0 0 / 8%); }
+.badge-cancelled { background: oklch(0.65 0.22 20 / 12%); color: oklch(0.65 0.22 20); border: 1px solid oklch(0.65 0.22 20 / 22%); box-shadow: inset 0 1px 0 oklch(1 0 0 / 15%), 0 1px 6px oklch(0.65 0.22 20 / 20%); }
+.badge-live      { background: oklch(0.67 0.26 28 / 12%); color: oklch(0.67 0.26 28); border: 1px solid oklch(0.67 0.26 28 / 22%); box-shadow: inset 0 1px 0 oklch(1 0 0 / 15%), 0 1px 6px oklch(0.67 0.26 28 / 22%); padding-left: 7px; }
+.badge-role      { background: oklch(0.70 0.17 245 / 12%); color: oklch(0.70 0.17 245); border: 1px solid oklch(0.70 0.17 245 / 22%); box-shadow: inset 0 1px 0 oklch(1 0 0 / 15%), 0 1px 6px oklch(0.70 0.17 245 / 20%); }
+.badge-company   { background: oklch(0.76 0.18 198 / 12%); color: oklch(0.76 0.18 198); border: 1px solid oklch(0.76 0.18 198 / 22%); box-shadow: inset 0 1px 0 oklch(1 0 0 / 15%), 0 1px 6px oklch(0.76 0.18 198 / 20%); }
+.badge-warning   { background: oklch(0.78 0.18 72 / 12%); color: oklch(0.78 0.18 72); border: 1px solid oklch(0.78 0.18 72 / 22%); box-shadow: inset 0 1px 0 oklch(1 0 0 / 15%), 0 1px 6px oklch(0.78 0.18 72 / 20%); }
+.badge-pending   { background: oklch(0.27 0.016 282); color: oklch(0.72 0.005 282); border: 1px solid oklch(1 0 0 / 12%); box-shadow: inset 0 1px 0 oklch(1 0 0 / 8%); }
+
+@keyframes live-pulse {
+  0%,100% { box-shadow: 0 0 0 0 oklch(0.67 0.26 28 / 0.65); }
+  50%      { box-shadow: 0 0 0 4px oklch(0.67 0.26 28 / 0); }
+}
+.live-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: oklch(0.67 0.26 28);
+  animation: live-pulse 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* ═══ VARIANT B — Dato-blokk card ═══════════════════════════════
+   Date callout left col · badges top-right · title · meta row ·
+   divider · footer badges (company + role)
+   ═══════════════════════════════════════════════════════════════ */
+.card {
+  display: flex;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--surface-container);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+  text-decoration: none;
+}
+.card:hover {
+  background: var(--surface-container-high);
+  box-shadow: 0 8px 24px oklch(0 0 0 / 0.25);
+  transform: translateY(-1px);
+}
+
+/* cancelled / utkast: muted */
+.card.is-cancelled { opacity: 0.6; }
+
+.date-block {
+  width: 58px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 14px 0;
+  border-right: 1px solid var(--border);
+  position: relative;
+}
+.date-block .day {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 800, "opsz" 36;
+  font-size: 1.625rem;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.date-block .month {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 600, "opsz" 11, "ROND" 0;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.title {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 750, "opsz" 18;
+  font-size: 0.9375rem;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+  line-height: 1.2;
+  /* clamp to 2 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.item-name {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: oklch(0.63 0.27 305);
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6875rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-sans);
+}
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 -14px;
+}
+.footer {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  padding-top: 2px;
+}
+
+/* ── Lucide-style SVG icons ──────────────────────────────────── */
+svg.icon { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- ── Status states ─────────────────────────────────────────── -->
+<div>
+  <div class="group-label">Statusar</div>
+  <div class="cards-grid">
+
+    <!-- LIVE (on-air) -->
+    <div class="card">
+      <div class="date-block" style="background:oklch(0.67 0.26 28 / 7%)">
+        <div class="day" style="color:oklch(0.67 0.26 28)">30</div>
+        <div class="month">Apr</div>
+      </div>
+      <div class="body">
+        <div class="top">
+          <div class="title">NRK Direktesending Studio B</div>
+          <div class="badges">
+            <span class="badge badge-live"><span class="live-dot"></span>Live</span>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="meta-item">
+            <svg class="icon" width="11" height="11" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            20:00 – 23:00
+          </span>
+          <span class="meta-item">
+            <svg class="icon" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5s4.5-4.75 4.5-8.5c0-2.485-2.015-4.5-4.5-4.5Z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="6" r="1.5" fill="currentColor"/></svg>
+            Oslo
+          </span>
+        </div>
+        <div class="divider"></div>
+        <div class="footer">
+          <span class="badge badge-company">Alvsvåg AS</span>
+          <span class="badge badge-role">Lydteknikar</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BEKREFTA -->
+    <div class="card">
+      <div class="date-block" style="background:oklch(0.63 0.27 305 / 7%)">
+        <div class="day" style="color:oklch(0.63 0.27 305)">14</div>
+        <div class="month">Jun</div>
+      </div>
+      <div class="body">
+        <div class="top">
+          <div class="title">Bergenfest Hovudscene</div>
+          <div class="badges">
+            <span class="badge badge-confirmed">Bekrefta</span>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="meta-item">
+            <svg class="icon" width="11" height="11" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            18:00 – 02:00
+          </span>
+          <span class="meta-item">
+            <svg class="icon" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5s4.5-4.75 4.5-8.5c0-2.485-2.015-4.5-4.5-4.5Z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="6" r="1.5" fill="currentColor"/></svg>
+            Bergenhus Festning
+          </span>
+        </div>
+        <div class="divider"></div>
+        <div class="footer">
+          <span class="badge badge-company">Alvsvåg AS</span>
+          <span class="badge badge-role">Lydmiks</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FULLFØRT -->
+    <div class="card">
+      <div class="date-block" style="background:oklch(0.75 0.18 158 / 7%)">
+        <div class="day" style="color:oklch(0.75 0.18 158)">3</div>
+        <div class="month">Jan</div>
+      </div>
+      <div class="body">
+        <div class="top">
+          <div class="title">Konsert – Trondheim Spektrum</div>
+          <div class="badges">
+            <span class="badge badge-completed">Fullført</span>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="meta-item">
+            <svg class="icon" width="11" height="11" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            19:00 – 23:30
+          </span>
+          <span class="meta-item">
+            <svg class="icon" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5s4.5-4.75 4.5-8.5c0-2.485-2.015-4.5-4.5-4.5Z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="6" r="1.5" fill="currentColor"/></svg>
+            Trondheim
+          </span>
+        </div>
+        <div class="divider"></div>
+        <div class="footer">
+          <span class="badge badge-role">Lydmiks</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- UTKAST -->
+    <div class="card is-cancelled">
+      <div class="date-block" style="background:oklch(0.20 0.016 282)">
+        <div class="day" style="color:var(--muted-foreground)">22</div>
+        <div class="month">Jul</div>
+      </div>
+      <div class="body">
+        <div class="top">
+          <div class="title">Sommerkonsert utandørs</div>
+          <div class="badges">
+            <span class="badge badge-draft">Utkast</span>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="meta-item">
+            <svg class="icon" width="11" height="11" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            16:00 – 22:00
+          </span>
+        </div>
+        <div class="divider"></div>
+        <div class="footer">
+          <span class="badge badge-warning">Ingen personell</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Festival / fleirdags ──────────────────────────────────── -->
+<div>
+  <div class="group-label">Festival — med programpunkt</div>
+  <div class="cards-grid">
+
+    <!-- Festival, bekrefta, med item_name -->
+    <div class="card">
+      <div class="date-block" style="background:oklch(0.63 0.27 305 / 7%)">
+        <div class="day" style="color:oklch(0.63 0.27 305)">20</div>
+        <div class="month">Aug</div>
+      </div>
+      <div class="body">
+        <div class="top">
+          <div class="title">Øyafestivalen 2025</div>
+          <div class="badges">
+            <span class="badge badge-confirmed">Bekrefta</span>
+          </div>
+        </div>
+        <div class="item-name">
+          <svg class="icon" width="10" height="10" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+          Hovudscene – dag 1
+        </div>
+        <div class="meta">
+          <span class="meta-item">
+            <svg class="icon" width="11" height="11" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            14:00 – 23:00
+          </span>
+          <span class="meta-item">
+            <svg class="icon" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5s4.5-4.75 4.5-8.5c0-2.485-2.015-4.5-4.5-4.5Z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="6" r="1.5" fill="currentColor"/></svg>
+            Tøyen, Oslo
+          </span>
+        </div>
+        <div class="divider"></div>
+        <div class="footer">
+          <span class="badge badge-company">ABC Studio</span>
+          <span class="badge badge-role">FOH</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Festival, overlapp-advarsel -->
+    <div class="card">
+      <div class="date-block" style="background:oklch(0.78 0.18 72 / 7%)">
+        <div class="day" style="color:oklch(0.78 0.18 72)">21</div>
+        <div class="month">Aug</div>
+      </div>
+      <div class="body">
+        <div class="top">
+          <div class="title">Øyafestivalen 2025</div>
+          <div class="badges">
+            <span class="badge badge-warning">Overlapp</span>
+          </div>
+        </div>
+        <div class="item-name">
+          <svg class="icon" width="10" height="10" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+          Sjøsida – dag 2
+        </div>
+        <div class="meta">
+          <span class="meta-item">
+            <svg class="icon" width="11" height="11" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            12:00 – 22:00
+          </span>
+          <span class="meta-item">
+            <svg class="icon" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5s4.5-4.75 4.5-8.5c0-2.485-2.015-4.5-4.5-4.5Z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="6" r="1.5" fill="currentColor"/></svg>
+            Tøyen, Oslo
+          </span>
+        </div>
+        <div class="divider"></div>
+        <div class="footer">
+          <span class="badge badge-company">ABC Studio</span>
+          <span class="badge badge-role">Monitor</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Oppdragstildeling — tilstandar ────────────────────────── -->
+<div>
+  <div class="group-label">Oppdragstildeling — svar</div>
+  <div class="cards-grid">
+
+    <!-- Ventande svar -->
+    <div class="card">
+      <div class="date-block" style="background:oklch(0.63 0.27 305 / 7%)">
+        <div class="day" style="color:oklch(0.63 0.27 305)">5</div>
+        <div class="month">Mai</div>
+      </div>
+      <div class="body">
+        <div class="top">
+          <div class="title">Konsert – Stavanger Konserthus</div>
+          <div class="badges">
+            <span class="badge badge-pending">Ventar svar</span>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="meta-item">
+            <svg class="icon" width="11" height="11" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            17:00 – 22:00
+          </span>
+          <span class="meta-item">
+            <svg class="icon" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5s4.5-4.75 4.5-8.5c0-2.485-2.015-4.5-4.5-4.5Z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="6" r="1.5" fill="currentColor"/></svg>
+            Stavanger
+          </span>
+        </div>
+        <div class="divider"></div>
+        <div class="footer">
+          <span class="badge badge-company">Alvsvåg AS</span>
+          <span class="badge badge-role">Rigg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Avlyst -->
+    <div class="card is-cancelled">
+      <div class="date-block" style="background:oklch(0.65 0.22 20 / 7%)">
+        <div class="day" style="color:oklch(0.65 0.22 20)">18</div>
+        <div class="month">Mar</div>
+      </div>
+      <div class="body">
+        <div class="top">
+          <div class="title">Privat arrangement – Flesland</div>
+          <div class="badges">
+            <span class="badge badge-cancelled">Avlyst</span>
+          </div>
+        </div>
+        <div class="meta">
+          <span class="meta-item">
+            <svg class="icon" width="11" height="11" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            15:00 – 20:00
+          </span>
+        </div>
+        <div class="divider"></div>
+        <div class="footer">
+          <span class="badge badge-draft">Ingen personell</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

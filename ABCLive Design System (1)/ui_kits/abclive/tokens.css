@@ -1,0 +1,64 @@
+/* ABCLive UI Kit — Shared Tokens */
+/* Import via <link> in index.html */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+@font-face {
+  font-family: 'Google Sans Flex';
+  src: url('../../fonts/GoogleSansFlex-VariableFont_GRAD_ROND_opsz_slnt_wdth_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --font-heading: 'Google Sans Flex', 'Manrope', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+
+  --surface:        oklch(0.08 0.016 282);
+  --surface-low:    oklch(0.11 0.016 282);
+  --surface-cont:   oklch(0.16 0.016 282);
+  --surface-high:   oklch(0.21 0.016 282);
+  --surface-highest:oklch(0.27 0.016 282);
+
+  --fg:             oklch(0.97 0.005 282);
+  --fg-muted:       oklch(0.55 0.010 282);
+  --fg-dim:         oklch(0.75 0.005 282);
+
+  --primary:        oklch(0.63 0.27 305);   /* Magenta Violet */
+  --primary-dim:    oklch(0.53 0.21 305);
+  --gold:           oklch(0.78 0.18 72);    /* Amber — warnings/conflicts */
+  --cold:           oklch(0.76 0.18 198);   /* Cyan — Alvsvåg AS */
+  --live:           oklch(0.67 0.26 28);
+  --live-subtle:    oklch(0.67 0.26 28 / 12%);
+  --success:        oklch(0.75 0.18 158);
+  --destructive:    oklch(0.65 0.22 20);
+  --role:           oklch(0.70 0.17 245);
+
+  --border:         oklch(1 0 0 / 9%);
+  --input-border:   oklch(1 0 0 / 12%);
+  --radius:         1rem;
+
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--surface);
+  color: var(--fg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes live-pulse {
+  0%,100% { box-shadow: 0 0 0 0 oklch(0.68 0.22 14 / 0.6); }
+  50%      { box-shadow: 0 0 0 4px oklch(0.68 0.22 14 / 0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in { animation: fadeIn 0.2s ease forwards; }

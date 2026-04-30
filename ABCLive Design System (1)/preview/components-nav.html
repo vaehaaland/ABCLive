@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="nn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@font-face {
+  font-family: 'Google Sans Flex';
+  src: url('../fonts/GoogleSansFlex-VariableFont_GRAD_ROND_opsz_slnt_wdth_wght.ttf') format('truetype');
+  font-weight: 100 900;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --surface:             oklch(0.08 0.016 282);
+  --surface-low:         oklch(0.11 0.016 282);
+  --surface-container:   oklch(0.16 0.016 282);
+  --surface-high:        oklch(0.21 0.016 282);
+  --surface-highest:     oklch(0.27 0.016 282);
+  --foreground:          oklch(0.97 0.005 282);
+  --muted-fg:            oklch(0.55 0.010 282);
+  --dim-fg:              oklch(0.42 0.010 282);
+  --border:              oklch(1 0 0 / 9%);
+  --primary:             oklch(0.63 0.27 305);
+  --primary-glow:        oklch(0.63 0.27 305 / 0.4);
+  --gold:                oklch(0.82 0.17 82);
+  --font-heading:        'Google Sans Flex', sans-serif;
+  --font-sans:           'Inter', sans-serif;
+}
+
+body {
+  background: var(--surface);
+  font-family: var(--font-sans);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Section dividers ─────────────────────────────────────── */
+.variant-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.variant-label {
+  padding: 20px 24px 14px;
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 700, "opsz" 11, "ROND" 0;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim-fg);
+  background: var(--surface);
+}
+
+/* ── Shared avatar ─────────────────────────────────────────── */
+.avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 700, "opsz" 12;
+  font-size: 10px; letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.avatar-purple {
+  background: linear-gradient(135deg, oklch(0.63 0.27 305), oklch(0.53 0.21 305));
+  color: oklch(0.97 0 0);
+}
+.avatar-gold {
+  background: linear-gradient(135deg, oklch(0.82 0.17 82), oklch(0.72 0.17 60));
+  color: oklch(0.12 0 0);
+}
+
+/* ── Icon button base ─────────────────────────────────────── */
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 0.625rem;
+  background: transparent; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted-fg);
+  transition: background 0.15s, color 0.15s;
+}
+.icon-btn:hover { background: var(--surface-high); color: var(--foreground); }
+
+/* notification dot */
+.notif-wrap { position: relative; }
+.notif-dot {
+  position: absolute; top: 5px; right: 5px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: oklch(0.67 0.26 28);
+  border: 1.5px solid var(--surface-low);
+}
+
+/* ── Logo shared ──────────────────────────────────────────── */
+.logo {
+  display: flex; align-items: center; gap: 8px;
+  text-decoration: none; flex-shrink: 0;
+}
+.logo-icon {
+  width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+}
+.logo-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ── SVG icon helper ─────────────────────────────────────── */
+svg.i { display: block; flex-shrink: 0; }
+
+
+/* ═══════════════════════════════════════════════════════════
+   VARIANT A — Glow Underline (refined current)
+   Frosted surface-low, active link gets primary glow underbar.
+   Logo: gradient text. Right: muted icons + purple avatar.
+   ═══════════════════════════════════════════════════════════ */
+.nav-a {
+  background: oklch(0.11 0.016 282 / 88%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  gap: 32px;
+}
+.nav-a .logo-text {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 800, "opsz" 16, "ROND" 0;
+  font-size: 1rem; letter-spacing: -0.025em;
+  background: linear-gradient(120deg, oklch(0.75 0.22 305), oklch(0.82 0.17 82));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.nav-a nav { display: flex; align-items: center; gap: 2px; }
+.nav-a .link {
+  position: relative;
+  padding: 6px 12px; border-radius: 0.75rem;
+  font-size: 0.875rem; font-weight: 500;
+  color: var(--muted-fg);
+  text-decoration: none; cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  display: flex; align-items: center; gap: 5px;
+}
+.nav-a .link:hover { color: var(--foreground); background: var(--surface-container); }
+.nav-a .link.active {
+  color: oklch(0.78 0.22 305);
+}
+.nav-a .link.active::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 8px; right: 8px;
+  height: 2px; border-radius: 9999px;
+  background: oklch(0.68 0.26 292);
+  box-shadow: 0 0 10px 2px oklch(0.68 0.26 292 / 0.5);
+}
+.nav-a .right { display: flex; align-items: center; gap: 6px; }
+
+
+/* ═══════════════════════════════════════════════════════════
+   VARIANT B — Capsule active + cold accent
+   Darker base (surface), active item = filled capsule in
+   primary. Logo: wordmark only, tight GSF. Right: cold-tinted
+   avatar.
+   ═══════════════════════════════════════════════════════════ */
+.nav-b {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  gap: 32px;
+}
+.nav-b .logo-text {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 800, "opsz" 16, "ROND" 0;
+  font-size: 1rem; letter-spacing: -0.025em;
+  color: var(--foreground);
+}
+.nav-b nav { display: flex; align-items: center; gap: 3px; }
+.nav-b .link {
+  padding: 5px 13px; border-radius: 9999px;
+  font-size: 0.875rem; font-weight: 500;
+  color: var(--muted-fg);
+  text-decoration: none; cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  display: flex; align-items: center; gap: 5px;
+  white-space: nowrap;
+}
+.nav-b .link:hover { color: var(--foreground); background: var(--surface-container); }
+.nav-b .link.active {
+  background: oklch(0.63 0.27 305 / 14%);
+  color: oklch(0.78 0.22 305);
+  border: 1px solid oklch(0.63 0.27 305 / 20%);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 10%), 0 1px 6px oklch(0.63 0.27 305 / 15%);
+}
+.nav-b .right { display: flex; align-items: center; gap: 6px; }
+.avatar-cold {
+  background: linear-gradient(135deg, oklch(0.76 0.18 198), oklch(0.65 0.18 220));
+  color: oklch(0.10 0 0);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   VARIANT C — Spotlight Cold (cyan) top-glow bar
+   Frosted surface-low. Active link: cyan top-border glow.
+   Logo: GSF wordmark in cold cyan tint. Avatar: purple.
+   Uses --spotlight-cold oklch(0.76 0.18 198).
+   ═══════════════════════════════════════════════════════════ */
+.nav-c {
+  background: oklch(0.11 0.016 282 / 90%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  gap: 24px;
+}
+.nav-c .logo-text {
+  font-family: var(--font-heading);
+  font-variation-settings: "wght" 800, "opsz" 16, "ROND" 0;
+  font-size: 1rem; letter-spacing: -0.025em;
+  color: oklch(0.84 0.14 198);
+}
+.nav-c nav { display: flex; align-items: stretch; gap: 2px; height: 52px; }
+.nav-c .link {
+  position: relative;
+  display: flex; align-items: center; gap: 5px;
+  padding: 0 13px;
+  font-size: 0.875rem; font-weight: 500;
+  color: var(--muted-fg);
+  text-decoration: none; cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+  border-radius: 0;
+}
+.nav-c .link:hover { color: var(--foreground); background: oklch(1 0 0 / 5%); }
+.nav-c .link.active {
+  color: oklch(0.84 0.16 198);
+}
+.nav-c .link.active::after {
+  content: '';
+  position: absolute; top: 0; left: 8px; right: 8px;
+  height: 2px; border-radius: 0 0 9999px 9999px;
+  background: oklch(0.76 0.18 198);
+  box-shadow: 0 0 10px 2px oklch(0.76 0.18 198 / 0.5);
+}
+.nav-c .right { display: flex; align-items: center; gap: 6px; }
+.nav-c .separator {
+  width: 1px; height: 20px; background: var(--border); margin: 0 6px;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ VARIANT A ═══════════════════════════════════════════ -->
+<div class="variant-label">A — Glow underbar · frosted blur · gradient logo</div>
+<header class="nav-a">
+  <div style="display:flex;align-items:center;gap:28px">
+    <a class="logo">
+      <div class="logo-icon"><img src="../assets/gemIcon.png" alt=""></div>
+      <span class="logo-text">ABC Live</span>
+    </a>
+    <nav>
+      <a class="link active">
+        <svg class="i" width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="9" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/></svg>
+        Oppdrag
+      </a>
+      <a class="link">
+        <svg class="i" width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="3" y="3" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 8h4M8 6v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Ressursar
+      </a>
+      <a class="link">
+        <svg class="i" width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 2v2M11 2v2M2 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Kalender
+      </a>
+      <a class="link">
+        Admin
+        <svg class="i" width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </nav>
+  </div>
+  <div class="right">
+    <div class="notif-wrap">
+      <button class="icon-btn">
+        <svg class="i" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2a4.5 4.5 0 0 0-4.5 4.5v2.25L2 10.5h12l-1.5-1.75V6.5A4.5 4.5 0 0 0 8 2Z" stroke="currentColor" stroke-width="1.4"/><path d="M6.5 10.5c0 .828.672 1.5 1.5 1.5s1.5-.672 1.5-1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+      <div class="notif-dot"></div>
+    </div>
+    <button class="icon-btn">
+      <svg class="i" width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5v1M8 13.5v1M1.5 8h-1M14.5 8h1M3.4 3.4l-.7-.7M13.3 13.3l-.7-.7M13.3 3.4l.7-.7M3.4 13.3l-.7.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.4"/></svg>
+    </button>
+    <div class="avatar avatar-purple">AV</div>
+  </div>
+</header>
+
+<!-- ═══ VARIANT B ═══════════════════════════════════════════ -->
+<div class="variant-label">B — Frosted capsule aktiv · mørkaste bakgrunn · kald avatar</div>
+<header class="nav-b">
+  <div style="display:flex;align-items:center;gap:24px">
+    <a class="logo">
+      <div class="logo-icon"><img src="../assets/gemIcon.png" alt=""></div>
+      <span class="logo-text">ABC Live</span>
+    </a>
+    <nav>
+      <a class="link active">
+        <svg class="i" width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="9" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/></svg>
+        Oppdrag
+      </a>
+      <a class="link">
+        <svg class="i" width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="3" y="3" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 8h4M8 6v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Ressursar
+      </a>
+      <a class="link">
+        <svg class="i" width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 2v2M11 2v2M2 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Kalender
+      </a>
+      <a class="link">
+        Admin
+        <svg class="i" width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </nav>
+  </div>
+  <div class="right">
+    <div class="notif-wrap">
+      <button class="icon-btn">
+        <svg class="i" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2a4.5 4.5 0 0 0-4.5 4.5v2.25L2 10.5h12l-1.5-1.75V6.5A4.5 4.5 0 0 0 8 2Z" stroke="currentColor" stroke-width="1.4"/><path d="M6.5 10.5c0 .828.672 1.5 1.5 1.5s1.5-.672 1.5-1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+      <div class="notif-dot"></div>
+    </div>
+    <button class="icon-btn">
+      <svg class="i" width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5v1M8 13.5v1M1.5 8h-1M14.5 8h1M3.4 3.4l-.7-.7M13.3 13.3l-.7-.7M13.3 3.4l.7-.7M3.4 13.3l-.7.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.4"/></svg>
+    </button>
+    <div class="avatar avatar-cold">AV</div>
+  </div>
+</header>
+
+<!-- ═══ VARIANT C ═══════════════════════════════════════════ -->
+<div class="variant-label">C — Spotlight Cold (cyan) · top-glow bar · frosted blur · cyan wordmark</div>
+<header class="nav-c">
+  <div style="display:flex;align-items:center;gap:24px">
+    <a class="logo">
+      <div class="logo-icon"><img src="../assets/gemIcon.png" alt=""></div>
+      <span class="logo-text">ABC Live</span>
+    </a>
+    <nav>
+      <a class="link active">
+        <svg class="i" width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="9" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/></svg>
+        Oppdrag
+      </a>
+      <a class="link">
+        <svg class="i" width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="3" y="3" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 8h4M8 6v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Ressursar
+      </a>
+      <a class="link">
+        <svg class="i" width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 2v2M11 2v2M2 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Kalender
+      </a>
+      <a class="link">
+        Admin
+        <svg class="i" width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </nav>
+  </div>
+  <div class="right">
+    <div class="notif-wrap">
+      <button class="icon-btn">
+        <svg class="i" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2a4.5 4.5 0 0 0-4.5 4.5v2.25L2 10.5h12l-1.5-1.75V6.5A4.5 4.5 0 0 0 8 2Z" stroke="currentColor" stroke-width="1.4"/><path d="M6.5 10.5c0 .828.672 1.5 1.5 1.5s1.5-.672 1.5-1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+      <div class="notif-dot"></div>
+    </div>
+    <button class="icon-btn">
+      <svg class="i" width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5v1M8 13.5v1M1.5 8h-1M14.5 8h1M3.4 3.4l-.7-.7M13.3 13.3l-.7-.7M13.3 3.4l.7-.7M3.4 13.3l-.7.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.4"/></svg>
+    </button>
+    <div class="avatar avatar-purple">AV</div>
+  </div>
+</header>
+
+</body>
+</html>

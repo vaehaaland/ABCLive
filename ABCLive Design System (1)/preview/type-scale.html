@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  @font-face {
+    font-family: 'Google Sans Flex';
+    src: url('../fonts/GoogleSansFlex-VariableFont_GRAD_ROND_opsz_slnt_wdth_wght.ttf') format('truetype');
+    font-weight: 100 900;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: oklch(0.08 0.016 282); font-family: 'Inter', sans-serif; padding: 20px; display: flex; flex-direction: column; gap: 7px; }
+  .row { display: flex; align-items: baseline; gap: 12px; }
+  .specimen { color: oklch(0.97 0.005 282); }
+  .meta { font-size: 9px; color: oklch(0.55 0.010 282); white-space: nowrap; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+  .div { height: 1px; background: oklch(1 0 0 / 6%); margin: 3px 0; }
+  .gsf { font-family: 'Google Sans Flex', sans-serif; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <span class="specimen gsf" style="font-size:1.5rem;font-weight:700;letter-spacing:-0.025em;font-variation-settings:'wght' 700,'wdth' 100,'opsz' 24,'ROND' 0">H2 — Festival program</span>
+    <span class="meta">GS Flex 700 1.5rem opsz24</span>
+  </div>
+  <div class="row">
+    <span class="specimen gsf" style="font-size:1.125rem;font-weight:700;letter-spacing:-0.015em;font-variation-settings:'wght' 700,'wdth' 100,'opsz' 18,'ROND' 0">H3 — Denne veka</span>
+    <span class="meta">GS Flex 700 1.125rem opsz18</span>
+  </div>
+  <div class="row">
+    <span class="specimen gsf" style="font-size:1rem;font-weight:600;letter-spacing:-0.01em;font-variation-settings:'wght' 600,'wdth' 100,'opsz' 16,'ROND' 0">Title — Bekrefta oppdrag</span>
+    <span class="meta">GS Flex 600 1rem opsz16</span>
+  </div>
+  <div class="div"></div>
+  <div class="row">
+    <span class="specimen" style="font-size:0.9375rem">Body — Oppdragsplanlegging for ABC Studio</span>
+    <span class="meta">Inter 400 0.9375rem</span>
+  </div>
+  <div class="row">
+    <span class="specimen" style="font-size:0.875rem;color:oklch(0.75 0.005 282)">Body SM — Trondheim Spektrum, 3. jan 2025</span>
+    <span class="meta">Inter 400 0.875rem</span>
+  </div>
+  <div class="row">
+    <span class="specimen" style="font-size:0.8125rem;font-weight:500;color:oklch(0.55 0.010 282)">Label — Ingen personell</span>
+    <span class="meta">Inter 500 0.8125rem</span>
+  </div>
+  <div class="row">
+    <span class="specimen" style="font-size:0.6875rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.55 0.010 282)">Micro — Bekrefta · Totalt</span>
+    <span class="meta">Inter 600 0.6875rem ↑</span>
+  </div>
+</body>
+</html>

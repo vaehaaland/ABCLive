@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  @font-face {
+    font-family: 'Google Sans Flex';
+    src: url('../fonts/GoogleSansFlex-VariableFont_GRAD_ROND_opsz_slnt_wdth_wght.ttf') format('truetype');
+    font-weight: 100 900;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: oklch(0.07 0.014 282); font-family: 'Inter', sans-serif; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+  .group { display: flex; flex-direction: column; gap: 8px; }
+  .header { display: flex; align-items: center; gap: 8px; }
+  .group-label {
+    font-family: 'Google Sans Flex', sans-serif; font-weight: 700; font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase; color: oklch(0.42 0.010 282);
+  }
+  .tag-approved {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 9999px;
+    background: oklch(0.75 0.18 158 / 15%); color: oklch(0.75 0.18 158);
+  }
+  .tag-backup {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 9999px;
+    background: oklch(0.63 0.27 305 / 12%); color: oklch(0.63 0.27 305);
+  }
+  .row { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+  .note { font-size: 10px; color: oklch(0.45 0.010 282); line-height: 1.5; padding: 0 2px; }
+
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 oklch(0.67 0.26 28 / 0.6); }
+    50%      { box-shadow: 0 0 0 4px oklch(0.67 0.26 28 / 0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- A3 — PRIMARY ─────────────────────────────────────────────────────────── -->
+<div class="group">
+  <div class="header">
+    <div class="group-label">A3 — Frosted Pill</div>
+    <span class="tag-approved">✓ Primær</span>
+  </div>
+  <div class="note">Frosted bakgrunn · inset top-highlight · Google Sans Flex · color glow shadow</div>
+  <div class="row" id="a3"></div>
+</div>
+
+<!-- A2 — BACKUP ──────────────────────────────────────────────────────────── -->
+<div class="group">
+  <div class="header">
+    <div class="group-label">A2 — Glow Pill</div>
+    <span class="tag-backup">Backup</span>
+  </div>
+  <div class="note">Farga glow-shadow · tinted bakgrunn · Inter · enklare å implementere</div>
+  <div class="row" id="a2"></div>
+</div>
+
+<script>
+const BADGES = [
+  { label: 'Bekrefta',        color: 'oklch(0.63 0.27 305)', live: false },
+  { label: 'Utkast',          color: 'oklch(0.55 0.010 282)', neutral: true },
+  { label: 'Fullført',        color: 'oklch(0.75 0.18 158)', live: false },
+  { label: 'Avlyst',          color: 'oklch(0.65 0.22 20)',  live: false },
+  { label: 'Live',            color: 'oklch(0.67 0.26 28)',  live: true  },
+  { label: 'Alvsvåg AS',      color: 'oklch(0.76 0.18 198)', live: false },
+  { label: 'Lydteknikar',     color: 'oklch(0.70 0.17 245)', live: false },
+  { label: '⚠ Overlapp',     color: 'oklch(0.78 0.18 72)',  live: false },
+  { label: 'Ingen personell', color: 'oklch(0.65 0.22 20)',  live: false },
+];
+
+function liveDot(animate) {
+  const s = document.createElement('span');
+  s.style.cssText = `width:5px;height:5px;border-radius:50%;background:oklch(0.67 0.26 28);flex-shrink:0;display:inline-block;${animate?'animation:pulse 1.5s ease-in-out infinite;':''}`;
+  return s;
+}
+
+function alpha(color, a) {
+  return color.replace(')', `/${a})`).replace('oklch(', 'oklch(');
+}
+
+// A3 — frosted, inset highlight, GSF
+BADGES.forEach(b => {
+  const el = document.createElement('span');
+  const bg     = b.neutral ? 'oklch(0.20 0.016 282 / 80%)' : alpha(b.color, '12%');
+  const c      = b.neutral ? 'oklch(0.75 0.005 282)' : b.color;
+  const border = b.neutral ? '1px solid oklch(1 0 0 / 10%)' : `1px solid ${alpha(b.color, '22%')}`;
+  const shadow = b.neutral
+    ? 'inset 0 1px 0 oklch(1 0 0 / 8%)'
+    : `inset 0 1px 0 oklch(1 0 0 / 15%), 0 1px 6px ${alpha(b.color, '20%')}`;
+  el.style.cssText = `display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 11px;border-radius:9999px;font-size:0.6875rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;font-family:'Google Sans Flex',sans-serif;font-variation-settings:'wght' 650,'opsz' 11,'ROND' 20;background:${bg};color:${c};border:${border};box-shadow:${shadow};`;
+  if (b.live) el.prepend(liveDot(true));
+  el.append(document.createTextNode(b.label));
+  document.getElementById('a3').appendChild(el);
+});
+
+// A2 — glow shadow, tinted bg, Inter
+BADGES.forEach(b => {
+  const el = document.createElement('span');
+  const bg     = b.neutral ? 'oklch(0.22 0.016 282)' : alpha(b.color, '18%');
+  const c      = b.neutral ? 'oklch(0.80 0.005 282)' : b.color;
+  const border = b.neutral ? '1px solid oklch(1 0 0 / 10%)' : `1px solid ${alpha(b.color, '20%')}`;
+  const shadow = b.neutral ? '0 1px 4px oklch(0 0 0 / 0.3)' : `0 1px 8px ${alpha(b.color, '30%')}`;
+  el.style.cssText = `display:inline-flex;align-items:center;gap:4px;height:21px;padding:0 11px;border-radius:9999px;font-size:0.6875rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;background:${bg};color:${c};border:${border};box-shadow:${shadow};`;
+  if (b.live) el.prepend(liveDot(true));
+  el.append(document.createTextNode(b.label));
+  document.getElementById('a2').appendChild(el);
+});
+</script>
+
+</body>
+</html>
