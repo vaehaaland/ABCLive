@@ -219,7 +219,7 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
               <>
                 {/* Header — avatar + name + role */}
                 <div className="flex items-center gap-3 mb-4">
-                  <Avatar src={data.avatar_url} name={displayName} size="md" />
+                  <Avatar src={data.avatar_url} name={displayName} size="md" id={profileId} />
                   <div className="min-w-0">
                     <p className="font-heading font-semibold text-sm leading-tight truncate">
                       {displayName ?? '—'}

@@ -47,21 +47,6 @@ function calcBusySlots(
   return { busyToday, slots }
 }
 
-function getInitials(fullName: string | null): string {
-  if (!fullName) return '?'
-  const words = fullName.trim().split(/\s+/)
-  if (words.length === 1) return words[0][0]?.toUpperCase() ?? '?'
-  return ((words[0][0] ?? '') + (words[words.length - 1][0] ?? '')).toUpperCase()
-}
-
-function getAvatarGradient(id: string): string {
-  let hash = 0
-  for (let i = 0; i < id.length; i++) {
-    hash = (hash * 31 + id.charCodeAt(i)) & 0xffffffff
-  }
-  const hue = Math.abs(hash) % 360
-  return `linear-gradient(135deg, oklch(0.68 0.22 ${hue}), oklch(0.55 0.18 ${hue + 20}))`
-}
 
 export default async function PersonnelPage() {
   const supabase = await createClient()
@@ -188,8 +173,6 @@ export default async function PersonnelPage() {
       busyToday,
       slots,
       avatar_url: p.avatar_url ?? null,
-      avatarGradient: getAvatarGradient(p.id),
-      initials: getInitials(p.full_name),
       primaryCompany: p.primary_company ?? null,
     }
   })

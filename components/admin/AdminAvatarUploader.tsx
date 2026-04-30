@@ -73,7 +73,7 @@ export default function AdminAvatarUploader({
   return (
     <div className={cn('flex flex-col items-center gap-1.5', className)}>
       <div className="relative inline-block">
-        <Avatar src={url} name={name} size={size} />
+        <Avatar src={url} name={name} size={size} id={userId} />
         <button
           type="button"
           onClick={() => inputRef.current?.click()}

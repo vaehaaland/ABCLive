@@ -77,6 +77,7 @@ export default async function DashboardLayout({
                 src={profile?.avatar_url}
                 name={profile?.full_name}
                 size="sm"
+                id={user.id}
               />
               <span className="hidden text-sm font-medium text-muted-foreground sm:block">
                 {getDisplayName(profile, user.email ?? '—')}

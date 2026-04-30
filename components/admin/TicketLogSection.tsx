@@ -14,7 +14,7 @@ import { getDisplayName } from '@/lib/utils'
 
 interface Props {
   ticketId: string
-  initialLogs: (TicketLog & { author: { id: string; full_name: string | null; nickname: string | null; email: string | null } | null })[]
+  initialLogs: (TicketLog & { author: { id: string; full_name: string | null; nickname: string | null; email: string | null; avatar_url?: string | null } | null })[]
 }
 
 export default function TicketLogSection({ ticketId, initialLogs }: Props) {
@@ -85,7 +85,7 @@ export default function TicketLogSection({ ticketId, initialLogs }: Props) {
           ) : (
             logs.map((log) => (
               <div key={log.id} className="flex gap-2.5">
-                <Avatar src={log.author?.avatar_url} name={log.author?.full_name} size="sm" />
+                <Avatar src={log.author?.avatar_url} name={log.author?.full_name} size="sm" id={log.author?.id} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-1.5 flex-wrap">
                     <span className="text-sm font-medium">
