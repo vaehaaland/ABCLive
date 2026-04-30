@@ -218,7 +218,7 @@ export default function AddEquipmentDialog({
           </div>
 
           {crossCompanySelections.length > 0 && (
-            <p className="text-xs text-spotlight-gold">
+            <p className="type-label text-spotlight-gold">
               {crossCompanySelections.length} innlånt utstyr krev godkjenning frå eigarselskapet.
             </p>
           )}
@@ -236,7 +236,7 @@ export default function AddEquipmentDialog({
               if (catItems.length === 0) return null
               return (
               <div key={cat}>
-                <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground mb-2 px-1">
+                <p className="type-micro tracking-widest text-muted-foreground mb-2 px-1">
                   {cat}
                 </p>
                 <div className="flex flex-col gap-1">
@@ -281,9 +281,9 @@ export default function AddEquipmentDialog({
                               {isCrossCompany && <CompanyBadge company={item.company} size="xs" />}
                             </div>
                             {isPending ? (
-                              <p className="text-xs mt-0.5 text-spotlight-gold">Venter på godkjenning</p>
+                              <p className="type-label mt-0.5 text-spotlight-gold">Venter på godkjenning</p>
                             ) : (
-                              <p className={`text-xs mt-0.5 ${item.available <= 0 && !isCrossCompany ? 'text-destructive' : 'text-muted-foreground'}`}>
+                              <p className={`type-label mt-0.5 ${item.available <= 0 && !isCrossCompany ? 'text-destructive' : 'text-muted-foreground'}`}>
                                 {isCrossCompany
                                   ? `${item.available} av ${item.quantity} ledig · krev godkjenning`
                                   : `${item.available} av ${item.quantity} ledig`}
@@ -297,7 +297,7 @@ export default function AddEquipmentDialog({
                             className="flex items-center gap-2"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <span className="text-xs text-muted-foreground">Antal</span>
+                            <span className="type-label text-muted-foreground">Antal</span>
                             <Input
                               type="number"
                               min={1}
@@ -309,7 +309,7 @@ export default function AddEquipmentDialog({
                           </div>
                         )}
                         {isSelected && isPending && (
-                          <span className="text-xs text-muted-foreground shrink-0">{sel.quantity} stk</span>
+                          <span className="type-label text-muted-foreground shrink-0">{sel.quantity} stk</span>
                         )}
                       </div>
                     )
@@ -322,7 +322,7 @@ export default function AddEquipmentDialog({
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           <div className="flex items-center justify-between border-t border-white/8 pt-3">
-            <span className="text-xs text-muted-foreground">
+            <span className="type-label text-muted-foreground">
               {selections.size} {selections.size === 1 ? 'utstyrstype' : 'utstyrstypar'} valt
             </span>
             <div className="flex gap-2">
@@ -339,3 +339,4 @@ export default function AddEquipmentDialog({
     </Dialog>
   )
 }
+

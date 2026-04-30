@@ -74,7 +74,7 @@ export default function FestivalReportSharingPanel({
             <div className="grid gap-2">
               <Label>Offentleg lenke</Label>
               <div className="flex flex-col gap-2 sm:flex-row">
-                <Input value={publicPath} readOnly className="font-mono text-xs" />
+                <Input value={publicPath} readOnly className="font-mono type-label" />
                 <CopyPublicReportLinkButton publicPath={publicPath} />
               </div>
             </div>

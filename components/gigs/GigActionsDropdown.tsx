@@ -155,17 +155,17 @@ export default function GigActionsDropdown({ gigId, status, gigType }: Props) {
               </button>
             ) : (
               <div className="px-2.5 py-2 flex flex-col gap-2">
-                <p className="text-xs text-destructive font-medium">Sikker? Oppdraget kan gjenopprettast seinare.</p>
+                <p className="type-label text-destructive">Sikker? Oppdraget kan gjenopprettast seinare.</p>
                 <div className="flex gap-1.5">
                   <button
                     onClick={() => runAction(() => deleteGig(gigId))}
-                    className="flex-1 text-xs rounded-md px-2 py-1 bg-destructive text-destructive-foreground hover:bg-destructive/80 transition-colors"
+                    className="flex-1 type-label rounded-md px-2 py-1 bg-destructive text-destructive-foreground hover:bg-destructive/80 transition-colors"
                   >
                     Slett
                   </button>
                   <button
                     onClick={() => setConfirmingDelete(false)}
-                    className="flex-1 text-xs rounded-md px-2 py-1 bg-surface-high hover:bg-surface-highest transition-colors"
+                    className="flex-1 type-label rounded-md px-2 py-1 bg-surface-high hover:bg-surface-highest transition-colors"
                   >
                     Avbryt
                   </button>
@@ -178,3 +178,4 @@ export default function GigActionsDropdown({ gigId, status, gigType }: Props) {
     </div>
   )
 }
+

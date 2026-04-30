@@ -139,7 +139,7 @@ export default function NewUserDialog() {
               />
               <span>
                 <span className="font-medium">Send invitasjon på e-post</span>
-                <span className="block text-muted-foreground text-xs">
+                <span className="block type-label text-muted-foreground">
                   Brukaren set passord sjølv via ei lenke i e-posten.
                 </span>
               </span>
@@ -155,7 +155,7 @@ export default function NewUserDialog() {
               />
               <span>
                 <span className="font-medium">Set passord no</span>
-                <span className="block text-muted-foreground text-xs">
+                <span className="block type-label text-muted-foreground">
                   Passordet må delast med brukaren på ein trygg måte.
                 </span>
               </span>

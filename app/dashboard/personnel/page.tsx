@@ -215,10 +215,10 @@ export default async function PersonnelPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="font-heading font-extrabold text-[1.75rem] leading-none tracking-[-0.035em]">
+            <h1 className="type-h2">
               Personell
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="type-body-sm text-muted-foreground mt-1">
               Oversikt over crew-medlemar, roller og tilgjengelegheit
             </p>
           </div>

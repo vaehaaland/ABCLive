@@ -221,11 +221,11 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
                 <div className="flex items-center gap-3 mb-4">
                   <Avatar src={data.avatar_url} name={displayName} size="md" />
                   <div className="min-w-0">
-                    <p className="font-heading font-semibold text-sm leading-tight truncate">
+                    <p className="type-title text-sm leading-tight truncate">
                       {displayName ?? '—'}
                     </p>
                     {data.primary_role && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{data.primary_role}</p>
+                      <p className="type-label text-muted-foreground mt-0.5">{data.primary_role}</p>
                     )}
                   </div>
                 </div>
@@ -233,7 +233,7 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
                 {/* Availability status */}
                 <div
                   className={cn(
-                    'flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-medium',
+                    'flex items-center gap-2 rounded-lg px-3 py-2 mb-4 type-label',
                     data.todayStatus === 'gig'
                       ? 'bg-destructive/10 text-destructive'
                       : data.todayStatus === 'blocked'
@@ -261,7 +261,7 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
                 {/* Upcoming gigs */}
                 {data.upcomingGigs.length > 0 && (
                   <div className="mb-4">
-                    <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground mb-2 font-medium">
+                    <p className="type-micro tracking-widest text-muted-foreground mb-2">
                       Kommande oppdrag
                     </p>
                     <ul className="flex flex-col gap-1.5">
@@ -272,11 +272,11 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
                         >
                           <CalendarIcon className="size-3 mt-0.5 shrink-0 text-primary" />
                           <div className="min-w-0">
-                            <p className="text-xs font-medium leading-tight truncate">{gig.name}</p>
+                            <p className="type-label leading-tight truncate">{gig.name}</p>
                             {gig.item_name && (
-                              <p className="mt-0.5 text-[0.65rem] text-primary">{gig.item_name}</p>
+                              <p className="type-micro normal-case tracking-normal mt-0.5 text-primary">{gig.item_name}</p>
                             )}
-                            <p className="text-[0.65rem] text-muted-foreground mt-0.5">
+                            <p className="type-micro normal-case tracking-normal text-muted-foreground mt-0.5">
                               {format(new Date(gig.start_date), 'd. MMM', { locale: nb })}
                               {gig.start_date !== gig.end_date && (
                                 <> – {format(new Date(gig.end_date), 'd. MMM', { locale: nb })}</>
@@ -293,7 +293,7 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
                 {/* Upcoming availability blocks */}
                 {data.upcomingBlocks.length > 0 && (
                   <div className="mb-4">
-                    <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground mb-2 font-medium">
+                    <p className="type-micro tracking-widest text-muted-foreground mb-2">
                       Utilgjengelegheit
                     </p>
                     <ul className="flex flex-col gap-1.5">
@@ -304,14 +304,14 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
                         >
                           <BanIcon className="size-3 mt-0.5 shrink-0 text-spotlight-gold" />
                           <div className="min-w-0">
-                            <p className="text-xs font-medium leading-tight text-spotlight-gold">
+                            <p className="type-label leading-tight text-spotlight-gold">
                               {format(new Date(block.blocked_from), 'd. MMM', { locale: nb })}
                               {block.blocked_from !== block.blocked_until && (
                                 <> – {format(new Date(block.blocked_until), 'd. MMM', { locale: nb })}</>
                               )}
                             </p>
                             {block.reason && (
-                              <p className="text-[0.65rem] text-muted-foreground mt-0.5">{block.reason}</p>
+                              <p className="type-micro normal-case tracking-normal text-muted-foreground mt-0.5">{block.reason}</p>
                             )}
                           </div>
                         </li>
@@ -329,7 +329,7 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
                         className={cn(
                           'flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2',
                           'bg-white/[0.06] hover:bg-white/[0.12] transition-colors',
-                          'text-xs font-medium text-foreground',
+                          'type-label text-foreground',
                         )}
                       >
                         <PhoneIcon className="size-3" />
@@ -342,7 +342,7 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
                         className={cn(
                           'flex items-center justify-center gap-1.5 rounded-lg px-3 py-2',
                           'bg-primary/20 hover:bg-primary/30 transition-colors',
-                          'text-xs font-medium text-primary',
+                          'type-label text-primary',
                         )}
                       >
                         <MailIcon className="size-3" />
@@ -359,3 +359,4 @@ export default function PersonHoverCard({ profileId, name, children }: PersonHov
     </PreviewCard.Root>
   )
 }
+

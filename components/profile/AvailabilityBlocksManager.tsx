@@ -100,7 +100,7 @@ export default function AvailabilityBlocksManager({ blocks }: Props) {
                     {formatDateRange(block.blocked_from, block.blocked_until)}
                   </span>
                   {block.reason && (
-                    <span className="text-xs text-muted-foreground">{block.reason}</span>
+                    <span className="type-label text-muted-foreground">{block.reason}</span>
                   )}
                 </div>
               </div>
@@ -168,3 +168,4 @@ export default function AvailabilityBlocksManager({ blocks }: Props) {
     </div>
   )
 }
+

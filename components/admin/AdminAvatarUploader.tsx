@@ -95,7 +95,7 @@ export default function AdminAvatarUploader({
           onChange={handlePick}
         />
       </div>
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error && <p className="type-label text-destructive">{error}</p>}
 
       <AvatarCropDialog
         open={cropOpen}
@@ -109,3 +109,4 @@ export default function AdminAvatarUploader({
     </div>
   )
 }
+

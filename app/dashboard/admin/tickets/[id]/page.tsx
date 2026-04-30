@@ -86,7 +86,7 @@ export default async function TicketDetailPage({
 
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="font-heading text-2xl font-bold">{ticket.title}</h1>
+          <h1 className="type-h2">{ticket.title}</h1>
           <p className="text-sm text-muted-foreground">
             Ticket #{ticket.id.slice(-8)}
           </p>

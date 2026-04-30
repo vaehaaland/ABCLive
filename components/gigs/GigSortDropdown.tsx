@@ -60,7 +60,7 @@ export function GigSortDropdown({ defaultValue }: { defaultValue: GigSort }) {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-xl border bg-surface-high px-3 py-1.5 text-xs font-medium transition-all',
+          'inline-flex items-center gap-1.5 rounded-xl border bg-surface-high px-3 py-1.5 type-label transition-all',
           open ? 'border-primary/40 text-foreground' : 'border-input text-muted-foreground hover:text-foreground',
           isPending && 'opacity-70'
         )}
@@ -79,7 +79,7 @@ export function GigSortDropdown({ defaultValue }: { defaultValue: GigSort }) {
                 key={optVal}
                 onClick={() => select(optVal)}
                 className={cn(
-                  'w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-left transition-colors',
+                  'w-full flex items-center gap-2.5 px-3 py-2.5 type-label text-left transition-colors',
                   active
                     ? 'bg-surface-high text-foreground'
                     : 'text-muted-foreground hover:bg-surface-high hover:text-foreground'
@@ -95,3 +95,4 @@ export function GigSortDropdown({ defaultValue }: { defaultValue: GigSort }) {
     </div>
   )
 }
+

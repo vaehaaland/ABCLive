@@ -69,7 +69,7 @@ export default function TicketLogSection({ ticketId, initialLogs }: Props) {
             />
           </div>
 
-          {error && <p className="text-xs text-destructive">{error}</p>}
+          {error && <p className="type-label text-destructive">{error}</p>}
 
           <div className="flex justify-end">
             <Button type="submit" size="sm" disabled={pending}>
@@ -91,7 +91,7 @@ export default function TicketLogSection({ ticketId, initialLogs }: Props) {
                     <span className="text-sm font-medium">
                       {getDisplayName(log.author, log.author?.email ?? 'Utviklar')}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="type-label text-muted-foreground">
                       {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: nb })}
                     </span>
                   </div>
@@ -107,3 +107,4 @@ export default function TicketLogSection({ ticketId, initialLogs }: Props) {
     </Card>
   )
 }
+

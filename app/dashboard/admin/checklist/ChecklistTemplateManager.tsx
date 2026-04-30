@@ -82,7 +82,7 @@ function TemplateItemRow({ item, onDelete, onUpdate }: TemplateItemRowProps) {
               value={descDraft}
               onChange={e => setDescDraft(e.target.value)}
               placeholder="Beskriving (valfri)…"
-              className="min-h-[52px] text-xs resize-none"
+              className="min-h-[52px] type-label resize-none"
             />
             <div className="flex gap-2">
               <Button size="sm" onClick={saveEdit} disabled={!titleDraft.trim()}>
@@ -99,10 +99,10 @@ function TemplateItemRow({ item, onDelete, onUpdate }: TemplateItemRowProps) {
               <span className={`text-sm ${!item.is_active ? 'line-through text-muted-foreground' : ''}`}>
                 {item.title}
               </span>
-              {!item.is_active && <Badge variant="secondary" className="text-xs">Inaktiv</Badge>}
+              {!item.is_active && <Badge variant="secondary" className="type-label">Inaktiv</Badge>}
             </div>
             {item.description && (
-              <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
+              <p className="type-label text-muted-foreground mt-0.5">{item.description}</p>
             )}
           </>
         )}
@@ -126,8 +126,8 @@ function TemplateItemRow({ item, onDelete, onUpdate }: TemplateItemRowProps) {
           </button>
           {confirmDelete ? (
             <span className="flex items-center gap-1">
-              <button onClick={handleDelete} className="text-xs text-destructive font-medium px-1">Slett</button>
-              <button onClick={() => setConfirmDelete(false)} className="text-xs text-muted-foreground px-1">Avbryt</button>
+              <button onClick={handleDelete} className="type-label text-destructive px-1">Slett</button>
+              <button onClick={() => setConfirmDelete(false)} className="type-label text-muted-foreground px-1">Avbryt</button>
             </span>
           ) : (
             <button
@@ -219,7 +219,7 @@ export default function ChecklistTemplateManager({
             value={newDesc}
             onChange={e => setNewDesc(e.target.value)}
             placeholder="Beskriving (valfri)…"
-            className="min-h-[52px] text-xs resize-none"
+            className="min-h-[52px] type-label resize-none"
           />
           <div className="flex gap-2">
             <Button size="sm" onClick={handleAdd} disabled={adding || !newTitle.trim()}>
@@ -245,3 +245,4 @@ export default function ChecklistTemplateManager({
     </div>
   )
 }
+

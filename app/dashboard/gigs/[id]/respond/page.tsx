@@ -98,7 +98,7 @@ export default async function GigAssignmentRespondPage({
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="space-y-2 rounded-lg border border-border/70 bg-muted/30 p-4">
-            <h2 className="font-heading text-xl font-semibold">{gig.name}</h2>
+            <h2 className="type-h3 text-xl">{gig.name}</h2>
             <p className="text-sm text-muted-foreground">{dateText}{gig.venue ? ` · ${gig.venue}` : ''}</p>
             {resolvedAssignment.role_on_gig && (
               <p className="text-sm text-muted-foreground">Rolle: {resolvedAssignment.role_on_gig}</p>
@@ -140,7 +140,7 @@ export default async function GigAssignmentRespondPage({
                 </Badge>
               </div>
               {resolvedAssignment.responded_at && (
-                <p className="text-xs text-muted-foreground">
+                <p className="type-label text-muted-foreground">
                   Svara {format(new Date(resolvedAssignment.responded_at), 'd. MMM yyyy HH:mm', { locale: nb })}
                 </p>
               )}
@@ -157,3 +157,4 @@ export default async function GigAssignmentRespondPage({
     </div>
   )
 }
+

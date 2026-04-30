@@ -15,7 +15,7 @@ export default async function NewEquipmentPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
-      <h1 className="text-2xl font-bold">Nytt utstyr</h1>
+      <h1 className="type-h2">Nytt utstyr</h1>
       <EquipmentForm />
     </div>
   )

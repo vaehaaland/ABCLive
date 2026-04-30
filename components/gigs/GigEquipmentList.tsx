@@ -74,7 +74,7 @@ function EquipmentRowItem({
           <p className={`text-sm font-medium ${row.packed ? 'text-muted-foreground line-through' : ''}`}>
             {item?.name ?? 'Ukjend'}
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="type-label text-muted-foreground">
             {row.quantity_needed} stk
             {item?.category && ` · ${item.category}`}
           </p>
@@ -120,7 +120,7 @@ export default function GigEquipmentList({
               style={{ width: `${Math.round((packedCount / total) * 100)}%` }}
             />
           </div>
-          <span className="text-xs text-muted-foreground shrink-0 flex items-center gap-1">
+          <span className="type-label text-muted-foreground shrink-0 flex items-center gap-1">
             <Package className="h-3 w-3" />
             {packedCount}/{total}
           </span>
@@ -140,3 +140,4 @@ export default function GigEquipmentList({
     </div>
   )
 }
+

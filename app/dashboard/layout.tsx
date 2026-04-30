@@ -10,6 +10,7 @@ import NotificationBell from '@/components/NotificationBell'
 import ReportIssueDialog from '@/components/ReportIssueDialog'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { getDisplayName } from '@/lib/utils'
+import { CalendarDays, Grid2x2, SquarePlus } from 'lucide-react'
 
 export default async function DashboardLayout({
   children,
@@ -29,29 +30,37 @@ export default async function DashboardLayout({
 
   const isAdmin = profile?.role === 'admin'
   const isSuperadmin = profile?.is_superadmin === true
-
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-surface-low/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-[oklch(0.11_0.016_282/0.90)] backdrop-blur-xl">
         <div className="flex h-[52px] items-center justify-between px-6">
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-6">
             {/* TODO: migrate layout to app/app/layout.tsx — update all hrefs from /dashboard/* to /app/* */}
             <Link href="/dashboard/gigs" className="shrink-0 flex items-center gap-2">
               <Image src="/gemIcon.png" alt="ABC Live" width={28} height={28} className="rounded-full" />
-              <span className="font-heading font-extrabold text-[1rem] tracking-tight bg-gradient-to-r from-primary to-spotlight-gold bg-clip-text text-transparent">
+              <span className="type-title text-[oklch(0.84_0.14_198)]">
                 ABC Live
               </span>
             </Link>
-            <nav className="flex items-center gap-0.5">
+            <nav className="flex h-[52px] items-stretch gap-0.5 [&_.text-primary]:text-[oklch(0.84_0.16_198)] [&_.text-primary]:after:bottom-auto [&_.text-primary]:after:top-0 [&_.text-primary]:after:rounded-b-full [&_.text-primary]:after:rounded-t-none [&_.text-primary]:after:bg-[oklch(0.76_0.18_198)] [&_.text-primary]:after:[box-shadow:0_0_10px_2px_oklch(0.76_0.18_198_/_0.5)] [&_a]:flex [&_a]:h-full [&_a]:items-center [&_a]:rounded-none [&_a]:px-[13px] [&_a]:py-0 [&_a]:hover:bg-[oklch(1_0_0/5%)] [&_a]:[gap:5px] [&_button]:flex [&_button]:h-full [&_button]:items-center [&_button]:rounded-none [&_button]:px-[13px] [&_button]:py-0 [&_button]:hover:bg-[oklch(1_0_0/5%)] [&_.text-primary:hover]:text-[oklch(0.84_0.16_198)] [&_svg]:h-[13px] [&_svg]:w-[13px] [&_svg]:shrink-0">
               {/* TODO: /dashboard/gigs → /app/gigs */}
-              <NavLink href="/dashboard/gigs">Oppdrag</NavLink>
+              <NavLink href="/dashboard/gigs">
+                <Grid2x2 />
+                Oppdrag
+              </NavLink>
               {isAdmin && (
                 // TODO: /dashboard/equipment → /app/resource/equipment
                 // Note: /app/resource/equipment and /app/resource/persons share the /app/resource parent
-                <NavLink href="/dashboard/equipment">Ressursar</NavLink>
+                <NavLink href="/dashboard/equipment">
+                  <SquarePlus />
+                  Ressursar
+                </NavLink>
               )}
               {/* TODO: /dashboard/calendar → /app/calendar */}
-              <NavLink href="/dashboard/calendar">Kalender</NavLink>
+              <NavLink href="/dashboard/calendar">
+                <CalendarDays />
+                Kalender
+              </NavLink>
               {isSuperadmin && (
                 // TODO: /dashboard/admin/* → /app/admin/*
                 <NavDropdown
@@ -66,14 +75,14 @@ export default async function DashboardLayout({
               )}
             </nav>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <ReportIssueDialog />
             <ThemeToggle />
             <NotificationBell />
             {/* TODO: /dashboard/profile → /app/profile */}
             <Link
               href="/dashboard/profile"
-              className="flex items-center gap-2 rounded-xl px-2.5 py-1 transition-colors hover:bg-surface-high"
+              className="flex items-center gap-2 rounded-xl px-2 py-1 transition-colors hover:bg-surface-high"
             >
               <Avatar
                 src={profile?.avatar_url}

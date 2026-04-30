@@ -128,7 +128,7 @@ export default function GigForm({ gig, isAdmin, companies = [], defaultCompanyId
           </SelectContent>
         </Select>
         {gigType === 'festival' && (
-          <p className="text-xs text-muted-foreground">
+          <p className="type-label text-muted-foreground">
             Programmet blir lagt inn etter at festivalen er oppretta.
           </p>
         )}
@@ -222,3 +222,4 @@ export default function GigForm({ gig, isAdmin, companies = [], defaultCompanyId
     </form>
   )
 }
+

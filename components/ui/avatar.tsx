@@ -45,7 +45,7 @@ export function Avatar({ src, name, size = "md", className, ...props }: AvatarPr
       data-slot="avatar"
       className={cn(
         "relative inline-flex shrink-0 items-center justify-center rounded-full overflow-hidden",
-        "bg-surface-highest text-primary font-semibold font-heading",
+        "bg-surface-highest text-primary type-title",
         sizeClasses[size],
         className
       )}

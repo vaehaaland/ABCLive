@@ -15,7 +15,7 @@ export function CompanyBadge({ company, size = 'sm', className }: CompanyBadgePr
   return (
     <Badge
       variant={isAlvsvag ? 'cold' : 'default'}
-      className={cn(size === 'xs' && 'text-[0.6rem] px-1.5', className)}
+      className={cn(size === 'xs' && 'type-micro px-1.5', className)}
     >
       {company.name}
     </Badge>

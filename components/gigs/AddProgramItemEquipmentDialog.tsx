@@ -371,7 +371,7 @@ export default function AddProgramItemEquipmentDialog({
 
                 return (
                   <div key={category}>
-                    <p className="mb-2 px-1 text-[0.65rem] uppercase tracking-widest text-muted-foreground">
+                    <p className="type-micro tracking-widest mb-2 px-1 text-muted-foreground">
                       {category}
                     </p>
                     <div className="flex flex-col gap-1">
@@ -407,10 +407,10 @@ export default function AddProgramItemEquipmentDialog({
 
                               <div>
                                 <p className="text-sm font-medium leading-tight">{item.name}</p>
-                                <p className="mt-0.5 text-xs text-muted-foreground">
+                                <p className="mt-0.5 type-label text-muted-foreground">
                                   Festivalpool {item.parentPoolQuantity} stk · opptatt no {item.overlappingFestivalUsage} stk
                                 </p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="type-label text-muted-foreground">
                                   Lager tilgjengeleg for festivalen {globalAvailableForFestival} av {item.quantity} stk
                                 </p>
                               </div>
@@ -418,7 +418,7 @@ export default function AddProgramItemEquipmentDialog({
 
                             {isSelected && (
                               <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                <span className="text-xs text-muted-foreground">Antal</span>
+                                <span className="type-label text-muted-foreground">Antal</span>
                                 <Input
                                   type="number"
                                   min={1}
@@ -441,7 +441,7 @@ export default function AddProgramItemEquipmentDialog({
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           <div className="flex items-center justify-between border-t border-white/8 pt-3">
-            <span className="text-xs text-muted-foreground">
+            <span className="type-label text-muted-foreground">
               Utstyr som blir lagt til her blir automatisk reservert på festivalnivå ved behov.
             </span>
             <div className="flex gap-2">
@@ -458,3 +458,4 @@ export default function AddProgramItemEquipmentDialog({
     </Dialog>
   )
 }
+

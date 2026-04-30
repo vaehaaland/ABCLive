@@ -21,7 +21,6 @@ import UserActionsMenu from '@/components/profile/UserActionsMenu'
 export const metadata: Metadata = {
   title: 'Profil',
 }
-
 const DAY = 86_400_000
 const DAY_LETTERS = ['Ma', 'Ti', 'On', 'To', 'Fr', 'Lø', 'Sø']
 
@@ -264,7 +263,7 @@ export default async function ProfilePage() {
 
         {/* Name + role */}
         <div className="flex flex-col gap-2 text-center">
-          <p className="font-heading font-bold text-base leading-snug">
+          <p className="type-title text-base leading-snug">
             {profile?.full_name ?? '—'}
           </p>
           <Badge
@@ -277,12 +276,12 @@ export default async function ProfilePage() {
 
         {/* Contact */}
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 type-label text-muted-foreground">
             <MailIcon className="size-3.5 shrink-0" />
             <span className="truncate">{user.email}</span>
           </div>
           {profile?.phone && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 type-label text-muted-foreground">
               <PhoneIcon className="size-3.5 shrink-0" />
               <span>{formatPhone(profile.phone)}</span>
             </div>
@@ -291,26 +290,26 @@ export default async function ProfilePage() {
 
         {/* Primary role */}
         <div className="flex flex-col gap-1.5">
-          <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">Hovudrolle</p>
+          <p className="type-micro tracking-widest text-muted-foreground">Hovudrolle</p>
           <PrimaryRoleEditor userId={user.id} initialValue={profile?.primary_role ?? null} />
         </div>
 
         {/* Nickname */}
         <div className="flex flex-col gap-1.5">
-          <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">Kallenavn</p>
+          <p className="type-micro tracking-widest text-muted-foreground">Kallenavn</p>
           <NicknameEditor userId={user.id} initialValue={profile?.nickname ?? null} />
         </div>
 
         {/* Availability */}
         <div className="flex flex-col gap-3">
-          <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">Tilgjengelegheit</p>
+          <p className="type-micro tracking-widest text-muted-foreground">Tilgjengelegheit</p>
           <div className="flex items-center gap-1.5">
             <span className={`size-1.5 rounded-full shrink-0 ${
               busyToday === 'gig' ? 'bg-destructive' :
               busyToday === 'blocked' ? 'bg-spotlight-gold' :
               'bg-emerald-500'
             }`} />
-            <span className="text-xs text-muted-foreground">
+            <span className="type-label text-muted-foreground">
               {busyToday === 'gig' ? 'Opptatt i dag' :
                busyToday === 'blocked' ? 'Utilgjengeleg i dag' :
                'Ledig i dag'}
@@ -343,14 +342,14 @@ export default async function ProfilePage() {
 
           {upcomingBlocks.length > 0 && (
             <div className="flex flex-col gap-1.5 mt-1">
-              <p className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">Blokkeringar</p>
+              <p className="type-micro tracking-widest text-muted-foreground">Blokkeringar</p>
               {upcomingBlocks.map((block) => (
                 <div key={block.id} className="flex items-start gap-2">
                   <BanIcon className="size-3 text-amber-500 shrink-0 mt-0.5" />
                   <div className="flex flex-col">
-                    <span className="text-xs">{formatBlockRange(block.blocked_from, block.blocked_until)}</span>
+                    <span className="type-label">{formatBlockRange(block.blocked_from, block.blocked_until)}</span>
                     {block.reason && (
-                      <span className="text-[0.65rem] text-muted-foreground">{block.reason}</span>
+                      <span className="type-micro normal-case tracking-normal text-muted-foreground">{block.reason}</span>
                     )}
                   </div>
                 </div>
@@ -370,17 +369,17 @@ export default async function ProfilePage() {
 
         {/* Hero */}
         <div className="flex flex-col gap-5 max-w-2xl">
-          <span className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
+          <span className="type-micro tracking-[0.15em] text-muted-foreground">
             {roleTagline}
           </span>
 
-          <h1 className="font-heading font-bold leading-none tracking-tight"
+          <h1 className="type-display tracking-tight"
             style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}
           >
             {displayName}
           </h1>
 
-          <p className="text-primary text-xl font-medium font-heading">
+          <p className="type-h3 text-primary text-xl">
             {roleLabel}
           </p>
 
@@ -400,7 +399,7 @@ export default async function ProfilePage() {
 
         {/* Availability blocks */}
         <section className="flex flex-col gap-6">
-          <h2 className="font-heading text-xl font-semibold tracking-tight">
+          <h2 className="type-h3">
             Utilgjengelegheit
           </h2>
           <AvailabilityBlocksManager blocks={availabilityBlocks ?? []} />
@@ -408,7 +407,7 @@ export default async function ProfilePage() {
 
         {/* Upcoming / active assignments */}
         <section className="flex flex-col gap-6">
-          <h2 className="font-heading text-xl font-semibold tracking-tight">
+          <h2 className="type-h3">
             Neste oppdrag
           </h2>
 
@@ -430,7 +429,7 @@ export default async function ProfilePage() {
 
         {/* Past assignments */}
         <section className="flex flex-col gap-6">
-          <h2 className="font-heading text-xl font-semibold tracking-tight">
+          <h2 className="type-h3">
             Siste oppdrag
           </h2>
 
@@ -454,3 +453,4 @@ export default async function ProfilePage() {
     </div>
   )
 }
+

@@ -85,7 +85,7 @@ function PersonCard({ person, dayLabels }: { person: PersonWithSlots; dayLabels:
             style={!person.avatar_url ? { background: person.avatarGradient, color: 'oklch(0.08 0 0)' } : undefined}
           />
           <div className="min-w-0">
-            <p className="font-heading font-bold text-[0.9375rem] leading-tight truncate">
+            <p className="type-title text-[0.9375rem] leading-tight truncate">
               {person.full_name ?? '—'}
               {person.nickname && (
                 <span className="font-normal text-muted-foreground"> ({person.nickname})</span>
@@ -93,12 +93,12 @@ function PersonCard({ person, dayLabels }: { person: PersonWithSlots; dayLabels:
             </p>
             <div className="flex items-center gap-1.5 mt-0.5">
               {person.phone ? (
-                <p className="flex items-center gap-1 text-[0.6875rem] text-muted-foreground">
+                <p className="type-micro normal-case tracking-normal flex items-center gap-1 text-muted-foreground">
                   <PhoneIcon className="size-2.5" />
                   {person.phone}
                 </p>
               ) : (
-                <p className="text-[0.6875rem] text-muted-foreground">—</p>
+                <p className="type-micro normal-case tracking-normal text-muted-foreground">—</p>
               )}
               {person.primaryCompany && <CompanyBadge company={person.primaryCompany} size="xs" />}
             </div>
@@ -107,10 +107,10 @@ function PersonCard({ person, dayLabels }: { person: PersonWithSlots; dayLabels:
 
         {/* Primary role */}
         <div>
-          <p className="text-[0.6rem] font-semibold text-muted-foreground uppercase tracking-[0.08em] mb-1.5">
+          <p className="type-micro text-muted-foreground mb-1.5">
             Hovudrolle
           </p>
-          <Badge variant="default" className="uppercase text-[0.6rem] tracking-[0.05em] h-auto py-1 whitespace-normal text-left leading-tight">
+          <Badge variant="default" className="type-micro h-auto py-1 whitespace-normal text-left leading-tight">
             {person.primary_role ?? person.role}
           </Badge>
         </div>
@@ -118,14 +118,14 @@ function PersonCard({ person, dayLabels }: { person: PersonWithSlots; dayLabels:
         {/* Roles on gig */}
         {person.roles.length > 0 && (
           <div>
-            <p className="text-[0.6rem] font-semibold text-muted-foreground uppercase tracking-[0.08em] mb-1.5">
+            <p className="type-micro text-muted-foreground mb-1.5">
               Roller på oppdrag
             </p>
             <div className="flex flex-wrap gap-1">
               {person.roles.map((r) => (
                 <span
                   key={r}
-                  className="text-[0.6875rem] font-medium px-2 py-0.5 rounded-full bg-surface-highest text-muted-foreground"
+                  className="type-micro normal-case tracking-normal px-2 py-0.5 rounded-full bg-surface-highest text-muted-foreground"
                 >
                   {r}
                 </span>
@@ -141,7 +141,7 @@ function PersonCard({ person, dayLabels }: { person: PersonWithSlots; dayLabels:
         <div className="flex items-end justify-between gap-3">
           <div className="flex items-center gap-1.5">
             <StatusDot status={person.busyToday} />
-            <span className="text-xs text-muted-foreground">{statusLabel}</span>
+            <span className="type-label text-muted-foreground">{statusLabel}</span>
           </div>
           <WeekBar slots={person.slots} dayLabels={dayLabels} />
         </div>
@@ -173,14 +173,14 @@ function PersonRow({ person, dayLabels }: { person: PersonWithSlots; dayLabels: 
           style={!person.avatar_url ? { background: person.avatarGradient, color: 'oklch(0.08 0 0)' } : undefined}
         />
         <div className="min-w-0">
-          <p className="font-heading font-semibold text-sm leading-tight truncate">
+          <p className="type-title text-sm leading-tight truncate">
             {person.full_name ?? '—'}
             {person.nickname && (
               <span className="font-normal text-muted-foreground"> ({person.nickname})</span>
             )}
           </p>
           {person.phone && (
-            <p className="flex items-center gap-1 text-[0.6875rem] text-muted-foreground">
+            <p className="type-micro normal-case tracking-normal flex items-center gap-1 text-muted-foreground">
               <PhoneIcon className="size-2.5" />{person.phone}
             </p>
           )}
@@ -189,7 +189,7 @@ function PersonRow({ person, dayLabels }: { person: PersonWithSlots; dayLabels: 
 
       {/* HOVUDROLLE */}
       <div className="px-3 py-3 w-[180px] shrink-0">
-        <Badge variant="default" className="uppercase text-[0.6rem] tracking-[0.05em] h-auto py-1 whitespace-normal leading-tight">
+        <Badge variant="default" className="type-micro h-auto py-1 whitespace-normal leading-tight">
           {person.primary_role ?? person.role}
         </Badge>
       </div>
@@ -200,13 +200,13 @@ function PersonRow({ person, dayLabels }: { person: PersonWithSlots; dayLabels: 
           {person.roles.map((r) => (
             <span
               key={r}
-              className="text-[0.6875rem] font-medium px-2 py-0.5 rounded-full bg-surface-highest text-muted-foreground whitespace-nowrap"
+              className="type-micro normal-case tracking-normal px-2 py-0.5 rounded-full bg-surface-highest text-muted-foreground whitespace-nowrap"
             >
               {r}
             </span>
           ))}
           {person.roles.length === 0 && (
-            <span className="text-[0.6875rem] text-muted-foreground/40">—</span>
+            <span className="type-micro normal-case tracking-normal text-muted-foreground/40">—</span>
           )}
         </div>
       </div>
@@ -215,7 +215,7 @@ function PersonRow({ person, dayLabels }: { person: PersonWithSlots; dayLabels: 
       <div className="px-3 py-3 w-[160px] shrink-0">
         <div className="flex items-center gap-1.5">
           <StatusDot status={person.busyToday} />
-          <span className="text-xs text-muted-foreground">{statusLabel}</span>
+          <span className="type-label text-muted-foreground">{statusLabel}</span>
         </div>
       </div>
 
@@ -289,7 +289,7 @@ export function PersonnelGrid({ people, dayLabels }: Props) {
               key={f.key}
               onClick={() => setStatusFilter(f.key)}
               className={cn(
-                'text-xs font-medium px-3 py-1.5 rounded-full transition-colors border',
+                'type-label px-3 py-1.5 rounded-full transition-colors border',
                 statusFilter === f.key
                   ? 'bg-surface-highest text-foreground border-white/15'
                   : 'bg-transparent text-muted-foreground border-white/10 hover:text-foreground hover:bg-surface-high',
@@ -338,19 +338,19 @@ export function PersonnelGrid({ people, dayLabels }: Props) {
           <div className="flex items-center gap-0 px-4 py-2 border-b border-border">
             <div className="w-[3px] shrink-0" /> {/* accent bar spacer */}
             <div className="w-[220px] shrink-0 pl-3">
-              <span className="text-[0.6rem] font-semibold text-muted-foreground uppercase tracking-[0.08em]">Namn</span>
+              <span className="type-micro text-muted-foreground">Namn</span>
             </div>
             <div className="w-[180px] shrink-0 px-3">
-              <span className="text-[0.6rem] font-semibold text-muted-foreground uppercase tracking-[0.08em]">Hovudrolle</span>
+              <span className="type-micro text-muted-foreground">Hovudrolle</span>
             </div>
             <div className="flex-1 px-3">
-              <span className="text-[0.6rem] font-semibold text-muted-foreground uppercase tracking-[0.08em]">Roller på oppdrag</span>
+              <span className="type-micro text-muted-foreground">Roller på oppdrag</span>
             </div>
             <div className="w-[160px] shrink-0 px-3">
-              <span className="text-[0.6rem] font-semibold text-muted-foreground uppercase tracking-[0.08em]">Status i dag</span>
+              <span className="type-micro text-muted-foreground">Status i dag</span>
             </div>
             <div className="shrink-0 px-4">
-              <span className="text-[0.6rem] font-semibold text-muted-foreground uppercase tracking-[0.08em]">Denne veka</span>
+              <span className="type-micro text-muted-foreground">Denne veka</span>
             </div>
           </div>
           <div className="divide-y divide-border">
@@ -361,9 +361,10 @@ export function PersonnelGrid({ people, dayLabels }: Props) {
         </div>
       )}
 
-      <p className="mt-4 text-xs text-muted-foreground">
+      <p className="mt-4 type-label text-muted-foreground">
         {filtered.length} av {people.length} personar
       </p>
     </>
   )
 }
+

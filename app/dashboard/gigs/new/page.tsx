@@ -34,7 +34,7 @@ export default async function NewGigPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
-      <h1 className="text-2xl font-bold">Nytt arrangement</h1>
+      <h1 className="type-h2">Nytt arrangement</h1>
       <GigForm isAdmin companies={companies} defaultCompanyId={defaultCompanyId} />
     </div>
   )

@@ -68,7 +68,7 @@ export function EquipmentRequestsSection({ requests }: Props) {
                   <span>{req.quantity_needed}× {equip.name}</span>
                 </div>
                 {gig && (
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="type-label text-muted-foreground truncate">
                     {gig.name} · {format(new Date(gig.start_date), 'd. MMM yyyy', { locale: nb })}
                     {gig.start_date !== gig.end_date && ` – ${format(new Date(gig.end_date), 'd. MMM yyyy', { locale: nb })}`}
                   </p>
@@ -101,3 +101,4 @@ export function EquipmentRequestsSection({ requests }: Props) {
     </div>
   )
 }
+

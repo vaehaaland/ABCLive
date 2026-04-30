@@ -164,7 +164,7 @@ export default function AddProgramItemPersonnelDialog({
                   <SelectItem key={person.id} value={person.id}>
                     <span>{getDisplayName(person, person.id)}</span>
                     {person.hasConflict && (
-                      <span className="ml-2 text-xs text-destructive">⚠ konflikt</span>
+                      <span className="ml-2 type-label text-destructive">⚠ konflikt</span>
                     )}
                   </SelectItem>
                 ))}
@@ -196,3 +196,4 @@ export default function AddProgramItemPersonnelDialog({
     </Dialog>
   )
 }
+

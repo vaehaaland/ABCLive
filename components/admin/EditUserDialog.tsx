@@ -237,7 +237,7 @@ export default function EditUserDialog({ open, onOpenChange, user, companies, is
             <Label>Selskapsmedlemskap</Label>
             <div className="flex flex-col gap-2 rounded-md border border-white/10 p-3">
               {memberships.length === 0 && (
-                <p className="text-xs text-muted-foreground">Ingen tilgangar tildelt.</p>
+                <p className="type-label text-muted-foreground">Ingen tilgangar tildelt.</p>
               )}
               {memberships.map((m) => (
                 <div key={m.id} className="flex items-center gap-2">
@@ -247,7 +247,7 @@ export default function EditUserDialog({ open, onOpenChange, user, companies, is
                     onValueChange={(v) => handleRoleChange(m.id, v as UserRole)}
                     disabled={pending || m.id === 'pending'}
                   >
-                    <SelectTrigger className="h-7 text-xs w-32">
+                    <SelectTrigger className="h-7 type-label w-32">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -270,12 +270,12 @@ export default function EditUserDialog({ open, onOpenChange, user, companies, is
 
               {addableCompanies.length > 0 && (
                 <div className="flex flex-wrap gap-1 pt-1 border-t border-white/10 mt-1">
-                  <span className="text-xs text-muted-foreground self-center mr-1">Legg til:</span>
+                  <span className="type-label text-muted-foreground self-center mr-1">Legg til:</span>
                   {addableCompanies.map((c) => (
                     <button
                       key={c.id}
                       type="button"
-                      className="text-xs underline underline-offset-2 text-primary hover:opacity-80 disabled:opacity-40"
+                      className="type-label underline underline-offset-2 text-primary hover:opacity-80 disabled:opacity-40"
                       disabled={pending}
                       onClick={() => handleAddCompany(c.id)}
                     >
@@ -297,7 +297,7 @@ export default function EditUserDialog({ open, onOpenChange, user, companies, is
             />
             <span>
               <span className="font-medium">Superadmin</span>
-              <span className="block text-muted-foreground text-xs">
+              <span className="block type-label text-muted-foreground">
                 {isSelf
                   ? 'Du kan ikkje endre din eigen superadmin-status.'
                   : 'Kan administrere brukarar i ABCLive.'}
@@ -332,9 +332,10 @@ export default function EditUserDialog({ open, onOpenChange, user, companies, is
               Set
             </Button>
           </div>
-          {status && <p className="text-xs text-emerald-400">{status}</p>}
+          {status && <p className="type-label text-emerald-400">{status}</p>}
         </div>
       </DialogContent>
     </Dialog>
   )
 }
+

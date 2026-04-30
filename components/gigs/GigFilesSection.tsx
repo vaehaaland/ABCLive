@@ -232,7 +232,7 @@ export default function GigFilesSection({ gigId, isAdmin, initialFiles }: GigFil
                       : <FileIcon mime={file.mime_type} />
                     }
                     <span className="text-sm font-medium truncate">{file.file_name}</span>
-                    <span className="text-xs text-muted-foreground shrink-0">
+                    <span className="type-label text-muted-foreground shrink-0">
                       {formatBytes(file.file_size)}
                     </span>
                   </button>
@@ -298,3 +298,4 @@ export default function GigFilesSection({ gigId, isAdmin, initialFiles }: GigFil
     </>
   )
 }
+

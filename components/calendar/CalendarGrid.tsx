@@ -165,19 +165,19 @@ function Tooltip({
     >
       <div className={cn('h-1', getEventColorClass(gig))} />
       <div className="p-3 flex flex-col gap-1.5">
-        <p className="font-heading font-semibold text-sm leading-snug">
+        <p className="type-title text-sm leading-snug">
           {gig.name}
         </p>
-        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <p className="flex items-center gap-1.5 type-label text-muted-foreground">
           {formatDateRange(gig)}
         </p>
         {gig.venue && (
-          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <p className="flex items-center gap-1.5 type-label text-muted-foreground">
             {gig.venue}
           </p>
         )}
         {gig.client && (
-          <p className="text-xs text-primary font-medium">{gig.client}</p>
+          <p className="type-label text-primary">{gig.client}</p>
         )}
       </div>
     </div>
@@ -228,7 +228,7 @@ function WeekRow({
           >
             <div
               className={cn(
-                'size-[26px] flex items-center justify-center text-xs font-medium rounded-full mx-auto',
+                'size-[26px] flex items-center justify-center type-label rounded-full mx-auto',
                 isToday
                   ? 'bg-primary text-primary-foreground font-bold'
                   : 'text-muted-foreground',
@@ -264,7 +264,7 @@ function WeekRow({
               key={si}
               href={`/dashboard/gigs/${gig.id}`}
               className={cn(
-                'absolute h-[22px] rounded-md flex items-center px-2 text-[0.6875rem] font-medium truncate pointer-events-auto cursor-pointer transition-opacity hover:opacity-80',
+                'absolute h-[22px] rounded-md flex items-center px-2 type-micro normal-case tracking-normal truncate pointer-events-auto cursor-pointer transition-opacity hover:opacity-80',
                 colorClass,
                 isFaded && 'opacity-30',
                 !isStart && !isContinuation && 'rounded-l-none',
@@ -331,7 +331,7 @@ export function CalendarGrid({
           <div
             key={d}
             className={cn(
-              'py-2 text-center text-xs font-medium',
+              'py-2 text-center type-label',
               i >= 5 ? 'text-muted-foreground/40' : 'text-muted-foreground',
             )}
           >
@@ -361,3 +361,4 @@ export function CalendarGrid({
     </>
   )
 }
+

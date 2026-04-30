@@ -264,6 +264,8 @@ export default async function GigsPage({
   const completedCount = allNonCancelled.filter(
     (g) => g.status === 'completed'
   ).length
+  // TODO: Implement a dedicated Supabase query for a reliable, real-time "Live no" stat (smooth updates and clear criteria).
+  const liveNowCount = 0
 
   // Festival program item counts
   const festivalIds = gigList
@@ -311,6 +313,8 @@ export default async function GigsPage({
     const statusLabel = statusLabels[gig.status as GigStatus]
     const statusVariant = statusVariants[gig.status as GigStatus]
     const accent = statusAccentClass[gig.status as GigStatus]
+    const clientLabel = gig.client?.trim() ? gig.client : '-'
+    const venueLabel = gig.venue?.trim() ? gig.venue : '-'
     const formattedDate =
       gig.start_date === gig.end_date
         ? format(new Date(gig.start_date), 'd. MMM yyyy', { locale: nb })
@@ -328,37 +332,40 @@ export default async function GigsPage({
           <div className={cn('w-[3px] shrink-0', accent)} />
           <div className="flex-1 px-4 py-3 flex items-center gap-4 min-w-0">
             <div className="flex-1 min-w-0">
-              <p className="font-heading font-bold text-sm leading-snug truncate">
+              <p className="type-title text-sm leading-snug truncate">
                 {gig.name}
               </p>
-              {gig.client && (
-                <p className="flex items-center gap-1 text-xs text-primary font-medium mt-0.5">
-                  <BuildingIcon className="size-3" />
-                  {gig.client}
-                </p>
-              )}
+              <p
+                className={cn(
+                  'flex items-center gap-1 type-label mt-0.5',
+                  clientLabel === '-' ? 'text-muted-foreground' : 'text-primary'
+                )}
+              >
+                <BuildingIcon className="size-3" />
+                {clientLabel}
+              </p>
             </div>
-            <div className="flex items-center gap-5 shrink-0 text-xs text-muted-foreground">
+            <div className="flex items-center gap-5 shrink-0 type-label text-muted-foreground">
               <span className="flex items-center gap-1">
                 <CalendarIcon className="size-3" />
                 {formattedDate}
               </span>
-              {gig.venue && (
-                <span className="flex items-center gap-1">
-                  <MapPinIcon className="size-3" />
-                  {gig.venue}
-                </span>
-              )}
+              <span className="flex items-center gap-1">
+                <MapPinIcon className="size-3" />
+                {venueLabel}
+              </span>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {showCompany && gigCompany && <CompanyBadge company={gigCompany} size="xs" />}
               {gigsWithoutPersonnel.has(gig.id) && (
                 <Badge variant="destructive">Ingen personell</Badge>
               )}
-              {gig.icloud_uid && (
-                <Cloud className="h-3.5 w-3.5 text-muted-foreground/40" aria-label="Synkronisert frå iCloud" />
-              )}
-              <Badge variant={statusVariant}>{statusLabel}</Badge>
+              <div className="flex items-center gap-1.5">
+                {gig.icloud_uid && (
+                  <Cloud className="h-3.5 w-3.5 text-muted-foreground/40" aria-label="Synkronisert frå iCloud" />
+                )}
+                <Badge variant={statusVariant}>{statusLabel}</Badge>
+              </div>
               {isDeleted && <Badge variant="destructive">Sletta</Badge>}
               {isDeleted && <RestoreGigButton gigId={gig.id} />}
             </div>
@@ -366,51 +373,76 @@ export default async function GigsPage({
         </Link>
       )
     }
-
     return (
       <Link
         key={gig.id}
         href={`/dashboard/gigs/${gig.id}`}
-        className="group flex rounded-2xl overflow-hidden bg-surface-container hover:bg-surface-high transition-all hover:-translate-y-px hover:shadow-[0_8px_24px_oklch(0_0_0/0.25)] cursor-pointer"
+        className={cn(
+          'group flex rounded-2xl overflow-hidden bg-surface-container border border-border hover:bg-surface-high transition-all hover:-translate-y-px hover:shadow-[0_8px_24px_oklch(0_0_0/0.25)] cursor-pointer',
+          (gig.status === 'cancelled' || gig.status === 'draft') && 'opacity-70'
+        )}
       >
-        <div className={cn('w-[3px] shrink-0 self-stretch', accent)} />
-        <div className="flex-1 p-4 min-w-0 flex flex-col gap-1.5">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-1.5">
-              <Badge variant={statusVariant}>{statusLabel}</Badge>
-              {gigsWithoutPersonnel.has(gig.id) && (
-                <Badge variant="destructive">Ingen personell</Badge>
-              )}
-              {showCompany && gigCompany && <CompanyBadge company={gigCompany} size="xs" />}
-            </div>
-            {gig.icloud_uid && (
-              <Cloud className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0 mt-0.5" aria-label="Synkronisert frå iCloud" />
-            )}
-          </div>
-          <p className="font-heading font-bold text-[0.9375rem] leading-snug tracking-[-0.02em] text-foreground line-clamp-2">
-            {gig.name}
-          </p>
-          {gig.client && (
-            <p className="flex items-center gap-1 text-xs text-primary font-medium">
-              <BuildingIcon className="size-3 shrink-0" />
-              {gig.client}
+        <div className={cn(
+          'w-[58px] shrink-0 border-r border-border flex flex-col items-center justify-center gap-0.5 py-3.5',
+          gig.status === 'confirmed' && 'bg-primary/10',
+          gig.status === 'completed' && 'bg-emerald-500/10',
+          gig.status === 'draft' && 'bg-surface-high',
+          gig.status === 'cancelled' && 'bg-destructive/10'
+        )}>
+          <span className={cn(
+            'type-h2 leading-none',
+            gig.status === 'confirmed' && 'text-primary',
+            gig.status === 'completed' && 'text-emerald-500',
+            gig.status === 'draft' && 'text-muted-foreground',
+            gig.status === 'cancelled' && 'text-destructive'
+          )}>
+            {format(new Date(gig.start_date), 'd', { locale: nb })}
+          </span>
+          <span className="type-micro tracking-[0.1em] text-muted-foreground">
+            {format(new Date(gig.start_date), 'MMM', { locale: nb })}
+          </span>
+        </div>
+        <div className="flex-1 px-3.5 py-3 min-w-0 flex flex-col gap-1.5">
+          <div className="flex items-start justify-between gap-2 min-w-0">
+            <p className="type-title text-[0.9375rem] leading-snug tracking-[-0.02em] text-foreground line-clamp-2 min-w-0">
+              {gig.name}
             </p>
-          )}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {gig.icloud_uid && (
+                <Cloud className="h-3.5 w-3.5 text-muted-foreground/40" aria-label="Synkronisert frå iCloud" />
+              )}
+              <Badge variant={statusVariant}>{statusLabel}</Badge>
+            </div>
+          </div>
+          <p
+            className={cn(
+              'flex items-center gap-1 type-label',
+              clientLabel === '-' ? 'text-muted-foreground' : 'text-primary'
+            )}
+          >
+            <BuildingIcon className="size-3 shrink-0" />
+            {clientLabel}
+          </p>
           <div className="flex flex-wrap gap-3 mt-0.5">
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1 type-label text-muted-foreground">
               <CalendarIcon className="size-3 shrink-0" />
               {formattedDate}
             </span>
-            {gig.venue && (
-              <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPinIcon className="size-3 shrink-0" />
-                {gig.venue}
-              </span>
+            <span className="flex items-center gap-1 type-label text-muted-foreground">
+              <MapPinIcon className="size-3 shrink-0" />
+              {venueLabel}
+            </span>
+          </div>
+          <div className="h-px bg-border -mx-3.5 mt-0.5" />
+          <div className="pt-0.5 flex items-center gap-1.5 flex-wrap">
+            {showCompany && gigCompany && <CompanyBadge company={gigCompany} size="xs" />}
+            {gigsWithoutPersonnel.has(gig.id) && (
+              <Badge variant="destructive">Ingen personell</Badge>
             )}
+            {isDeleted && <Badge variant="destructive">Sletta</Badge>}
           </div>
           {isDeleted && (
             <div className="mt-1 flex items-center gap-2">
-              <Badge variant="destructive">Sletta</Badge>
               <RestoreGigButton gigId={gig.id} />
             </div>
           )}
@@ -423,7 +455,7 @@ export default async function GigsPage({
     <div className="flex flex-col">
       {/* Page header */}
       <div className="flex items-center justify-between mb-7">
-        <h1 className="font-heading font-extrabold text-[1.75rem] leading-none tracking-[-0.035em]">
+        <h1 className="type-h2">
           Oppdrag
         </h1>
         {isAdmin && (
@@ -449,37 +481,50 @@ export default async function GigsPage({
       {/* Stats bar */}
       <div className="flex gap-px rounded-[0.875rem] overflow-hidden bg-border mb-7">
         {[
-          { label: 'Totalt', value: totalCount, colorClass: '' },
-          { label: 'Bekrefta', value: confirmedCount, colorClass: 'text-primary' },
-          { label: 'Utkast', value: draftCount, colorClass: 'text-muted-foreground' },
-          { label: 'Fullførte', value: completedCount, colorClass: 'text-success' },
-        ].map(({ label, value, colorClass }) => (
+          { label: 'Totalt', value: totalCount, colorClass: 'text-foreground', trend: '—' },
+          {
+            label: 'Live no',
+            value: liveNowCount,
+            colorClass: 'text-[oklch(0.67_0.26_28)]',
+            trend: null,
+            segmentClass: 'bg-[oklch(0.67_0.26_28/0.07)] hover:bg-[oklch(0.67_0.26_28/0.11)]',
+            isLive: true,
+          },
+          { label: 'Bekrefta', value: confirmedCount, colorClass: 'text-primary', trend: '—' },
+          { label: 'Utkast', value: draftCount, colorClass: 'text-muted-foreground', trend: '—' },
+          { label: 'Fullførte', value: completedCount, colorClass: 'text-success', trend: null },
+        ].map(({ label, value, colorClass, trend, segmentClass, isLive }) => (
           <div
             key={label}
-            className="flex-1 bg-surface-container hover:bg-surface-high transition-colors px-4 py-2.5 flex flex-col gap-0.5 cursor-default"
+            className={cn(
+              'flex-1 bg-surface-container hover:bg-surface-high transition-colors px-4 py-3 flex flex-col gap-1 cursor-default',
+              segmentClass
+            )}
           >
-            <span
-              className={cn(
-                'font-heading font-extrabold text-2xl leading-none tracking-[-0.04em]',
-                colorClass
+            <div className="flex items-center gap-1.5">
+              {isLive && <span className="size-1.5 rounded-full bg-[oklch(0.67_0.26_28)] live-dot-pulse" />}
+              <span className={cn('type-h2 leading-none tracking-[-0.03em]', colorClass)}>
+                {value}
+              </span>
+              {trend && (
+                <span className="type-micro text-muted-foreground pb-0.5">
+                  {trend}
+                </span>
               )}
-            >
-              {value}
-            </span>
-            <span className="text-[0.6875rem] font-medium text-muted-foreground uppercase tracking-[0.08em]">
+            </div>
+            <span className="type-micro uppercase tracking-[0.1em] text-muted-foreground">
               {label}
             </span>
           </div>
         ))}
       </div>
-
       {/* Company filter */}
       {showCompanyFilter && (
         <div className="flex items-center gap-1.5 mb-4">
           <Link
             href={buildHref({ company: null })}
             className={cn(
-              'text-xs font-medium px-3 py-1.5 rounded-full transition-colors',
+              'type-label px-3 py-1.5 rounded-full transition-colors',
               !companyFilter
                 ? 'bg-surface-highest text-foreground'
                 : 'bg-surface-high text-muted-foreground hover:text-foreground'
@@ -492,7 +537,7 @@ export default async function GigsPage({
               key={c.id}
               href={buildHref({ company: c.id })}
               className={cn(
-                'text-xs font-medium px-3 py-1.5 rounded-full transition-colors',
+                'type-label px-3 py-1.5 rounded-full transition-colors',
                 companyFilter === c.id
                   ? 'bg-surface-highest text-foreground'
                   : 'bg-surface-high text-muted-foreground hover:text-foreground'
@@ -512,7 +557,7 @@ export default async function GigsPage({
             <Link
               href={buildHref({ view: null })}
               className={cn(
-                'text-xs font-medium px-3.5 py-[5px] rounded-[0.5625rem] transition-colors',
+                'type-label px-3.5 py-[5px] rounded-[0.5625rem] transition-colors',
                 !viewMine
                   ? 'bg-surface-highest text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -523,7 +568,7 @@ export default async function GigsPage({
             <Link
               href={buildHref({ view: 'mine' })}
               className={cn(
-                'text-xs font-medium px-3.5 py-[5px] rounded-[0.5625rem] transition-colors',
+                'type-label px-3.5 py-[5px] rounded-[0.5625rem] transition-colors',
                 viewMine
                   ? 'bg-surface-highest text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -586,10 +631,10 @@ export default async function GigsPage({
           {groups.map(({ label, gigs: groupGigs }) => (
             <div key={label}>
               <div className="flex items-center gap-3 mb-3.5">
-                <span className="font-heading font-bold text-sm text-muted-foreground tracking-[-0.01em]">
+                <span className="type-title text-sm text-muted-foreground">
                   {label}
                 </span>
-                <span className="font-mono text-[0.6875rem] text-muted-foreground/60 bg-surface-high px-2 py-0.5 rounded-full">
+                <span className="type-micro normal-case tracking-normal font-mono text-muted-foreground/60 bg-surface-high px-2 py-0.5 rounded-full">
                   {groupGigs.length}
                 </span>
                 <div className="flex-1 h-px bg-border" />
@@ -620,3 +665,4 @@ export default async function GigsPage({
     </div>
   )
 }
+

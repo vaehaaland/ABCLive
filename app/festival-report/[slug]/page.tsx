@@ -48,8 +48,8 @@ export default async function PublicFestivalReportPage({
     <div className="mx-auto flex min-h-screen w-full max-w-xl items-center px-4 py-12">
       <div className="flex w-full flex-col gap-6">
         <div className="space-y-2 text-center">
-          <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Delt festivalsrapport</p>
-          <h1 className="font-heading text-3xl font-bold">{meta.name}</h1>
+          <p className="type-micro tracking-[0.18em] text-muted-foreground">Delt festivalsrapport</p>
+          <h1 className="type-h1 text-3xl">{meta.name}</h1>
         </div>
         <PublicFestivalReportUnlockForm slug={slug} />
       </div>

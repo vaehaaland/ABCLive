@@ -123,20 +123,20 @@ function ChecklistItemRow({ item, isAdmin, gigId, onOptimisticUpdate, onRemove }
                   setShowComment(v => !v)
                   if (!showComment) setTimeout(() => {}, 0)
                 }}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors px-1"
+                className="type-label text-muted-foreground hover:text-foreground transition-colors px-1"
                 title={showComment ? 'Skjul kommentar' : 'Legg til kommentar'}
               >
                 {item.comment ? (
                   showComment ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />
                 ) : (
-                  <span className="text-xs opacity-50 hover:opacity-100">Kommentar</span>
+                  <span className="type-label opacity-50 hover:opacity-100">Kommentar</span>
                 )}
               </button>
               {isAdmin && (
                 confirmDelete ? (
                   <span className="flex items-center gap-1">
-                    <button onClick={handleDelete} className="text-xs text-destructive font-medium">Slett</button>
-                    <button onClick={() => setConfirmDelete(false)} className="text-xs text-muted-foreground">Avbryt</button>
+                    <button onClick={handleDelete} className="type-label text-destructive">Slett</button>
+                    <button onClick={() => setConfirmDelete(false)} className="type-label text-muted-foreground">Avbryt</button>
                   </span>
                 ) : (
                   <button
@@ -151,14 +151,14 @@ function ChecklistItemRow({ item, isAdmin, gigId, onOptimisticUpdate, onRemove }
           </div>
 
           {state === 'checked' && item.checker && (
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="type-label text-muted-foreground mt-0.5">
               Huka av av {getDisplayName(item.checker, 'ukjend')}
               {item.checked_at && ` · ${formatDistanceToNow(new Date(item.checked_at), { addSuffix: true, locale: nb })}`}
             </p>
           )}
 
           {item.comment && !showComment && (
-            <p className="text-xs text-muted-foreground mt-0.5 italic truncate">{item.comment}</p>
+            <p className="type-label text-muted-foreground mt-0.5 italic truncate">{item.comment}</p>
           )}
 
           {showComment && (
@@ -167,7 +167,7 @@ function ChecklistItemRow({ item, isAdmin, gigId, onOptimisticUpdate, onRemove }
                 value={commentDraft}
                 onChange={e => setCommentDraft(e.target.value)}
                 placeholder="Legg til ein merknad…"
-                className="min-h-[52px] text-xs resize-none"
+                className="min-h-[52px] type-label resize-none"
                 onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) saveComment() }}
               />
               <div className="flex flex-col gap-1">
@@ -267,7 +267,7 @@ export default function GigChecklistSection({
         <div className="flex items-center gap-2">
           <CardTitle className="text-base">Sjekkliste</CardTitle>
           {totalCount > 0 && (
-            <span className="text-xs text-muted-foreground">
+            <span className="type-label text-muted-foreground">
               {checkedCount + naCount}/{totalCount}
             </span>
           )}
@@ -343,3 +343,4 @@ export default function GigChecklistSection({
     </Card>
   )
 }
+

@@ -155,7 +155,7 @@ export function EquipmentTable({ equipment }: Props) {
             key={cat}
             onClick={() => setCatFilter(cat)}
             className={cn(
-              'text-xs font-medium px-3 py-1.5 rounded-full transition-colors border',
+              'type-label px-3 py-1.5 rounded-full transition-colors border',
               catFilter === cat
                 ? 'bg-primary text-white border-transparent'
                 : 'bg-transparent text-muted-foreground border-white/10 hover:text-foreground hover:bg-surface-high'
@@ -170,7 +170,7 @@ export function EquipmentTable({ equipment }: Props) {
         <TableHeader>
           <TableRow className="border-white/8 hover:bg-transparent bg-surface-high/50">
             <TableHead
-              className="cursor-pointer select-none text-xs font-semibold text-muted-foreground uppercase tracking-[0.06em]"
+              className="type-micro cursor-pointer select-none text-muted-foreground tracking-[0.06em]"
               onClick={() => handleSort('name')}
             >
               <span className="flex items-center gap-0.5">
@@ -179,7 +179,7 @@ export function EquipmentTable({ equipment }: Props) {
               </span>
             </TableHead>
             <TableHead
-              className="cursor-pointer select-none w-36 text-xs font-semibold text-muted-foreground uppercase tracking-[0.06em]"
+              className="type-micro cursor-pointer select-none w-36 text-muted-foreground tracking-[0.06em]"
               onClick={() => handleSort('category')}
             >
               <span className="flex items-center gap-0.5">
@@ -187,9 +187,9 @@ export function EquipmentTable({ equipment }: Props) {
                 <SortIcon col="category" sortKey={sortKey} sortDir={sortDir} />
               </span>
             </TableHead>
-            <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.06em]">Beskriving</TableHead>
+            <TableHead className="type-micro text-muted-foreground tracking-[0.06em]">Beskriving</TableHead>
             <TableHead
-              className="cursor-pointer select-none w-24 text-xs font-semibold text-muted-foreground uppercase tracking-[0.06em]"
+              className="type-micro cursor-pointer select-none w-24 text-muted-foreground tracking-[0.06em]"
               onClick={() => handleSort('quantity')}
             >
               <span className="flex items-center gap-0.5">
@@ -198,7 +198,7 @@ export function EquipmentTable({ equipment }: Props) {
               </span>
             </TableHead>
             <TableHead
-              className="cursor-pointer select-none w-28 text-xs font-semibold text-muted-foreground uppercase tracking-[0.06em]"
+              className="type-micro cursor-pointer select-none w-28 text-muted-foreground tracking-[0.06em]"
               onClick={() => handleSort('status')}
             >
               <span className="flex items-center gap-0.5">
@@ -255,7 +255,7 @@ export function EquipmentTable({ equipment }: Props) {
                       className="block w-full cursor-text rounded px-1.5 py-0.5 hover:bg-white/5 text-sm"
                     >
                       {item.category ?? (
-                        <span className="text-muted-foreground/50 italic text-xs">—</span>
+                        <span className="type-label text-muted-foreground/50 italic">—</span>
                       )}
                     </span>
                   )}
@@ -280,7 +280,7 @@ export function EquipmentTable({ equipment }: Props) {
                       title={item.description ?? undefined}
                     >
                       {item.description ?? (
-                        <span className="text-muted-foreground/40 italic text-xs">—</span>
+                        <span className="type-label text-muted-foreground/40 italic">—</span>
                       )}
                     </span>
                   )}

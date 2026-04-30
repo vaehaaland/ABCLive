@@ -306,7 +306,7 @@ export default async function GigDetailPage({
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="mb-2 flex flex-wrap items-center gap-2">
-            <h1 className="font-heading text-2xl font-bold">{gig.name}</h1>
+            <h1 className="type-h2">{gig.name}</h1>
             {isFestival && <Badge variant="gold">Festival</Badge>}
             <CompanyBadge company={gig.company} size="xs" />
           </div>
@@ -388,7 +388,7 @@ export default async function GigDetailPage({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-base">{isFestival ? 'Festivalcrew' : 'Personell'}</CardTitle>
+              <CardTitle>{isFestival ? 'Festivalcrew' : 'Personell'}</CardTitle>
               {declinedCount > 0 && (
                 <Button variant="ghost" size="sm" asChild>
                   <Link href={showDeclined ? `/dashboard/gigs/${gig.id}` : `/dashboard/gigs/${gig.id}?showDeclined=1`}>
@@ -443,7 +443,7 @@ export default async function GigDetailPage({
                           {statusBadge}
                         </div>
                         {row.assignment_status === 'declined' && row.response_note && (
-                          <p className="pl-0.5 text-xs text-muted-foreground italic">
+                          <p className="pl-0.5 type-label text-muted-foreground italic">
                             &ldquo;{row.response_note}&rdquo;
                           </p>
                         )}
@@ -463,9 +463,9 @@ export default async function GigDetailPage({
                       <div className="flex items-center gap-2.5">
                         <p className="text-sm font-medium">{row.name}</p>
                         {row.role_on_gig && <Badge variant="role">{row.role_on_gig}</Badge>}
-                        <Badge variant="outline" className="text-xs">Ekstern</Badge>
+                        <Badge variant="outline" className="type-label">Ekstern</Badge>
                         {row.company && (
-                          <span className="text-xs text-muted-foreground">{row.company}</span>
+                          <span className="type-label text-muted-foreground">{row.company}</span>
                         )}
                       </div>
                       {isAdmin && <RemoveExternalPersonnelButton id={row.id} gigId={gig.id} />}
@@ -479,7 +479,7 @@ export default async function GigDetailPage({
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base">{isFestival ? 'Festivalutstyr' : 'Utstyr'}</CardTitle>
+            <CardTitle>{isFestival ? 'Festivalutstyr' : 'Utstyr'}</CardTitle>
             {isAdmin && (
               <AddEquipmentDialog
                 gigId={gig.id}
@@ -506,7 +506,7 @@ export default async function GigDetailPage({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div className="space-y-1">
-              <CardTitle className="text-base">Program</CardTitle>
+              <CardTitle>Program</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Venue, tidspunkt, teknikarar og utstyr blir styrt per programpost.
               </p>
@@ -624,7 +624,7 @@ export default async function GigDetailPage({
                                   <li key={row.id} className="flex items-center justify-between py-2">
                                     <div>
                                       <p className="text-sm font-medium">{itemEquipment?.name ?? 'Ukjend'}</p>
-                                      <p className="text-xs text-muted-foreground">
+                                      <p className="type-label text-muted-foreground">
                                         {row.quantity_needed} stk
                                         {itemEquipment?.category && ` · ${itemEquipment.category}`}
                                       </p>
@@ -672,3 +672,4 @@ export default async function GigDetailPage({
     </div>
   )
 }
+

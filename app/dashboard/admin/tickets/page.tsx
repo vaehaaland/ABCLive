@@ -62,7 +62,7 @@ export default async function AdminTicketsPage({
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="font-heading text-2xl font-bold">Tickets</h1>
+          <h1 className="type-h2">Tickets</h1>
           <p className="text-sm text-muted-foreground">
             Administrer brukar-rapporterte problem og ønskje. Berre synleg for superadmin.
           </p>
@@ -122,7 +122,7 @@ export default async function AdminTicketsPage({
                    ticket.created_by_profile?.email ||
                    'Ukjend'}
                 </TableCell>
-                <TableCell className="text-muted-foreground text-xs">
+                <TableCell className="type-label text-muted-foreground">
                   {format(new Date(ticket.created_at), 'd. MMM yyyy', { locale: nb })}
                 </TableCell>
               </TableRow>

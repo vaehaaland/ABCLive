@@ -64,7 +64,7 @@ export function GigStatusFilter({ defaultValue }: { defaultValue: GigStatus[] })
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-xl border bg-surface-high px-3 py-1.5 text-xs font-medium transition-all',
+          'inline-flex items-center gap-1.5 rounded-xl border bg-surface-high px-3 py-1.5 type-label transition-all',
           open ? 'border-primary/40 text-foreground' : 'border-input text-muted-foreground hover:text-foreground',
           isPending && 'opacity-70'
         )}
@@ -89,7 +89,7 @@ export function GigStatusFilter({ defaultValue }: { defaultValue: GigStatus[] })
                 key={value}
                 onClick={() => toggle(value)}
                 className={cn(
-                  'w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-left transition-colors',
+                  'w-full flex items-center gap-2.5 px-3 py-2.5 type-label text-left transition-colors',
                   checked ? 'bg-surface-high text-foreground' : 'text-muted-foreground hover:bg-surface-high hover:text-foreground'
                 )}
               >
@@ -113,7 +113,7 @@ export function GigStatusFilter({ defaultValue }: { defaultValue: GigStatus[] })
                   })
                   setOpen(false)
                 }}
-                className="w-full px-3 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors text-left"
+                className="w-full px-3 py-2 type-label text-muted-foreground hover:text-foreground transition-colors text-left"
               >
                 Nullstill filter
               </button>
@@ -124,3 +124,4 @@ export function GigStatusFilter({ defaultValue }: { defaultValue: GigStatus[] })
     </div>
   )
 }
+
