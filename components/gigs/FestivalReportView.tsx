@@ -2,6 +2,7 @@ import { format } from 'date-fns'
 import { nb } from 'date-fns/locale'
 import { Badge } from '@/components/ui/badge'
 import type { FestivalReportData } from '@/app/dashboard/gigs/_lib/festival-report'
+import { getGigDisplayStatus } from '@/lib/gig-status'
 
 function formatTimeRange(startAt: string, endAt: string) {
   return `${format(new Date(startAt), 'HH:mm')}–${format(new Date(endAt), 'HH:mm')}`
@@ -18,10 +19,22 @@ function formatFestivalDateRange(startDate: string, endDate: string) {
   return `${format(start, 'd. MMMM yyyy', { locale: nb })} – ${format(end, 'd. MMMM yyyy', { locale: nb })}`
 }
 
-function statusLabel(status: FestivalReportData['festival']['status']) {
+function statusLabel(festival: FestivalReportData['festival']) {
+  const today = new Date().toLocaleDateString('sv-SE')
+  const status = getGigDisplayStatus(
+    {
+      status: festival.status,
+      start_date: festival.startDate,
+      end_date: festival.endDate,
+    },
+    today
+  )
+
   switch (status) {
     case 'confirmed':
       return 'Bekrefta'
+    case 'live':
+      return 'Live'
     case 'completed':
       return 'Fullført'
     case 'cancelled':
@@ -41,7 +54,7 @@ export default function FestivalReportView({ report }: { report: FestivalReportD
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="type-h1 text-3xl">{report.festival.name}</h1>
                 <Badge variant="gold">Festivalrapport</Badge>
-                <Badge variant="outline">{statusLabel(report.festival.status)}</Badge>
+                <Badge variant="outline">{statusLabel(report.festival)}</Badge>
               </div>
 
               <div className="grid gap-1.5 text-sm text-black/70">

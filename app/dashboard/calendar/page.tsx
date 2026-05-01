@@ -120,6 +120,7 @@ export default async function CalendarPage({
           <div className="flex items-center gap-4 ml-2">
             {[
               { color: 'bg-primary', label: 'Bekrefta' },
+              { color: 'bg-live', label: 'Live' },
               { color: 'bg-spotlight-gold', label: 'Festival' },
               { color: 'bg-emerald-500', label: 'Fullført' },
               { color: 'bg-surface-highest', label: 'Utkast' },

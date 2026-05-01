@@ -4,25 +4,27 @@ import { nb } from 'date-fns/locale'
 import { CalendarIcon, LayoutGridIcon, MapPinIcon } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
-import { statusLabels } from '@/lib/gig-status'
+import { getGigDisplayStatus, statusLabels, type GigDisplayStatus } from '@/lib/gig-status'
 import { cn } from '@/lib/utils'
-import type { GigStatus } from '@/types/database'
 
-const statusVariants: Record<GigStatus, 'default' | 'secondary' | 'success' | 'destructive'> = {
+const statusVariants: Record<GigDisplayStatus, 'default' | 'secondary' | 'live' | 'success' | 'destructive'> = {
   draft: 'secondary',
   confirmed: 'default',
+  live: 'live',
   completed: 'success',
   cancelled: 'destructive',
 }
-const dateBlockBgClass: Record<GigStatus, string> = {
+const dateBlockBgClass: Record<GigDisplayStatus, string> = {
   draft: 'bg-surface-high',
   confirmed: 'bg-primary/10',
+  live: 'bg-live/10',
   completed: 'bg-emerald-500/10',
   cancelled: 'bg-destructive/10',
 }
-const dateTextClass: Record<GigStatus, string> = {
+const dateTextClass: Record<GigDisplayStatus, string> = {
   draft: 'text-muted-foreground',
   confirmed: 'text-primary',
+  live: 'text-live',
   completed: 'text-emerald-500',
   cancelled: 'text-destructive',
 }
@@ -32,6 +34,7 @@ type GigAssignmentCardProps = {
   name: string
   venue: string | null
   start_date: string
+  end_date: string
   status: string
   role_label: string | null
   item_name: string | null
@@ -42,13 +45,15 @@ export function GigAssignmentCard({
   name,
   venue,
   start_date,
+  end_date,
   status,
   role_label,
   item_name,
 }: GigAssignmentCardProps) {
-  const statusLabel = statusLabels[status as GigStatus]
-  const statusVariant = statusVariants[status as GigStatus]
-  const statusKey = status as GigStatus
+  const today = new Date().toLocaleDateString('sv-SE')
+  const statusKey = getGigDisplayStatus({ status, start_date, end_date }, today)
+  const statusLabel = statusLabels[statusKey]
+  const statusVariant = statusVariants[statusKey]
   const isMuted = status === 'cancelled' || status === 'draft'
 
   return (

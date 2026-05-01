@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { statusLabels } from '@/lib/gig-status'
 import type { Gig, GigStatus, GigType } from '@/types/database'
 
 interface Company {
@@ -161,7 +162,7 @@ export default function GigForm({ gig, isAdmin, companies = [], defaultCompanyId
         <Select value={status} onValueChange={(v) => setStatus(v as GigStatus)}>
           <SelectTrigger id="status">
             <SelectValue>
-              {status === 'confirmed' ? 'Bekrefta' : status === 'completed' ? 'Fullført' : status === 'cancelled' ? 'Avlyst' : 'Utkast'}
+              {statusLabels[status]}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>

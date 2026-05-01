@@ -4,21 +4,22 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { ChevronDownIcon, CheckIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { GigStatus } from '@/types/database'
+import type { GigStatusFilterValue } from '@/lib/gig-status'
 
-const STATUS_OPTIONS: { value: GigStatus; label: string; dotClass: string }[] = [
+const STATUS_OPTIONS: { value: GigStatusFilterValue; label: string; dotClass: string }[] = [
   { value: 'confirmed', label: 'Bekrefta', dotClass: 'bg-primary' },
+  { value: 'live', label: 'Live', dotClass: 'bg-live' },
   { value: 'draft', label: 'Utkast', dotClass: 'bg-surface-highest border border-input' },
   { value: 'completed', label: 'Fullført', dotClass: 'bg-emerald-500' },
   { value: 'cancelled', label: 'Avlyst', dotClass: 'bg-destructive' },
 ]
 
-export function GigStatusFilter({ defaultValue }: { defaultValue: GigStatus[] }) {
+export function GigStatusFilter({ defaultValue }: { defaultValue: GigStatusFilterValue[] }) {
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [selected, setSelected] = useState<GigStatus[]>(defaultValue)
-  const [prevDefault, setPrevDefault] = useState<GigStatus[]>(defaultValue)
+  const [selected, setSelected] = useState<GigStatusFilterValue[]>(defaultValue)
+  const [prevDefault, setPrevDefault] = useState<GigStatusFilterValue[]>(defaultValue)
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const ref = useRef<HTMLDivElement>(null)
@@ -38,7 +39,7 @@ export function GigStatusFilter({ defaultValue }: { defaultValue: GigStatus[] })
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [open])
 
-  function toggle(status: GigStatus) {
+  function toggle(status: GigStatusFilterValue) {
     const next = selected.includes(status)
       ? selected.filter((s) => s !== status)
       : [...selected, status]
