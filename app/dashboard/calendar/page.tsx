@@ -42,6 +42,7 @@ export default async function CalendarPage({
     .select('id, name, start_date, end_date, status, gig_type, venue, client')
     .lte('start_date', format(monthEnd, 'yyyy-MM-dd'))
     .gte('end_date', format(monthStart, 'yyyy-MM-dd'))
+    .is('deleted_at', null)
     .neq('status', 'cancelled')
 
   if (query) {
@@ -59,6 +60,7 @@ export default async function CalendarPage({
       .from('gigs')
       .select('start_date')
       .ilike('name', `%${query}%`)
+      .is('deleted_at', null)
       .neq('status', 'cancelled')
       .gte('start_date', format(monthEnd, 'yyyy-MM-dd'))
       .order('start_date', { ascending: true })

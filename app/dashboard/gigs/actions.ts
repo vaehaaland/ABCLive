@@ -36,6 +36,7 @@ export async function deleteGig(gigId: string) {
     .from('gigs').update({ deleted_at: new Date().toISOString() }).eq('id', gigId)
   if (error) throw error
   revalidatePath('/dashboard/gigs')
+  revalidatePath('/dashboard/calendar')
   revalidatePath(`/dashboard/gigs/${gigId}`)
 }
 
@@ -45,5 +46,6 @@ export async function restoreGig(gigId: string) {
     .from('gigs').update({ deleted_at: null }).eq('id', gigId)
   if (error) throw error
   revalidatePath('/dashboard/gigs')
+  revalidatePath('/dashboard/calendar')
   revalidatePath(`/dashboard/gigs/${gigId}`)
 }
