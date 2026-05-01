@@ -165,9 +165,14 @@ export default async function GigsPage({
   )
   const myGigIds = [...myRoleMap.keys()]
 
-  // Stats query — all non-cancelled, non-deleted gigs, no date filter
+  const userCompanyIds = userCompanies.map((company) => company.id)
+
+  // Stats query — global across UI filters/search/date scope, but limited to the user's company memberships.
+  // Includes non-deleted gigs and excludes cancelled gigs for consistency with existing stat definitions.
   let statsQuery = supabase.from('gigs').select('status').neq('status', 'cancelled').is('deleted_at', null)
-  if (companyFilter) statsQuery = statsQuery.eq('company_id', companyFilter)
+  if (userCompanyIds.length > 0) {
+    statsQuery = statsQuery.in('company_id', userCompanyIds)
+  }
   const statsQueryPromise = statsQuery as unknown as Promise<{
     data: { status: string }[] | null
     error: unknown
@@ -264,8 +269,11 @@ export default async function GigsPage({
   const completedCount = allNonCancelled.filter(
     (g) => g.status === 'completed'
   ).length
-  // TODO: Implement a dedicated Supabase query for a reliable, real-time "Live no" stat (smooth updates and clear criteria).
-  const liveNowCount = 0
+  // Domain rule: `live` is a persisted gig status, not a UI-computed instant value.
+  // "Live no" is global (independent of current UI filters/search/date scope) by counting all scoped gigs with status `live`.
+  // Scope here is the user's company memberships, not the current page filter state.
+  // No realtime subscription is used; status transitions are driven by manual updates and optional server-side jobs.
+  const liveNowCount = allNonCancelled.filter((g) => g.status === 'live').length
 
   // Festival program item counts
   const festivalIds = gigList
@@ -665,4 +673,3 @@ export default async function GigsPage({
     </div>
   )
 }
-
