@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import { parseISO } from 'date-fns'
 import Link from 'next/link'
+import { getGigDisplayStatus } from '@/lib/gig-status'
 import { cn } from '@/lib/utils'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -110,13 +111,15 @@ function getSegmentsForWeek(gigs: CalendarGig[], week: Date[]): Seg[] {
   return result
 }
 
-function getEventColorClass(gig: CalendarGig): string {
+function getEventColorClass(gig: CalendarGig, today: string): string {
   if (gig.gig_type === 'festival') {
     return 'bg-spotlight-gold/80 text-[oklch(0.08_0_0)]'
   }
-  switch (gig.status) {
+  switch (getGigDisplayStatus(gig, today)) {
     case 'confirmed':
       return 'bg-primary text-primary-foreground'
+    case 'live':
+      return 'bg-live text-white'
     case 'completed':
       return 'bg-emerald-500 text-white'
     case 'draft':
@@ -140,9 +143,11 @@ function formatDateRange(gig: CalendarGig): string {
 function Tooltip({
   gig,
   pos,
+  today,
 }: {
   gig: CalendarGig | null
   pos: { x: number; y: number } | null
+  today: string
 }) {
   if (!gig || !pos) return null
 
@@ -163,7 +168,7 @@ function Tooltip({
       style={style}
       className="w-60 rounded-xl bg-surface-highest border border-border shadow-[0_20px_40px_oklch(0_0_0/0.4)] p-0 overflow-hidden pointer-events-none"
     >
-      <div className={cn('h-1', getEventColorClass(gig))} />
+      <div className={cn('h-1', getEventColorClass(gig, today))} />
       <div className="p-3 flex flex-col gap-1.5">
         <p className="type-title text-sm leading-snug">
           {gig.name}
@@ -194,6 +199,7 @@ function WeekRow({
   searchQuery,
   onEventHover,
   onEventLeave,
+  todayKey,
 }: {
   week: Date[]
   month: number
@@ -202,6 +208,7 @@ function WeekRow({
   searchQuery: string
   onEventHover: (gig: CalendarGig, e: React.MouseEvent) => void
   onEventLeave: () => void
+  todayKey: string
 }) {
   const maxLane = segs.reduce((m, s) => Math.max(m, s.lane), -1)
   const rowH =
@@ -254,7 +261,7 @@ function WeekRow({
             searchQuery &&
             !gig.name.toLowerCase().includes(searchQuery.toLowerCase())
 
-          const colorClass = getEventColorClass(gig)
+          const colorClass = getEventColorClass(gig, todayKey)
           // A segment that starts at col 0 but isn't the actual event start
           // is a continuation from the previous week
           const isContinuation = !isStart && startCol === 0
@@ -302,6 +309,7 @@ export function CalendarGrid({
   searchQuery: string
 }) {
   const today = new Date()
+  const todayKey = today.toLocaleDateString('sv-SE')
   const weeks = buildCalendar(year, month)
   const weekSegs = weeks.map((week) => getSegmentsForWeek(gigs, week))
 
@@ -352,12 +360,13 @@ export function CalendarGrid({
             searchQuery={searchQuery}
             onEventHover={handleHover}
             onEventLeave={clearHover}
+            todayKey={todayKey}
           />
         ))}
       </div>
 
       {/* Hover tooltip */}
-      <Tooltip gig={hoveredGig} pos={tooltipPos} />
+      <Tooltip gig={hoveredGig} pos={tooltipPos} today={todayKey} />
     </>
   )
 }

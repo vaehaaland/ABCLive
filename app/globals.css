@@ -295,6 +295,21 @@
   animation: live-pulse 1.5s ease-in-out infinite;
 }
 
+@keyframes logo-ring-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+
+.logo-ring-pulse {
+  animation: logo-ring-pulse 2s ease-out infinite;
+}
+
 @media print {
   @page {
     size: A4;

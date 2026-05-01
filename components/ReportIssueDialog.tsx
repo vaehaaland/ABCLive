@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { createTicket } from '@/app/actions/tickets'
+import { CircleHelpIcon } from 'lucide-react'
 
 export default function ReportIssueDialog() {
   const router = useRouter()
@@ -57,7 +58,18 @@ export default function ReportIssueDialog() {
         setOpen(next)
       }}
     >
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>Rapporter problem</DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Rapporter problem"
+            title="Rapporter problem"
+          />
+        }
+      >
+        <CircleHelpIcon className="size-4" />
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Rapporter problem</DialogTitle>

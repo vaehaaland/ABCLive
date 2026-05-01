@@ -9,7 +9,6 @@ import LogoutButton from '@/components/LogoutButton'
 import NotificationBell from '@/components/NotificationBell'
 import ReportIssueDialog from '@/components/ReportIssueDialog'
 import { ThemeToggle } from '@/components/ThemeToggle'
-import { getDisplayName } from '@/lib/utils'
 import { CalendarDays, Grid2x2, SquarePlus } from 'lucide-react'
 
 export default async function DashboardLayout({
@@ -32,13 +31,29 @@ export default async function DashboardLayout({
   const isSuperadmin = profile?.is_superadmin === true
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-[oklch(0.11_0.016_282/0.90)] backdrop-blur-xl">
-        <div className="flex h-[52px] items-center justify-between px-6">
-          <div className="flex items-center gap-6">
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-[oklch(0.11_0.016_282/0.90)] backdrop-blur-2xl">
+        <div className="flex h-[52px] items-center justify-between gap-6 px-6">
+          <div className="flex min-w-0 items-center gap-2">
             {/* TODO: migrate layout to app/app/layout.tsx — update all hrefs from /dashboard/* to /app/* */}
-            <Link href="/dashboard/gigs" className="shrink-0 flex items-center gap-2">
-              <Image src="/gemIcon.png" alt="ABC Live" width={28} height={28} className="rounded-full" />
-              <span className="type-title text-[oklch(0.84_0.14_198)]">
+            <Link href="/dashboard/gigs" className="flex shrink-0 items-center gap-[9px]">
+              <span className="relative flex size-7 shrink-0 items-center justify-center">
+                <span
+                  aria-hidden="true"
+                  className="logo-ring-pulse absolute inset-0 rounded-full border border-[oklch(0.67_0.26_28/0.75)]"
+                />
+                <span
+                  aria-hidden="true"
+                  className="logo-ring-pulse absolute inset-0 rounded-full border border-[oklch(0.67_0.26_28/0.75)] [animation-delay:0.85s]"
+                />
+                <Image
+                  src="/gemIcon.png"
+                  alt="ABC Live"
+                  width={28}
+                  height={28}
+                  className="relative z-10 rounded-full"
+                />
+              </span>
+              <span className="bg-[linear-gradient(135deg,oklch(0.63_0.27_305),oklch(0.53_0.21_305))] bg-clip-text font-heading text-base font-extrabold text-transparent [-webkit-background-clip:text] [-webkit-text-fill-color:transparent] [font-variation-settings:'wght'_800,'opsz'_16,'ROND'_0]">
                 ABC Live
               </span>
             </Link>
@@ -75,14 +90,16 @@ export default async function DashboardLayout({
               )}
             </nav>
           </div>
-          <div className="flex items-center gap-2 text-muted-foreground">
+          <div className="flex shrink-0 items-center gap-1.5 text-muted-foreground [&_[data-slot=button]]:size-8 [&_[data-slot=button]]:rounded-[0.625rem]">
             <ReportIssueDialog />
-            <ThemeToggle />
             <NotificationBell />
+            <ThemeToggle />
+            <div className="mx-1 h-5 w-px bg-border" />
             {/* TODO: /dashboard/profile → /app/profile */}
             <Link
               href="/dashboard/profile"
-              className="flex items-center gap-2 rounded-xl px-2 py-1 transition-colors hover:bg-surface-high"
+              className="flex items-center gap-2 rounded-[0.625rem] px-1 py-1 transition-colors hover:bg-surface-high"
+              aria-label="Profil"
             >
               <Avatar
                 src={profile?.avatar_url}
@@ -90,9 +107,6 @@ export default async function DashboardLayout({
                 size="sm"
                 id={user.id}
               />
-              <span className="hidden text-sm font-medium text-muted-foreground sm:block">
-                {getDisplayName(profile, user.email ?? '—')}
-              </span>
             </Link>
             <LogoutButton />
           </div>

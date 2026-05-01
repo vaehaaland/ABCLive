@@ -31,16 +31,24 @@ import {
 import { cn } from '@/lib/utils'
 import { CompanyBadge } from '@/components/CompanyBadge'
 import type { Gig, GigStatus } from '@/types/database'
-import { statusLabels, statusAccentClass } from '@/lib/gig-status'
+import {
+  getGigDisplayStatus,
+  isGigLiveOnDate,
+  statusLabels,
+  statusAccentClass,
+  type GigDisplayStatus,
+  type GigStatusFilterValue,
+} from '@/lib/gig-status'
 import RestoreGigButton from '@/components/gigs/RestoreGigButton'
 
 export const metadata: Metadata = {
   title: 'Oppdrag',
 }
 
-const statusVariants: Record<GigStatus, 'default' | 'secondary' | 'success' | 'destructive'> = {
+const statusVariants: Record<GigDisplayStatus, 'default' | 'secondary' | 'live' | 'success' | 'destructive'> = {
   draft: 'secondary',
   confirmed: 'default',
+  live: 'live',
   completed: 'success',
   cancelled: 'destructive',
 }
@@ -89,10 +97,11 @@ export default async function GigsPage({
   const search = sp.search?.trim() ?? ''
   const layout: GigLayout = sp.layout === 'list' ? 'list' : 'grid'
   const companyFilter = sp.company ?? null
+  const today = format(new Date(), 'yyyy-MM-dd')
 
-  const ALL_STATUSES: GigStatus[] = ['draft', 'confirmed', 'completed', 'cancelled']
-  const statusFilter: GigStatus[] = sp.status
-    ? (sp.status.split(',').filter((s) => ALL_STATUSES.includes(s as GigStatus)) as GigStatus[])
+  const ALL_STATUSES: GigStatusFilterValue[] = ['draft', 'confirmed', 'live', 'completed', 'cancelled']
+  const statusFilter: GigStatusFilterValue[] = sp.status
+    ? (sp.status.split(',').filter((s) => ALL_STATUSES.includes(s as GigStatusFilterValue)) as GigStatusFilterValue[])
     : []
 
   const baseParams = new URLSearchParams()
@@ -165,11 +174,18 @@ export default async function GigsPage({
   )
   const myGigIds = [...myRoleMap.keys()]
 
-  // Stats query — all non-cancelled, non-deleted gigs, no date filter
-  let statsQuery = supabase.from('gigs').select('status').neq('status', 'cancelled').is('deleted_at', null)
-  if (companyFilter) statsQuery = statsQuery.eq('company_id', companyFilter)
+  const userCompanyIds = userCompanies.map((company) => company.id)
+
+  // Stats query: admin-only, global across UI filters/search/date scope, scoped to the admin's company memberships.
+  // Includes non-deleted gigs and excludes cancelled gigs for consistency with existing stat definitions.
+  let statsQuery = supabase.from('gigs').select('status, start_date, end_date').neq('status', 'cancelled').is('deleted_at', null)
+  if (isAdmin && userCompanyIds.length > 0) {
+    statsQuery = statsQuery.in('company_id', userCompanyIds)
+  } else {
+    statsQuery = statsQuery.eq('id', '00000000-0000-0000-0000-000000000000')
+  }
   const statsQueryPromise = statsQuery as unknown as Promise<{
-    data: { status: string }[] | null
+    data: { status: string; start_date: string; end_date: string }[] | null
     error: unknown
   }>
 
@@ -201,7 +217,12 @@ export default async function GigsPage({
   }
 
   if (statusFilter.length > 0) {
-    gigsQuery = gigsQuery.in('status', statusFilter)
+    const statusQueryValues = [
+      ...new Set(
+        statusFilter.map((status) => (status === 'live' ? 'confirmed' : status))
+      ),
+    ] as GigStatus[]
+    gigsQuery = gigsQuery.in('status', statusQueryValues)
   }
 
   if (companyFilter) {
@@ -222,7 +243,9 @@ export default async function GigsPage({
     statsQueryPromise,
   ])
 
-  const gigList = gigs ?? []
+  const gigList = statusFilter.length > 0
+    ? (gigs ?? []).filter((gig) => statusFilter.includes(getGigDisplayStatus(gig, today)))
+    : gigs ?? []
 
   const gigIds = gigList.map((gig) => gig.id)
   const gigsWithoutPersonnel = new Set<string>(gigIds)
@@ -258,14 +281,15 @@ export default async function GigsPage({
   const allNonCancelled = statsData ?? []
   const totalCount = allNonCancelled.length
   const confirmedCount = allNonCancelled.filter(
-    (g) => g.status === 'confirmed'
+    (g) => g.status === 'confirmed' && !isGigLiveOnDate(g, today)
   ).length
   const draftCount = allNonCancelled.filter((g) => g.status === 'draft').length
   const completedCount = allNonCancelled.filter(
     (g) => g.status === 'completed'
   ).length
-  // TODO: Implement a dedicated Supabase query for a reliable, real-time "Live no" stat (smooth updates and clear criteria).
-  const liveNowCount = 0
+  // Live no is computed, not persisted: confirmed gigs whose date range includes today.
+  // It remains global across UI filters/search/date scope and scoped to the user's company memberships.
+  const liveNowCount = allNonCancelled.filter((g) => isGigLiveOnDate(g, today)).length
 
   // Festival program item counts
   const festivalIds = gigList
@@ -310,9 +334,10 @@ export default async function GigsPage({
 
   const renderGigCard = (gig: Gig, showCompany: boolean) => {
     const isDeleted = !!gig.deleted_at
-    const statusLabel = statusLabels[gig.status as GigStatus]
-    const statusVariant = statusVariants[gig.status as GigStatus]
-    const accent = statusAccentClass[gig.status as GigStatus]
+    const displayStatus = getGigDisplayStatus(gig, today)
+    const statusLabel = statusLabels[displayStatus]
+    const statusVariant = statusVariants[displayStatus]
+    const accent = statusAccentClass[displayStatus]
     const clientLabel = gig.client?.trim() ? gig.client : '-'
     const venueLabel = gig.venue?.trim() ? gig.venue : '-'
     const formattedDate =
@@ -384,17 +409,19 @@ export default async function GigsPage({
       >
         <div className={cn(
           'w-[58px] shrink-0 border-r border-border flex flex-col items-center justify-center gap-0.5 py-3.5',
-          gig.status === 'confirmed' && 'bg-primary/10',
-          gig.status === 'completed' && 'bg-emerald-500/10',
-          gig.status === 'draft' && 'bg-surface-high',
-          gig.status === 'cancelled' && 'bg-destructive/10'
+          displayStatus === 'confirmed' && 'bg-primary/10',
+          displayStatus === 'live' && 'bg-live/10',
+          displayStatus === 'completed' && 'bg-emerald-500/10',
+          displayStatus === 'draft' && 'bg-surface-high',
+          displayStatus === 'cancelled' && 'bg-destructive/10'
         )}>
           <span className={cn(
             'type-h2 leading-none',
-            gig.status === 'confirmed' && 'text-primary',
-            gig.status === 'completed' && 'text-emerald-500',
-            gig.status === 'draft' && 'text-muted-foreground',
-            gig.status === 'cancelled' && 'text-destructive'
+            displayStatus === 'confirmed' && 'text-primary',
+            displayStatus === 'live' && 'text-live',
+            displayStatus === 'completed' && 'text-emerald-500',
+            displayStatus === 'draft' && 'text-muted-foreground',
+            displayStatus === 'cancelled' && 'text-destructive'
           )}>
             {format(new Date(gig.start_date), 'd', { locale: nb })}
           </span>
@@ -479,45 +506,47 @@ export default async function GigsPage({
       </div>
 
       {/* Stats bar */}
-      <div className="flex gap-px rounded-[0.875rem] overflow-hidden bg-border mb-7">
-        {[
-          { label: 'Totalt', value: totalCount, colorClass: 'text-foreground', trend: '—' },
-          {
-            label: 'Live no',
-            value: liveNowCount,
-            colorClass: 'text-[oklch(0.67_0.26_28)]',
-            trend: null,
-            segmentClass: 'bg-[oklch(0.67_0.26_28/0.07)] hover:bg-[oklch(0.67_0.26_28/0.11)]',
-            isLive: true,
-          },
-          { label: 'Bekrefta', value: confirmedCount, colorClass: 'text-primary', trend: '—' },
-          { label: 'Utkast', value: draftCount, colorClass: 'text-muted-foreground', trend: '—' },
-          { label: 'Fullførte', value: completedCount, colorClass: 'text-success', trend: null },
-        ].map(({ label, value, colorClass, trend, segmentClass, isLive }) => (
-          <div
-            key={label}
-            className={cn(
-              'flex-1 bg-surface-container hover:bg-surface-high transition-colors px-4 py-3 flex flex-col gap-1 cursor-default',
-              segmentClass
-            )}
-          >
-            <div className="flex items-center gap-1.5">
-              {isLive && <span className="size-1.5 rounded-full bg-[oklch(0.67_0.26_28)] live-dot-pulse" />}
-              <span className={cn('type-h2 leading-none tracking-[-0.03em]', colorClass)}>
-                {value}
-              </span>
-              {trend && (
-                <span className="type-micro text-muted-foreground pb-0.5">
-                  {trend}
-                </span>
+      {isAdmin && (
+        <div className="flex gap-px rounded-[0.875rem] overflow-hidden bg-border mb-7">
+          {[
+            { label: 'Totalt', value: totalCount, colorClass: 'text-foreground', trend: '-' },
+            {
+              label: 'Live no',
+              value: liveNowCount,
+              colorClass: 'text-live',
+              trend: null,
+              segmentClass: 'bg-live/10 hover:bg-live/15',
+              isLive: true,
+            },
+            { label: 'Bekrefta', value: confirmedCount, colorClass: 'text-primary', trend: '-' },
+            { label: 'Utkast', value: draftCount, colorClass: 'text-muted-foreground', trend: '-' },
+            { label: 'Fullførte', value: completedCount, colorClass: 'text-success', trend: null },
+          ].map(({ label, value, colorClass, trend, segmentClass, isLive }) => (
+            <div
+              key={label}
+              className={cn(
+                'flex-1 bg-surface-container hover:bg-surface-high transition-colors px-4 py-3 flex flex-col gap-1 cursor-default',
+                segmentClass
               )}
+            >
+              <div className="flex items-center gap-1.5">
+                {isLive && <span className="size-1.5 rounded-full bg-live live-dot-pulse" />}
+                <span className={cn('type-h2 leading-none tracking-[-0.03em]', colorClass)}>
+                  {value}
+                </span>
+                {trend && (
+                  <span className="type-micro text-muted-foreground pb-0.5">
+                    {trend}
+                  </span>
+                )}
+              </div>
+              <span className="type-micro uppercase tracking-[0.1em] text-muted-foreground">
+                {label}
+              </span>
             </div>
-            <span className="type-micro uppercase tracking-[0.1em] text-muted-foreground">
-              {label}
-            </span>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
       {/* Company filter */}
       {showCompanyFilter && (
         <div className="flex items-center gap-1.5 mb-4">
@@ -665,4 +694,3 @@ export default async function GigsPage({
     </div>
   )
 }
-

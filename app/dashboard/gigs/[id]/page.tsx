@@ -29,7 +29,7 @@ import RestoreGigButton from '@/components/gigs/RestoreGigButton'
 import GigEquipmentList from '@/components/gigs/GigEquipmentList'
 import GigAssignmentRespondDialog from '@/components/gigs/GigAssignmentRespondDialog'
 import type { GigFile, GigProgramItem, GigStatus, GigType, GigCommentWithAuthor, GigChecklistItem, GigExternalPersonnel } from '@/types/database'
-import { statusLabels } from '@/lib/gig-status'
+import { getGigDisplayStatus, statusLabels } from '@/lib/gig-status'
 import { CheckCircle2, Clock3, Cloud, XCircle } from 'lucide-react'
 import { CompanyBadge } from '@/components/CompanyBadge'
 
@@ -290,6 +290,8 @@ export default async function GigDetailPage({
     itemEquipmentMap.set(row.program_item_id, list)
   }
 
+  const displayStatus = getGigDisplayStatus(gig, format(new Date(), 'yyyy-MM-dd'))
+
   return (
     <div className={`grid grid-cols-1 gap-6 ${isFestival ? 'max-w-7xl lg:grid-cols-2' : 'max-w-5xl lg:grid-cols-2'}`}>
       <div className="flex flex-col gap-6">
@@ -324,12 +326,13 @@ export default async function GigDetailPage({
             <Cloud className="h-4 w-4 text-muted-foreground/50 shrink-0" aria-label="Synkronisert frå iCloud" />
           )}
           <Badge variant={
-            gig.status === 'confirmed' ? 'default' :
-            gig.status === 'completed' ? 'success' :
-            gig.status === 'cancelled' ? 'destructive' :
+            displayStatus === 'confirmed' ? 'default' :
+            displayStatus === 'live' ? 'live' :
+            displayStatus === 'completed' ? 'success' :
+            displayStatus === 'cancelled' ? 'destructive' :
             'secondary'
           }>
-            {statusLabels[gig.status as GigStatus]}
+            {statusLabels[displayStatus]}
           </Badge>
           {isAdmin && !gig.deleted_at && (
             <>
